@@ -17,19 +17,18 @@ external_stylesheets = [
     },
 ]
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
-app.title = "Avocado Analytics: Understand Your Avocados!"
+server = app.server
+app.title = "COVID Dashboard"
 
 app.layout = html.Div(
     children=[
         html.Div(
             children=[
                 html.H1(
-                    children="Avocado Analytics", className="header-title"
+                    children="COVID Dashboard", className="header-title"
                 ),
                 html.P(
-                    children="Analyze the behavior of avocado prices"
-                    " and the number of avocados sold in the US"
-                    " between 2015 and 2018",
+                    children="Canadian COVID-19 Mortality",
                     className="header-description",
                 ),
             ],
