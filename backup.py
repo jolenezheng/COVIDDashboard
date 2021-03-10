@@ -45,6 +45,8 @@ fnameDict = {
 names = list(fnameDict.keys())
 nestedOptions = fnameDict[names[0]]
 tempSubregion = "Northern"
+province_name = "Albany"
+region_name = "organic"
 
 base_intro = """Lorem ipsum dolor sit amet, consectetur adipiscing elit, \
     sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. \
@@ -108,9 +110,39 @@ app.layout = html.Div(
                         dcc.Dropdown(
                             id='subregion-dropdown',
                             className='dropdown',
-                            value = 'None'
                         ),
                     ]
+                ),
+                html.Div(
+                    children=[
+                        html.Div(children="Region", className="menu-title"),
+                        dcc.Dropdown(
+                            id="region-filter",
+                            options=[
+                                {"label": region, "value": region}
+                                for region in np.sort(data.region.unique())
+                            ],
+                            value="Albany",
+                            clearable=False,
+                            className="dropdown",
+                        ),
+                    ]
+                ),
+                html.Div(
+                    children=[
+                        html.Div(children="Type", className="menu-title"),
+                        dcc.Dropdown(
+                            id="type-filter",
+                            options=[
+                                {"label": avocado_type, "value": avocado_type}
+                                for avocado_type in data.type.unique()
+                            ],
+                            value="organic",
+                            clearable=False,
+                            searchable=False,
+                            className="dropdown",
+                        ),
+                    ],
                 ),
                 html.Div(
                     children=[
@@ -142,7 +174,13 @@ app.layout = html.Div(
                     children=[
                         html.Div(
                             children=dcc.Graph(
-                                id="covid-chart", config={"displayModeBar": False},
+                                id="volume-chart", config={"displayModeBar": False},
+                            ),
+                            className="card",
+                        ),
+                        html.Div(
+                            children=dcc.Graph(
+                                id="price-chart", config={"displayModeBar": False},
                             ),
                             className="card",
                         ),
@@ -162,32 +200,60 @@ app.layout = html.Div(
 def update_date_dropdown(name):
     return [{'label': i, 'value': i} for i in fnameDict[name]]
 
-
 @app.callback(
-    Output("covid-chart", "figure"),
+    [Output("price-chart", "figure"), Output("volume-chart", "figure")],
     [
-        Input("region-dropdown", "value"),
-        Input("subregion-dropdown", "value"),
+        Input("region-filter", "value"),
+        Input("type-filter", "value"),
+        Input("date-range", "start_date"),
+        Input("date-range", "end_date"),
     ],
 )
-def update_covid_chart(name, region):
-    print(name)
-    print(region)
-    
-    if (name == "Newfoundland and Labrador"):
-        name = "NL"
-    elif (name == "British Columbia"):
-        name = "BC"
+def update_charts(region, avocado_type, start_date, end_date):
+    mask = (
+        (data.region == region)
+        & (data.type == avocado_type)
+        & (data.Date >= start_date)
+        & (data.Date <= end_date)
+    )
+    filtered_data = data.loc[mask, :]
+    price_chart_figure = {
+        "data": [
+            {
+                "x": filtered_data["Date"],
+                "y": filtered_data["AveragePrice"],
+                "type": "lines",
+                "hovertemplate": "$%{y:.2f}<extra></extra>",
+            },
+        ],
+        "layout": {
+            "title": {
+                "text": "Graph 2",
+                "x": 0.05,
+                "xanchor": "left",
+            },
+            "xaxis": {"fixedrange": True},
+            "yaxis": {"tickprefix": "$", "fixedrange": True},
+            "colorway": ["#4a65ad"],
+        },
+    }
 
-    fig = px.line(df_mort, x = date(name, region), y = r_avg(name, region))
-
-    # fig = go.Figure(data=go.Scatter(x=x, y=y))
-    fig.update_layout(title='Daily Reported Deaths in ' + region + ', ' + name,
-                   xaxis_title='Date',
-                   yaxis_title='Daily Mortality(7-day Rolling Average')
-
-    return fig
-
+    volume_chart_figure = {
+        "data": [
+            {
+                "x": filtered_data["Date"],
+                "y": filtered_data["Total Volume"],
+                "type": "lines",
+            },
+        ],
+        "layout": {
+            "title": {"text": "Covid Mortality", "x": 0.05, "xanchor": "left"},
+            "xaxis": {"fixedrange": True},
+            "yaxis": {"fixedrange": True},
+            "colorway": ["#4a65ad"],
+        },
+    }
+    return price_chart_figure, volume_chart_figure
 
 
 def date(province_name, region_name):
