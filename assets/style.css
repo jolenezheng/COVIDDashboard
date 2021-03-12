@@ -53,15 +53,19 @@ body {
   line-height: 32px;
 }
 
-.menu-title {
+.dropdown-title {
   margin-top: 20px;
   margin-bottom: 10px;
   color: #4a65ad;
+  font-weight: 300;
+}
+
+.options-card {
+  padding: 30px 70px 30px 70px;
 }
 
 
 .left-column {
-  padding: 30px 70px 70px 70px;
   background-color: #e9e9e9;
   height: 100vh;
   width: 25.6666666667%;
@@ -100,4 +104,12 @@ body {
 
 #graph-title-intro {
   padding-bottom: 20px;
+}
+
+.options-header {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  font-size: 20px;
+  width: 100%;
+  /* background-color: #4a65ad; */
 }
