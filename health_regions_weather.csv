@@ -1,0 +1,102 @@
+﻿province_name,health_region,temp_region,prov_id,climate_id
+Alberta,Calgary,CALGARY INTL A,AB,3031092
+Alberta,Central,LACOMBE CDA 2,AB,3023722
+Alberta,Edmonton,EDMONTON INTL A,AB,3012216
+Alberta,North,FORT MCMURRAY A,AB,3062697
+Alberta,Not Reported,,AB,
+Alberta,South,LETHBRIDGE,AB,3033875
+BC,Fraser,ABBOTSFORD A,BC,1100032
+BC,Interior,KELOWNA,BC,1123939
+BC,Island,VICTORIA INTL A,BC,1018621
+BC,Northern,PRINCE GEORGE,BC,1096439
+BC,Not Reported,,BC,
+BC,Vancouver Coastal,VANCOUVER INTL A,BC,1108395
+Manitoba,Interlake-Eastern,STONY MOUNTAIN,MB,5022791
+Manitoba,Northern,THOMPSON A,MB,5062922
+Manitoba,Not Reported,,MB,
+Manitoba,Prairie Mountain,BRANDON A,MB,5010481
+Manitoba,Southern Health,KLEEFELD (MAFRI),MB,5021500
+Manitoba,Winnepeg,WINNIPEG INTL A,MB,5023227
+New Brunswick,Not Reported,,NB,
+New Brunswick,Zone 1 (Moncton area),MONCTON / GREATER MONCTON ROMEO LEBLANC INTL A,NB,8103202
+New Brunswick,Zone 2 (Saint John area),SAINT JOHN A,NB,8104901
+New Brunswick,Zone 3 (Fredericton area),FREDERICTON INTL A,NB,8101505
+New Brunswick,Zone 4 (Edmundston area),EDMUNDSTON,NB,8101303
+New Brunswick,Zone 5 (Campbellton area),CHARLO AUTO,NB,8100885
+New Brunswick,Zone 6 (Bathurst area),BATHURST A,NB,8100506
+New Brunswick,Zone 7 (Miramichi area),MIRAMICHI RCS,NB,8100989
+NL,Central,GANDER AIRPORT CS,NL,8401705
+NL,Eastern,ST. JOHN'S INTL A,NL,8403505
+NL,Labrador-Grenfell,HAPPY VALLEY GOOSE BAY,NL,8501915
+NL,Not Reported,,NL,
+NL,Western,CORNER BROOK,NL,8401298
+Nova Scotia,Not Reported,,NS,
+Nova Scotia,Zone 1 - Western,KENTVILLE CDA CS,NS,8202810
+Nova Scotia,Zone 2 - Northern,DEBERT,NS,8201390
+Nova Scotia,Zone 3 - Eastern,NORTHEAST MARGAREE (AUT),NS,8204154
+Nova Scotia,Zone 4 - Central,HALIFAX DOCKYARD,NS,8202240
+Nunavut,Nunavut,IQALUIT A,NU,2402596
+NWT,NWT,YELLOWKNIFE A,NT,2204101
+Ontario,Algoma,SAULT STE MARIE A,ON,6057591
+Ontario,Brant,BRANTFORD AIRPORT,ON,6140942
+Ontario,Chatham-Kent,CHATHAM KENT,ON,6131414
+Ontario,Durham,OSHAWA,ON,6155875
+Ontario,Eastern,CORNWALL,ON,6101874
+Ontario,Grey Bruce,WIARTON A,ON,6119498
+Ontario,Haldimand-Norfolk,DELHI CS,ON,6131983
+Ontario,Haliburton Kawartha Pineridge,HALIBURTON 3,ON,6163171
+Ontario,Halton,OAKVILLE TWN,ON,6155750
+Ontario,Hamilton,HAMILTON A,ON,6153193
+Ontario,Hastings Prince Edward,BELLEVILLE,ON,6150689
+Ontario,Huron Perth,GODERICH,ON,6122847
+Ontario,Kingston Frontenac Lennox & Addington,KINGSTON A,ON,6104152
+Ontario,Lambton,SARNIA,ON,6127510
+Ontario,Leeds Grenville and Lanark,BROCKVILLE CLIMATE,ON,6100970
+Ontario,Middlesex-London,LONDON A,ON,6144473
+Ontario,Niagara,ST. CATHARINES / NIAGARA DISTRICT A,ON,6137286
+Ontario,North Bay Parry Sound,NORTH BAY A,ON,6085701
+Ontario,Northwestern,KENORA A,ON,6034076
+Ontario,Not Reported,,ON,
+Ontario,Ottawa,OTTAWA CDA RCS,ON,6105978
+Ontario,Peel,TORONTO INTL A,ON,6158731
+Ontario,Peterborough,PETERBOROUGH A,ON,6166415
+Ontario,Porcupine,TIMMINS CLIMATE,ON,6078282
+Ontario,Renfrew,PEMBROKE CLIMATE,ON,6106367
+Ontario,Simcoe Muskoka,MUSKOKA,ON,6115529
+Ontario,Southwestern,ST THOMAS WPCP,ON,6137362
+Ontario,Sudbury,SUDBURY CLIMATE,ON,6068145
+Ontario,Thunder Bay,THUNDER BAY,ON,6048260
+Ontario,Timiskaming,EARLTON A,ON,6072223
+Ontario,Toronto,TORONTO CITY,ON,6158355
+Ontario,Waterloo,KITCHENER/WATERLOO,ON,6144239
+Ontario,Wellington Dufferin Guelph,GUELPH TURFGRASS,ON,6143089
+Ontario,Windsor-Essex,WINDSOR A,ON,6139530
+Ontario,York,TORONTO BUTTONVILLE A,ON,6158409
+PEI,Prince Edward Island,CHARLOTTETOWN A,PE,8300301
+Quebec,Abitibi-Témiscamingue,ROUYN-NORANDA A,QC,7086719
+Quebec,Bas-Saint-Laurent,POINTE-AU-PERE (INRS),QC,7056068
+Quebec,Capitale-Nationale,QUEBEC INTL A,QC,7016293
+Quebec,Chaudière-Appalaches,BEAUPORT,QC,7010565
+Quebec,Côte-Nord,SEPT-ILES,QC,7047914
+Quebec,Estrie,SHERBROOKE,QC,7028123
+Quebec,Gaspésie-Îles-de-la-Madeleine,GASPE A,QC,7052602
+Quebec,Lanaudière,L'ASSOMPTION,QC,7014160
+Quebec,Laurentides,MONTREAL MIRABEL INTL A,QC,7034900
+Quebec,Laval,MCTAVISH,QC,7024745
+Quebec,Mauricie,TROIS RIVIERES A,QC,7018561
+Quebec,Montérégie,MONTREAL/ST-HUBERT,QC,7027329
+Quebec,Montréal,MONTREAL/PIERRE ELLIOTT TRUDEAU INTL,QC,702S006
+Quebec,Nord-du-Québec,CHIBOUGAMAU CHAPAIS A,QC,7091409
+Quebec,Not Reported,,QC,
+Quebec,Nunavik,AKULIVIK A,QC,7100072
+Quebec,Outaouais,OTTAWA GATINEAU A,QC,7032685
+Quebec,Saguenay,JONQUIERE,QC,7063370
+Quebec,Terres-Cries-de-la-Baie-James,EASTMAIN RIVER A,QC,7092306
+Saskatchewan,Central,PILGER,SK,4056121
+Saskatchewan,Far North,LA RONGE A,SK,4064155
+Saskatchewan,North,PRINCE ALBERT A,SK,4056241
+Saskatchewan,Not Reported,,SK,
+Saskatchewan,Regina,REGINA INTL A,SK,4016566
+Saskatchewan,Saskatoon,SASKATOON INTL A,SK,4057152
+Saskatchewan,South,MOOSE JAW A,SK,4015320
+Yukon,Yukon,WHITEHORSE A,YT,2101303
