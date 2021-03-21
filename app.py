@@ -338,7 +338,7 @@ def update_charts(province_name, region, start_date, end_date):
     # weat_city = x
     # date_city=2*x*x
 
-    weather_fig = px.line(df_mort, x = weat_city, y = date_city)
+    weather_fig = px.line(df_mort, x = date_city, y = weat_city)
     weather_fig.update_layout(title='Daily Reported Temperature in ' + region + ', ' + province_name,
                    xaxis_title='Date',
                    yaxis_title='Mean Temperature')
