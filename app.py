@@ -8,7 +8,6 @@ from dash.dependencies import Output, Input
 import plotly.express as px
 import plotly.graph_objects as go
 import datetime as datetime
-import dash_daq as daq
 
 from textwrap import dedent
 
