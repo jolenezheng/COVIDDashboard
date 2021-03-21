@@ -8,17 +8,23 @@ from dash.dependencies import Output, Input
 import plotly.express as px
 import plotly.graph_objects as go
 import datetime as datetime
+import dash_daq as daq
 
 from textwrap import dedent
 
 
-df_mort = pd.read_csv('https://raw.githubusercontent.com/ccodwg/Covid19Canada/master/timeseries_hr/mortality_timeseries_hr.csv')
-df_mort["date_death_report"] = pd.to_datetime(df_mort["date_death_report"], format="%d-%m-%Y")
+df_mort = pd.read_csv('https://raw.githubusercontent.com/ccodwg/Covid19Canada/master/timeseries_hr/mortality_timeseries_hr.csv', parse_dates=[0], dayfirst=True)
+df_mort["date_death_report"] = pd.to_datetime(df_mort["date_death_report"], format="%d-%m-%Y", dayfirst =True)
 
 df_cases = pd.read_csv('https://raw.githubusercontent.com/ccodwg/Covid19Canada/master/timeseries_hr/cases_timeseries_hr.csv')
+df_cases["date_report"] = pd.to_datetime(df_cases["date_report"], format="%d-%m-%Y", dayfirst =True)
 
 weather_base_url = 'https://dd.weather.gc.ca/climate/observations/daily/csv/'
-weat_info = pd.read_csv('data/health_regions_weather.csv')
+weat_info = pd.read_csv(r'data/health_regions_weather.csv', encoding='Latin-1')
+
+mobility_info = pd.read_csv(r'data/2020_CA_Region_Mobility_Report.csv')
+mobility_info["sub_region_2"] = mobility_info["sub_region_2"]
+
 
 current_date = datetime.datetime.now()
 gloabl_date = current_date.strftime('%Y-%m')
@@ -29,6 +35,11 @@ target_url = ""
 weat_data = None
 weat_city = None
 date_city = None
+# province_name = "Ontario"
+# region = "Waterloo"
+# start_date = "15-03-2020"
+# end_date = datetime.datetime.strftime(datetime.datetime.now(), "%d-%m-%Y")
+
 
 # df_mob = pd.read_csv('https://www.gstatic.com/covid19/mobility/Global_Mobility_Report.csv')
 
@@ -53,7 +64,11 @@ fnameDict = {
                 "Niagara","North Bay Parry Sound","Northwestern","Not Reported","Ottawa","Peel","Peterborough","Porcupine",
                 "Renfrew","Simcoe Muskoka","Southwestern","Sudbury","Thunder Bay","Timiskaming","Toronto","Waterloo",
                 "Wellington Dufferin Guelph","Windsor-Essex","York"], "Prince Edward Island": ["Prince Edward Island"],
-    "Quebec": ["Estrie","Not Reported","Nunavik","Outaouais","Saguenay","Terres-Cries-de-la-Baie-James"],
+    "Quebec": ["Abitibi-Témiscamingue","Bas-Saint-Laurent","Capitale-Nationale",
+                  "Chaudière-Appalaches","Côte-Nord","Estrie","Gaspésie-Îles-de-la-Madeleine",
+                  "Lanaudière","Laurentides","Laval","Mauricie","Montérégie",
+                  "Montréal","Nord-du-Québec","Not Reported","Nunavik",
+                  "Outaouais","Saguenay","Terres-Cries-de-la-Baie-James"],
     "Repatriated": ["Not Reported"], "Saskatchewan":["Central","Far North","North","Not Reported","Regina","Saskatoon","South"],
     "Yukon": ["Yukon"]
 }
@@ -96,7 +111,7 @@ app.layout = html.Div(
                                     id='region-dropdown',
                                     className='dropdown',
                                     options=[{'label':name, 'value':name} for name in names],
-                                    value = list(fnameDict.keys())[0]
+                                    value = "Ontario" #list(fnameDict.keys())[0]
                                 ),
                             ]
                         ),
@@ -106,7 +121,7 @@ app.layout = html.Div(
                                 dcc.Dropdown(
                                     id='subregion-dropdown',
                                     className='dropdown',
-                                    value = 'None'
+                                    value = 'Waterloo'
                                 ),
                             ]
                         ),
@@ -120,8 +135,67 @@ app.layout = html.Div(
                                     id="date-range",
                                     min_date_allowed=df_mort.date_death_report.min().date(),
                                     max_date_allowed=df_mort.date_death_report.max().date(),
-                                    start_date=df_mort.date_death_report.min().date(),
+                                    start_date="2020-03-13", #df_mort.date_death_report.min().date(),
                                     end_date=df_mort.date_death_report.max().date(),
+                                ),
+                            ]
+                        ),
+                        html.Div(
+                            children=[
+                                html.Div(
+                                    children="Face Mask Use",
+                                    className="dropdown-title"
+                                    ),
+                                dcc.Slider(
+                                    id='facemask-slider',
+                                    min=0,
+                                    max=100,
+                                    step=1,
+                                    value=10,
+                                    marks={
+                                        0: '0%',
+                                        100: '100%'
+                                    },
+                                    # handleLabel={"showCurrentValue": True,"label": "VALUE"},
+                                ),
+                                html.Div(className='slider-output-container', id='slider-drag-output'),
+                            ]
+                        ),
+                        html.Div(
+                            children=[
+                                html.Div(
+                                    children="Mobility",
+                                    className="dropdown-title"
+                                    ),
+                                dcc.Slider(
+                                    id='mobility-slider',
+                                    min=0,
+                                    max=100,
+                                    step=1,
+                                    value=10,
+                                    marks={
+                                        0: '0%',
+                                        100: '100%'
+                                    },
+                                ),
+                            ]
+                        ),
+                        html.Div(
+                            children=[
+                                html.Div(
+                                    children="Vaccinations",
+                                    className="dropdown-title"
+                                    ),
+                                dcc.Slider(
+                                    id='vaccine-slider',
+                                    min=0,
+                                    max=100,
+                                    step=1,
+                                    value=10,
+                                    marks={
+                                        0: '0%',
+                                        100: '100%'
+                                    },
                                 ),
                             ]
                         ),
@@ -155,6 +229,12 @@ app.layout = html.Div(
                         ),
                         html.Div(
                             children=dcc.Graph(
+                                id="mobility-chart", config={"displayModeBar": False},
+                            ),
+                            className="card",
+                        ),
+                        html.Div(
+                            children=dcc.Graph(
                                 id="weather-chart", config={"displayModeBar": False},
                             ),
                             className="card",
@@ -182,8 +262,15 @@ def display_info_box(btn_click):
         return dedent(base_intro), "Learn More"
 
 
+ # ============== SLIDER CALLBACK ==============
+
+@app.callback(Output('slider-drag-output', 'children'),
+              [Input('facemask-slider', 'drag_value'), Input('facemask-slider', 'value')])
+def display_value(drag_value, value):
+    return 'For testing purposes: Drag Value: {} | Value: {}'.format(drag_value, value)
+
 @app.callback(
-    [Output("covid-chart", "figure"), Output("cases-chart", "figure"), Output("weather-chart", "figure")],
+    [Output("covid-chart", "figure"), Output("cases-chart", "figure"), Output("mobility-chart", "figure"), Output("weather-chart", "figure")],
     [
         Input("region-dropdown", "value"),
         Input("subregion-dropdown", "value"),
@@ -192,7 +279,6 @@ def display_info_box(btn_click):
     ],
 )
 def update_charts(province_name, region, start_date, end_date):
-    print(gloabl_date)
     # Update names to abbreviated form
     if (province_name == "Newfoundland and Labrador"):
         province_name = "NL"
@@ -210,74 +296,131 @@ def update_charts(province_name, region, start_date, end_date):
                    yaxis_title='Daily Mortality (7-day Rolling Average)')
 
     # ============== CASES GRAPH ==============
-    cases_fig = px.line(df_mort, x = date_cases(province_name, region), y = ravg_cases(province_name, region))
+    cases_fig = px.line(df_mort, x = date_cases(province_name, region, start_date, end_date), y = ravg_cases(province_name, region, start_date, end_date))
     cases_fig.update_layout(title='Daily Reported Cases in ' + region + ', ' + province_name,
                    xaxis_title='Date',
                    yaxis_title='Daily Cases (7-day Rolling Average)')
 
+     # ============== MOBILITY GRAPH ==============
+    mobility_fig = px.line(df_mort, x = date_mob(province_name, region, start_date, end_date), y = mobility(province_name, region, start_date, end_date))
+    mobility_fig.update_layout(title='Social Mobility in ' + region + ', ' + province_name,
+                   xaxis_title='Date',
+                   yaxis_title='Social Mobility')
+
     # ============== WEATHER GRAPH ==============
-    colnames = ["x2","3x","xv","xvv",
-                "Date/Time","y","m","d","Da","2a",
-                "ac","asa","Mi","Mean Temp",
-                "gf","hfgdgfd","adfgf",
-                "Cos)","Co3lag","Totdm",
-                "Tod","T2","Tfgf",
-                "234rt","234","ff4rt434r",
-                "Snow on Grnd Flag","Dir of Max Gust (10s deg)",
-                "Dirf","Spff","Sp4"]
+    # colnames = ["x2","3x","xv","xvv",
+    #             "Date/Time","y","m","d","Da","2a",
+    #             "ac","asa","Mi","Mean Temp",
+    #             "gf","hfgdgfd","adfgf",
+    #             "Cos)","Co3lag","Totdm",
+    #             "Tod","T2","Tfgf",
+    #             "234rt","234","ff4rt434r",
+    #             "Snow on Grnd Flag","Dir of Max Gust (10s deg)",
+    #             "Dirf","Spff","Sp4"]
 
     prov_id = provinceid(province_name, region)
     climate_id = climateid(province_name, region)
     target_url = weather_base_url + prov_id + '/climate_daily_' + prov_id + '_' + climate_id + '_' + gloabl_date + '_P1D.csv'
+    weat_data =  pd.read_csv(target_url, encoding='Latin-1')
     # weat_data =  pd.read_csv(target_url, names=colnames)
     # weat_data =  pd.read_csv(target_url, encoding='unicode_escape')
     # weat_city = weat_data.iloc[14]
     # weat_city = weat_data['Mean Temp (' + (u"\N{DEGREE SIGN}").decode('utf-8').strip() + '°C)']
     # weat_city = weat_data['Mean Temp']
-    # weat_city = weat_data['Mean Temp (°C)']
     # weat_city = weat_data.columns[14]
     # weat_city =  pd.read_csv(target_url, usecols=[14]) #encoding='Latin-1')
 
     # weat_city = weat_data['Mean Temp (' + u"\u2103".encode('utf-8').strip() + 'C)']
 
-    # date_city = weat_data['Date/Time']
+    weat_city = weat_data['Mean Temp (°C)']
+    date_city = weat_data['Date/Time']
 
     x = np.arange(10)
+    # weat_city = x
+    # date_city=2*x*x
 
-    weather_fig = px.line(df_mort, x = x, y = 2*x*x)
+    weather_fig = px.line(df_mort, x = weat_city, y = date_city)
     weather_fig.update_layout(title='Daily Reported Temperature in ' + region + ', ' + province_name,
                    xaxis_title='Date',
                    yaxis_title='Mean Temperature')
 
-    return mort_fig, cases_fig, weather_fig
+    return mort_fig, cases_fig, mobility_fig, weather_fig
 
 # -------------- MORTALITY HELPER FUNCTIONS --------------
 def date(province_name, region_name, start_date, end_date):
+    # start_date = pd.to_datetime(start_date)
+    # end_date = pd.to_datetime(end_date)
+    # start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d').strftime('%d-%m-%Y')
+    # end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d').strftime('%d-%m-%Y')
 
-    start_date = pd.to_datetime(start_date)
-    end_date = pd.to_datetime(end_date)
+    # issue: python is treating d-m as m-d
 
     filtered_df = df_mort[df_mort.date_death_report.between(
-        datetime.datetime.strftime(start_date, "%d-%m-%Y"),
-        datetime.datetime.strftime(end_date, "%d-%m-%Y")
+        datetime.datetime.strptime(start_date, '%Y-%m-%d').strftime('%d-%m-%Y'),
+        datetime.datetime.strptime(end_date, '%Y-%m-%d').strftime('%d-%m-%Y')
+        # start_date, end_date
     )]
     
     df_province = filtered_df[filtered_df.province == province_name]
     return df_province.date_death_report[df_province.health_region == region_name]
     
 def r_avg(province_name, region_name, start_date, end_date):
-
-    start_date = pd.to_datetime(start_date)
-    end_date = pd.to_datetime(end_date)
+    start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d').strftime('%d-%m-%Y')
+    end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d').strftime('%d-%m-%Y')
 
     filtered_df = df_mort[df_mort.date_death_report.between(
-        datetime.datetime.strftime(start_date, "%d-%m-%Y"),
-        datetime.datetime.strftime(end_date, "%d-%m-%Y")
+        start_date, end_date
     )]
     
     df_province = filtered_df[filtered_df.province == province_name]
     return df_province.deaths[df_province.health_region == region_name].rolling(window=7).mean()
 
+
+# -------------- CASES HELPER FUNCTIONS --------------
+
+def date_cases(province_name, region_name, start_date, end_date):
+    filtered_df = df_cases[df_cases.date_report.between(
+        datetime.datetime.strptime(start_date, '%Y-%m-%d').strftime('%d-%m-%Y'),
+        datetime.datetime.strptime(end_date, '%Y-%m-%d').strftime('%d-%m-%Y')
+    )]
+    dfcases_province = filtered_df[filtered_df.province == province_name]
+    return dfcases_province.date_report[dfcases_province.health_region == region_name]
+
+def ravg_cases(province_name, region_name, start_date, end_date):
+    filtered_df = df_cases[df_cases.date_report.between(
+        datetime.datetime.strptime(start_date, '%Y-%m-%d').strftime('%d-%m-%Y'),
+        datetime.datetime.strptime(end_date, '%Y-%m-%d').strftime('%d-%m-%Y')
+    )]
+    dfcases_province = filtered_df[filtered_df.province == province_name]
+    return dfcases_province.cases[dfcases_province.health_region == region_name].rolling(window=7).mean()
+
+# -------------- MOBILITY HELPER FUNCTIONS --------------
+
+def mobility(province_name, region_name, start_date, end_date):
+
+    filtered_df = mobility_info[mobility_info.date.between(
+        start_date, end_date
+        # datetime.datetime.strptime(start_date, '%Y-%m-%d').strftime('%d-%m-%Y'),
+        # datetime.datetime.strptime(end_date, '%Y-%m-%d').strftime('%d-%m-%Y')
+    )]
+    
+    weat_info_province = weat_info[weat_info.province_name == province_name]
+    sub_region = weat_info_province.sub_region_2[weat_info_province.health_region == region_name].item()
+
+    return filtered_df.workplaces_percent_change_from_baseline[mobility_info.sub_region_2 == sub_region].rolling(window=7).mean()
+
+def date_mob(province_name, region_name, start_date, end_date):
+
+    filtered_df = mobility_info[mobility_info.date.between(
+        start_date, end_date
+        # datetime.datetime.strptime(start_date, '%Y-%m-%d').strftime('%d-%m-%Y'),
+        # datetime.datetime.strptime(end_date, '%Y-%m-%d').strftime('%d-%m-%Y')
+    )]
+    
+    weat_info_province = weat_info[weat_info.province_name == province_name]
+    sub_region = weat_info_province.sub_region_2[weat_info_province.health_region == region_name].item()
+    
+    return filtered_df.date[mobility_info.sub_region_2 == sub_region]
 
 # -------------- WEATHER HELPER FUNCTIONS --------------
 
@@ -297,26 +440,6 @@ def weatregion(province_name, region_name):
     return weat_info_province.temp_region[weat_info_province.health_region == region_name].item()
 
 
-# -------------- CASES HELPER FUNCTIONS --------------
-
-def date_cases(province_name, region_name):
-    dfcases_province = df_cases[df_cases.province == province_name]
-    return dfcases_province.date_report[dfcases_province.health_region == region_name]
-
-def ravg_cases(province_name, region_name):
-    dfcases_province = df_cases[df_cases.province == province_name]
-    return dfcases_province.cases[dfcases_province.health_region == region_name].rolling(window=7).mean()
-
 if __name__ == "__main__":
     app.run_server(debug=True)
 
-# {  {"", "Estimate", "Standard Error", "t\[Hyphen]Statistic",    "P\[Hyphen]Value"},  {tau, 25.1009, 1.69849, 14.7783, 2.28032*10^-49},  {lS0, -2.70768, 0.136775, -19.7966, 4.6873*10^-87},  {trend1, -0.0311442, 0.00722183, -4.31251, 0.0000161565},  {Tmin2, 24.6497, 1.02868, 23.9625, 1.56566*10^-126},  {dT2, 0.00562779, 0.00093845, 5.99689, 2.0182*10^-9},  {dT3, 0.000182757, 0.0000380385, 4.80453, 1.55338*10^-6},  {H0, 2.30833, 0.434351, 5.31443, 1.07219*10^-7},  {H2, 5.89094, 0.546897, 10.7716, 4.85314*10^-27},  {Anl, -0.007345, 0.00148539, -4.94485, 7.63276*10^-7},  {house2, 0.0198985, 0.0029732, 6.69261, 2.20381*10^-11},  {mob1, 0.0379239, 0.0033316, 11.3831, 5.29764*10^-30},  {v1, 20.1012, 10.8628, 1.85047, 0.0642483},  {v2, -0.0773693, 0.0664672, -1.16402, 0.244418} } 
-
-# Exp[.5*(lS0(*ab*Log[10]*(xLogPWPD-1.96)*)(*+bb*(xBeta-0.187)*)+        Log[10]*xLogPWPD + Log[.25](*2/(4-xBeta)*bb+*)+        2/(4 - xBeta)*Log[(2 - xBeta/2)/(2*10^xLogPWPD*.25^2)] -        H0*xHerd - H2*(xHerd - xHerd2)*6 - v1*Vax1 + mob1*xMob +        trend1*xTrends1 + dT2*(xTemp - Tmin2)^2 +        dT3*(xTemp - Tmin2)^3 - Log[tau])] - 1/tau +    house2*(xHouse - 2.75) + Anl*(xAnnual - 3.65) -    v2*Vax2,(*2>ab>0&&*)-.2 < mob1 < .2 &&(*-2<mDec<2&&*)40 > tau > 10 &&    100 > H0 > -100 && 100 > H2 > -100 &&(*4>Timmune>1&&*)   4 > lS0 > -6 && -10 < trend1 < 10 &&    0 < Tmin2 < 30 && -.01 < dT2 < .01 && -.01 < dT3 < .01 && -5 <     house2 < 15 && -5 < Anl < 5 && -20 < v1 < 40 && -10 < v2 < 10}, {(*ab,*)tau, lS0, trend1, Tmin2, dT2, dT3, H0, H2, Anl, house2, mob1, \ v1, v2}, Flatten[{xLogPWPD, xBeta, xHerd, xHerd2, xAnnual, xHouse, xMob,    xTrends1, xTemp, Vax1, Vax2}
-
-
-
-# Exp[.5*(lS0 + Log[10]*xLogPWPD + Log[.25] +        2/(4 - xBeta)*Log[(2 - xBeta/2)/(2*10^xLogPWPD*.25^2)] -        H0*xHerd - H2*(xHerd - xHerd2)*6 - v1*Vax1 + mob1*xMob +        trend1*xTrends1 + dT2*(xTemp - Tmin2)^2 +        dT3*(xTemp - Tmin2)^3 - Log[tau])] - 1/tau +    house2*(xHouse - 2.75) + Anl*(xAnnual - 3.65) -    v2*Vax2, -.2 < mob1 < .2 && 40 > tau > 10 && 100 > H0 > -100 &&    100 > H2 > -100 && 4 > lS0 > -6 && -10 < trend1 < 10 &&    0 < Tmin2 < 30 && -.01 < dT2 < .01 && -.01 < dT3 < .01 && -5 <     house2 < 15 && -5 < Anl < 5 && -20 < v1 < 40 && -10 < v2 < 10}, {tau, lS0, trend1, Tmin2, dT2, dT3, H0, H2, Anl, house2, mob1, v1, v2}, Flatten[{xLogPWPD, xBeta, xHerd, xHerd2, xAnnual, xHouse, xMob,    xTrends1, xTemp, Vax1, Vax2}
-
-
-# Exp[.5*(lS0 + Log[10]*xLogPWPD + Log[.25] +       2/(4 - xBeta)*Log[(2 - xBeta/2)/(2*10^xLogPWPD*.25^2)] -       H0*xHerd - H2*(xHerd - xHerd2)*6 - v1*Vax1 + mob1*xMob +       trend1*xTrends1 + dT2*(xTemp - Tmin2)^2 + dT3*(xTemp - Tmin2)^3 -       Log[tau])] - 1/tau + house2*(xHouse - 2.75) +   Anl*(xAnnual - 3.65) - v2*Vax2
