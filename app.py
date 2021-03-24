@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import math
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
@@ -216,28 +217,44 @@ app.layout = html.Div(
                     children=[
                         html.Div(
                             children=dcc.Graph(
-                                id="covid-chart", config={"displayModeBar": False},
+                                id="simulation-chart", config={"displayModeBar": False},
                             ),
                             className="card",
                         ),
                         html.Div(
-                            children=dcc.Graph(
-                                id="cases-chart", config={"displayModeBar": False},
-                            ),
-                            className="card",
+                            children= [
+                                dcc.Graph(
+                                    id="covid-chart", config={"displayModeBar": False}, style={'display': 'inline-block'},
+                                ),
+                                dcc.Graph(
+                                    id="cases-chart", config={"displayModeBar": False}, style={'display': 'inline-block'},
+                                ),
+                            ],
+                            # className="card",
                         ),
+                        # html.Div(
+                        #     children=dcc.Graph(
+                        #         id="cases-chart", config={"displayModeBar": False},
+                        #     ),
+                        #     className="card",
+                        # ),
                         html.Div(
-                            children=dcc.Graph(
-                                id="mobility-chart", config={"displayModeBar": False},
-                            ),
-                            className="card",
+                            children= [
+                                dcc.Graph(
+                                    id="mobility-chart", config={"displayModeBar": False}, style={'display': 'inline-block'},
+                                ),
+                                dcc.Graph(
+                                    id="weather-chart", config={"displayModeBar": False}, style={'display': 'inline-block'},
+                                ),
+                            ],
+                        #     # className="card",
                         ),
-                        html.Div(
-                            children=dcc.Graph(
-                                id="weather-chart", config={"displayModeBar": False},
-                            ),
-                            className="card",
-                        ),
+                        # html.Div(
+                        #     children=dcc.Graph(
+                        #         id="weather-chart", config={"displayModeBar": False},
+                        #     ),
+                        #     className="card",
+                        # ),
                     ],
                 ),
             ],
@@ -269,7 +286,7 @@ def display_value(drag_value, value):
     return 'For testing purposes: Drag Value: {} | Value: {}'.format(drag_value, value)
 
 @app.callback(
-    [Output("covid-chart", "figure"), Output("cases-chart", "figure"), Output("mobility-chart", "figure"), Output("weather-chart", "figure")],
+    [Output("simulation-chart", "figure"), Output("covid-chart", "figure"), Output("cases-chart", "figure"), Output("mobility-chart", "figure"), Output("weather-chart", "figure")],
     [
         Input("region-dropdown", "value"),
         Input("subregion-dropdown", "value"),
@@ -287,6 +304,15 @@ def update_charts(province_name, region, start_date, end_date):
         province_name == "PEI"
     elif (province_name == "Northwest Territories"):
         province_name == "NWT"
+    
+    # ============== SIMULATION GRAPH ==============
+    # x = np.arange(10)
+    # x = date(province_name, region, start_date, end_date)
+    dates = ["Oct 2020", "Nov 2020", "Dec 2020", "Jan 2021", "Feb 2021", "Mar 2021", "Apr 2021", "May 2021", "Jun 2021"]
+    pred_fig = px.line(x = dates, y = predict_cases(dates, province_name, region, start_date, end_date))
+    pred_fig.update_layout(title='Daily Predicted Deaths in ' + region + ', ' + province_name,
+                   xaxis_title='Date',
+                   yaxis_title='Daily Mortality (7-day Rolling Average)')
 
     # ============== MORTALITY GRAPH ==============
     mort_fig = px.line(df_mort, x = date(province_name, region, start_date, end_date), y = r_avg(province_name, region, start_date, end_date))
@@ -307,43 +333,77 @@ def update_charts(province_name, region, start_date, end_date):
                    yaxis_title='Social Mobility')
 
     # ============== WEATHER GRAPH ==============
-    # colnames = ["x2","3x","xv","xvv",
-    #             "Date/Time","y","m","d","Da","2a",
-    #             "ac","asa","Mi","Mean Temp",
-    #             "gf","hfgdgfd","adfgf",
-    #             "Cos)","Co3lag","Totdm",
-    #             "Tod","T2","Tfgf",
-    #             "234rt","234","ff4rt434r",
-    #             "Snow on Grnd Flag","Dir of Max Gust (10s deg)",
-    #             "Dirf","Spff","Sp4"]
-
     prov_id = provinceid(province_name, region)
     climate_id = climateid(province_name, region)
     target_url = weather_base_url + prov_id + '/climate_daily_' + prov_id + '_' + climate_id + '_' + gloabl_date + '_P1D.csv'
     weat_data =  pd.read_csv(target_url, encoding='Latin-1')
-    # weat_data =  pd.read_csv(target_url, names=colnames)
-    # weat_data =  pd.read_csv(target_url, encoding='unicode_escape')
-    # weat_city = weat_data.iloc[14]
-    # weat_city = weat_data['Mean Temp (' + (u"\N{DEGREE SIGN}").decode('utf-8').strip() + '°C)']
-    # weat_city = weat_data['Mean Temp']
-    # weat_city = weat_data.columns[14]
-    # weat_city =  pd.read_csv(target_url, usecols=[14]) #encoding='Latin-1')
+    # weat_data['Date'] = weat_data['Date/Time']
 
-    # weat_city = weat_data['Mean Temp (' + u"\u2103".encode('utf-8').strip() + 'C)']
-
-    weat_city = weat_data['Mean Temp (°C)']
+    # weat_city = weat_data['Mean Temp (°C)']
     date_city = weat_data['Date/Time']
+    # date_city = weat_date(province_name, region, start_date, end_date, weat_data)
 
     x = np.arange(10)
-    # weat_city = x
-    # date_city=2*x*x
+    weat_city = x
 
     weather_fig = px.line(df_mort, x = date_city, y = weat_city)
     weather_fig.update_layout(title='Daily Reported Temperature in ' + region + ', ' + province_name,
                    xaxis_title='Date',
                    yaxis_title='Mean Temperature')
 
-    return mort_fig, cases_fig, mobility_fig, weather_fig
+    return pred_fig, mort_fig, cases_fig, mobility_fig, weather_fig
+
+
+# -------------- MODEL HELPER FUNCTIONS --------------
+def predict_cases(dates, province_name, region_name, start_date, end_date):
+    tau = 25.1009
+    lS0 = -2.70768
+    trend1=-0.0311442
+    xTrends1 = 1 # Google Trends for face mask
+    dtrends= 0.00722183
+    xTemp = 1 # temperature? -> temperature when?
+    Tmin2 = 24.6497
+    dT2 = 0.00562779
+    dT3 = 0.000182757
+    xLogPWPD = 1 # Log10[PWD*AgreFrac[>80]] -> what is PWD?
+    xHerd = 1 # Total Covid Death/Annual Death -> Annual death as in 2021, or since a year ago today
+    xHerd2 = 1 # Total Covid Death (more than 2 months ago)/Annual Death -> what does more than 2 months ago mean?
+    H0 = 2.30833
+    H2 = 5.89094
+    xAnnual = 1 # Log10[Annual Death] -> since a year ago today?
+    Anl = -0.007345
+    xHouse = 1 # Average number/household -> is average number = avg number of covid cases?
+    house2 = 0.0198985
+    xMob = 1 # Google Workplace Mobility -> given day, month, etc.?
+    mob1 = 0.0379239
+    v2 = 0
+    v1 = 1 # Fraction of vaccinated population (unto a month ago) -> time frame?
+    xVax1 = 1 # Fraction of vaccinated population (unto a month ago) -> time frame?
+    v1= 11.9697
+    xBeta = 1 # Population Sparsity
+    # Daily Cases Tomorrow = Exp[lambda]*Daily cases today -> what is lambda?
+
+    # what is xVax1, Vax1, Vax2?
+    Vax1 = 1
+    Vax2 = 1
+    # What is the base for the logs?
+    # what is Exp?
+    # How far should we predict for?
+
+    # Exp[.5*(lS0 + Log[10]*xLogPWPD + Log[.25] + 
+    #  2/(4 - xBeta)*Log[(2 - xBeta/2)/(2*10^xLogPWPD*.25^2)] - 
+    #  H0*xHerd - H2*(xHerd - xHerd2)*6 - v1*Vax1 + mob1*xMob + 
+    #  trend1*xTrends1 + dT2*(xTemp - Tmin2)^2 + dT3*(xTemp - Tmin2)^3 -
+    #   Log[tau])] - 1/tau + house2*(xHouse - 2.75) + Anl*(xAnnual - 3.65) - v2*Vax2
+    # x = ["Jan 2021", "Feb 2021", "Mar 2021"]
+    y = []
+    i = 10
+    for date in dates:
+        y.append(i)
+        i += 10
+    
+    return y
+
 
 # -------------- MORTALITY HELPER FUNCTIONS --------------
 def date(province_name, region_name, start_date, end_date):
@@ -423,8 +483,22 @@ def date_mob(province_name, region_name, start_date, end_date):
 
 # -------------- WEATHER HELPER FUNCTIONS --------------
 
+def weat_date(province_name, region_name, start_date, end_date, weat_data):
+    # weat_data['Date'] = weat_data['Date/Time']
+    filtered_df = weat_data['Date/Time'].between(
+        start_date, end_date
+    )
+
+    return filtered_df['Date/Time']
+
+# def weat_avg(province_name, region_name, start_date, end_date):
+
 # Gets the climate ID for the health region
 def climateid(province_name, region_name):
+    # filtered_df = mobility_info[mobility_info.date.between(
+    #     start_date, end_date
+    # )]
+
     weat_info_province = weat_info[weat_info.province_name == province_name]
     return weat_info_province.climate_id[weat_info_province.health_region == region_name].item()
 
