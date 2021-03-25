@@ -1,0 +1,93 @@
+HR_UID,Province,ENGNAME,shortname
+4832,AB,Calgary Zone,Calgary
+4833,AB,Central Zone,Central
+4834,AB,Edmonton Zone,Edmonton
+4835,AB,North Zone,Northern
+4831,AB,South Zone,South
+591,BC,Fraser Health,Fraser
+592,BC,Interior Health,Interior
+594,BC,Northern Health,Northern
+595,BC,Vancouver  Coastal Health,Vancouver Coastal
+593,BC,Vancouver Island Health,Island
+4603,MB,Interlake-Eastern Regional Health Authority,Interlake-Eastern
+4604,MB,Northern Regional Health Authority,Northern
+4602,MB,Prairie Mountain Health,Prairie Mountain
+4605,MB,Southern Health—Santé Sud,Southern Health
+4601,MB,Winnipeg Regional Health Authority,Winnipeg
+1301,NB,Zone 1 (Moncton area),Zone 1 (Moncton area)
+1302,NB,Zone 2 (Saint John area),Zone 2 (Saint John area)
+1303,NB,Zone 3 (Fredericton area),Zone 3 (Fredericton area)
+1304,NB,Zone 4 (Edmundston area),Zone 4 (Edmundston area)
+1305,NB,Zone 5 (Campbellton area),Zone 5 (Campbellton area)
+1306,NB,Zone 6 (Bathurst area),Zone 6 (Bathurst area)
+1307,NB,Zone 7 (Miramichi area),Zone 7 (Miramichi area)
+1012,NL,Central Regional Health Authority,Central
+1011,NL,Eastern Regional Health Authority,Eastern
+1014,NL,Labrador-Grenfell Regional Health Authority,Labrador-Grenfell
+1013,NL,Western Regional Health Authority,Western
+1201,NS,Zone 1 - Western,Zone 1 - Western
+1202,NS,Zone 2 - Northern,Zone 2 - Northern
+1203,NS,Zone 3 - Eastern,Zone 3 - Eastern
+1204,NS,Zone 4 - Central,Zone 4 - Central
+6101,NT,Northwest Territories,NWT
+6201,NU,Nunavut,Nunavut
+3527,ON,Brant County Health Unit,Brant
+3540,ON,Chatham-Kent Health Unit,Chatham-Kent
+3537,ON,City of Hamilton Health Unit,Hamilton
+3551,ON,City of Ottawa Health Unit,Ottawa
+3595,ON,City of Toronto Health Unit,Toronto
+3530,ON,Durham Regional Health Unit,Durham
+3533,ON,Grey Bruce Health Unit,Grey Bruce
+3534,ON,Haldimand-Norfolk Health Unit,Haldimand-Norfolk
+3535,ON,"Haliburton, Kawartha, Pine Ridge District Health Unit",Haliburton Kawartha Pineridge
+3536,ON,Halton Regional Health Unit,Halton
+3538,ON,Hastings and Prince Edward Counties Health Unit,Hastings Prince Edward
+3539,ON,Huron Perth Public Health Unit,Huron Perth
+3541,ON,"Kingston, Frontenac and Lennox and Addington Health Unit",Kingston Frontenac Lennox & Addington
+3542,ON,Lambton Health Unit,Lambton
+3543,ON,"Leeds, Grenville and Lanark District Health Unit",Leeds Grenville and Lanark
+3544,ON,Middlesex-London Health Unit,Middlesex-London
+3546,ON,Niagara Regional Area Health Unit,Niagara
+3547,ON,North Bay Parry Sound District Health Unit,North Bay Parry Sound
+3549,ON,Northwestern Health Unit,Northwestern
+3553,ON,Peel Regional Health Unit,Peel
+3555,ON,Peterborough County–City Health Unit,Peterborough
+3556,ON,Porcupine Health Unit,Porcupine
+3557,ON,Renfrew County and District Health Unit,Renfrew
+3560,ON,Simcoe Muskoka District Health Unit,Simcoe Muskoka
+3575,ON,Southwestern Health Unit,Southwestern
+3561,ON,Sudbury and District Health Unit,Sudbury
+3526,ON,The District of Algoma Health Unit,Algoma
+3558,ON,The Eastern Ontario Health Unit,Eastern
+3562,ON,Thunder Bay District Health Unit,Thunder Bay
+3563,ON,Timiskaming Health Unit,Timiskaming
+3565,ON,Waterloo Health Unit,Waterloo
+3566,ON,Wellington-Dufferin-Guelph Health Unit,Wellington Dufferin Guelph
+3568,ON,Windsor-Essex County Health Unit,Windsor-Essex
+3570,ON,York Regional Health Unit,York
+1100,PE,Prince Edward Island,Prince Edward Island
+2408,QC,Région de l'Abitibi-Témiscamingue,Abitibi-Témiscamingue
+2405,QC,Région de l'Estrie,Estrie
+2407,QC,Région de l'Outaouais,Outaouais
+2409,QC,Région de la Côte-Nord,Côte-Nord
+2403,QC,Région de la Capitale-Nationale,Capitale-Nationale
+2412,QC,Région de la Chaudière-Appalaches,Chaudière-Appalaches
+2411,QC,Région de la Gaspésie—Îles-de-la-Madeleine,Gaspésie-Îles-de-la-Madeleine
+2404,QC,Région de la Mauricie et du Centre-du-Québec,Mauricie
+2416,QC,Région de la Montérégie,Montérégie
+2414,QC,Région de Lanaudière,Lanaudière
+2413,QC,Région de Laval,Laval
+2406,QC,Région de Montréal,Montréal
+2415,QC,Région des Laurentides,Laurentides
+2418,QC,Région des Terres-Cries-de-la-Baie-James,Terres-Cries-de-la-Baie-James
+2401,QC,Région du Bas-Saint-Laurent,Bas-Saint-Laurent
+2410,QC,Région du Nord-du-Québec,Nord-du-Québec
+2417,QC,Région du Nunavik,Nunavik
+2402,QC,Région du Saguenay—Lac-Saint-Jean,Saguenay
+473,SK,Central,Central
+471,SK,Far North,Far North
+472,SK,North,North
+475,SK,Regina,Regina
+474,SK,Saskatoon,Saskatoon
+476,SK,South,South
+6001,YT,Yukon,Yukon

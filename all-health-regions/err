@@ -1,0 +1,15 @@
+Traceback (most recent call last):
+  File "get_pwpd.py", line 5, in <module>
+    import scipy.optimize
+  File "/usr/local/Caskroom/miniconda/base/envs/GHSwork/lib/python3.7/site-packages/scipy/optimize/__init__.py", line 390, in <module>
+    from ._minimize import *
+  File "/usr/local/Caskroom/miniconda/base/envs/GHSwork/lib/python3.7/site-packages/scipy/optimize/_minimize.py", line 26, in <module>
+    from ._trustregion_dogleg import _minimize_dogleg
+  File "/usr/local/Caskroom/miniconda/base/envs/GHSwork/lib/python3.7/site-packages/scipy/optimize/_trustregion_dogleg.py", line 5, in <module>
+    import scipy.linalg
+  File "/usr/local/Caskroom/miniconda/base/envs/GHSwork/lib/python3.7/site-packages/scipy/linalg/__init__.py", line 196, in <module>
+    from .basic import *
+  File "/usr/local/Caskroom/miniconda/base/envs/GHSwork/lib/python3.7/site-packages/scipy/linalg/basic.py", line 17, in <module>
+    from ._solve_toeplitz import levinson
+  File "<frozen importlib._bootstrap>", line 416, in parent
+KeyboardInterrupt

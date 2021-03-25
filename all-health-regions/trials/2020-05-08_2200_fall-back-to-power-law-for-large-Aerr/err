@@ -1,0 +1,2 @@
+/usr/local/lib/python3.7/site-packages/scipy/optimize/minpack.py:808: OptimizeWarning: Covariance of the parameters could not be estimated
+  category=OptimizeWarning)

@@ -1,0 +1,105 @@
+# Use this conda environment
+#      ~/local/lib/mycode/conda/GHSwork.yml
+import numpy as np
+import pandas as pd
+import geopandas as gpd
+import rasterio
+import rasterio.mask
+
+class Pars:
+    home="/Users/holderb"
+    # GHS info
+    ghspop_filepath=home+"/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0.tif"
+    resolution_in_m = 250
+    GHS_pixperkm = 1000//resolution_in_m
+    GHS_Acell_in_kmsqd = 1.0/(GHS_pixperkm)**2
+    GHS_nodataval = -200
+    eps_mollweide = 'esri:54009'
+    
+    # Counties polygons
+    UScounties_filepath = 'counties/tl_2019_us_county/tl_2019_us_county.shp'
+    UScounties = None
+    
+    # FIPS database
+    fips_filepath = 'fips/all-geocodes-v2017.csv'
+    fipscodes = None
+    # guam, virgin islands, manu'a, etc don't have state-fips
+    fips_excluded_states = [78, 66, 69, 60]
+    
+    # database for output
+    pwpd_counties = None
+    csv_out_filename = 'pwpd_counties.csv'
+
+def load_all_databases():
+    # read in counties DataFrame
+    Pars.UScounties = gpd.read_file(Pars.UScounties_filepath)
+    # read in FIPS DataFrame
+    Pars.fipscodes = pd.read_csv(Pars.fips_filepath, encoding='mac_roman')
+
+def create_new_database():
+    # copy some columns to a new DataFrame
+    Pars.pwpd_counties = Pars.UScounties.loc[:,['STATEFP', 'COUNTYFP',
+                                           'NAME', 'NAMELSAD', 'ALAND']]
+    # add column for state names
+    Pars.pwpd_counties['STATENAME'] = Pars.pwpd_counties['NAME']
+    # use the fips file to get the state names from FIPS code
+    droprows = []
+    for index, row in Pars.pwpd_counties.iterrows():
+        f = int(row['STATEFP'])
+        # guam, virgin islands, manu'a, etc don't have state-fips
+        if (f not in Pars.fips_excluded_states):  
+            Pars.pwpd_counties.loc[index, 'STATENAME'] = \
+                Pars.fipscodes[(Pars.fipscodes['State Code (FIPS)'] == f)
+                          & (Pars.fipscodes['County Code (FIPS)'] == 0)]['Area Name (including legal/statistical area description)'].tolist()[0]
+        else:
+            # find indices of those places without statefips
+            droprows.append(index)
+    # drop the rows with places without statefips
+    Pars.pwpd_counties.drop(droprows)
+    # also drop same rows from UScounties polygons
+    Pars.UScounties.drop(droprows)
+    # add columns for population and pwpd, make them numeric
+    Pars.pwpd_counties['POP'] = \
+        pd.to_numeric(Pars.pwpd_counties['STATEFP'])
+    Pars.pwpd_counties['PWPD'] = \
+        pd.to_numeric(Pars.pwpd_counties['STATEFP'])
+
+def get_GHS_windowed_subimage(windowDataFrame):
+    # get polygon shape(s) from the geopandas dataframe
+    windowshapes = windowDataFrame["geometry"]
+    # mask GHS-POP image with entire set of shapes
+    with rasterio.open(Pars.ghspop_filepath) as src:
+        img, img_transform = \
+            rasterio.mask.mask(src, windowshapes, crop=True)
+        img_profile = src.profile
+        img_meta = src.meta
+    img_meta.update( { "driver": "GTiff",
+                       "height": img.shape[1],
+                       "width": img.shape[2],
+                       "transform": img_transform} )
+    # return only the first band (rasterio returns 3D array)
+    return img[0], img_transform
+    
+# load the counties polygons and statefips databases
+load_all_databases()
+# make pwpd database w/ state names too
+create_new_database()
+# loop over counties, mask GHS, calculate pwpd
+for index, row in Pars.pwpd_counties.iterrows():
+    print(index)
+    # get corresponding county polygon
+    county = Pars.UScounties.loc[[index]]
+    # transform to Mollweide
+    county_m = county.to_crs(crs=Pars.eps_mollweide)
+    # mask GHS-POP image on county, get raster subimage
+    img, img_transform = get_GHS_windowed_subimage(county_m)
+    imarr = np.array(img)
+    imarr[(imarr == Pars.GHS_nodataval)] = 0.0
+    pop = np.sum(imarr)
+    Pars.pwpd_counties.loc[index, 'POP'] = pop
+    pwpd = np.sum(np.multiply(imarr, imarr)) \
+        / Pars.GHS_Acell_in_kmsqd / pop
+    Pars.pwpd_counties.loc[index, 'PWPD'] = pwpd
+# write pwpd dataframe to csv
+Pars.pwpd_counties.to_csv(Pars.csv_out_filename)
+

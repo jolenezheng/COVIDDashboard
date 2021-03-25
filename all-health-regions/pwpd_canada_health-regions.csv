@@ -1,0 +1,102 @@
+HR_UID,Province,ENGNAME,ProvinceName,shortname,landarea,POP,PWPD
+10,NL,Entire Province,NL,Entire Province,843759.6875,479224.75,1863.456877
+1011,NL,Eastern Regional Health Authority,NL,Eastern,51290.75,297302.125,2116.373813
+1012,NL,Central Regional Health Authority,NL,Central,89187.8125,81279.375,1357.359256
+1013,NL,Western Regional Health Authority,NL,Western,109324.25,70931.99219,1547.268878
+1014,NL,Labrador-Grenfell Regional Health Authority,NL,Labrador-Grenfell,618769.625,29711.29883,1472.026257
+1100,PE,Prince Edward Island,PEI,Prince Edward Island,16309.8125,131290,1121.15823
+12,NS,Entire Province,Nova Scotia,Entire Province,31057.6875,182618.9219,855.9694822
+1201,NS,Zone 1 - Western,Nova Scotia,Zone 1 - Western,17331.25,146763.2656,1020.144866
+1202,NS,Zone 2 - Northern,Nova Scotia,Zone 2 - Northern,201174.5625,884511.0625,2129.293961
+1203,NS,Zone 3 - Eastern,Nova Scotia,Zone 3 - Eastern,48907.875,136855.6563,1155.360358
+1204,NS,Zone 4 - Central,Nova Scotia,Zone 4 - Central,42453.375,418272.9688,3393.071783
+13,NB,Entire Province,New Brunswick,Entire Province,15122.0625,213907.8594,1829.787765
+1301,NB,Zone 1 (Moncton area),New Brunswick,Zone 1 (Moncton area),29698.125,153141.5625,1271.415838
+1302,NB,Zone 2 (Saint John area),New Brunswick,Zone 2 (Saint John area),21853.1875,185365.5781,1370.001845
+1303,NB,Zone 3 (Fredericton area),New Brunswick,Zone 3 (Fredericton area),14445.3125,46091.68359,879.6289664
+1304,NB,Zone 4 (Edmundston area),New Brunswick,Zone 4 (Edmundston area),5070.75,25487.92383,1017.479736
+1305,NB,Zone 5 (Campbellton area),New Brunswick,Zone 5 (Campbellton area),9276.5625,76024.41406,865.8479623
+1306,NB,Zone 6 (Bathurst area),New Brunswick,Zone 6 (Bathurst area),12530.125,44351.19922,867.9268358
+1307,NB,Zone 7 (Miramichi area),New Brunswick,Zone 7 (Miramichi area),78457.5625,744370.5,1358.006315
+24,QC,Entire Province,Quebec,Entire Province,2258729,7894709,4522.073894
+2401,QC,Région du Bas-Saint-Laurent,Quebec,Bas-Saint-Laurent,61506.0625,198886.4531,1445.484232
+2402,QC,Région du Saguenay—Lac-Saint-Jean,Quebec,Saguenay,196502.125,279687.6563,1759.002534
+2403,QC,Région de la Capitale-Nationale,Quebec,Capitale-Nationale,31602,690771.1875,4247.814925
+2404,QC,Région de la Mauricie et du Centre-du-Québec,Quebec,Mauricie,57080.3125,522316.2188,1979.906262
+2405,QC,Région de l'Estrie,Quebec,Estrie,14891.4375,484128.5625,2015.04439
+2406,QC,Région de Montréal,Quebec,Montréal,1505.1875,1748232.625,10537.01289
+2407,QC,Région de l'Outaouais,Quebec,Outaouais,46015.4375,402967.6875,3059.083193
+2408,QC,Région de l'Abitibi-Témiscamingue,Quebec,Abitibi-Témiscamingue,70089.8125,150701.6875,1610.273037
+2409,QC,Région de la Côte-Nord,Quebec,Côte-Nord,636646.875,69112.34375,2112.748144
+2410,QC,Région du Nord-du-Québec,Quebec,Nord-du-Québec,394614.9375,15294.43555,1837.45833
+2411,QC,Région de la Gaspésie—Îles-de-la-Madeleine,Quebec,Gaspésie-Îles-de-la-Madeleine,83318.875,88161.8125,825.6033529
+2412,QC,Région de la Chaudière-Appalaches,Quebec,Chaudière-Appalaches,24671.5,429844,1668.131136
+2413,QC,Région de Laval,Quebec,Laval,606.9375,426466.625,5098.611672
+2414,QC,Région de Lanaudière,Quebec,Lanaudière,13403.9375,448304.25,2447.084684
+2415,QC,Région des Laurentides,Quebec,Laurentides,31442.3125,565426.75,2487.749297
+2416,QC,Région de la Montérégie,Quebec,Montérégie,18932.0625,1346772.25,3256.855463
+2417,QC,Région du Nunavik,Quebec,Nunavik,527968.8125,9991.047852,2369.552058
+2418,QC,Région des Terres-Cries-de-la-Baie-James,Quebec,Terres-Cries-de-la-Baie-James,263180.875,17649.82422,1620.93943
+35,ON,Entire Province,Ontario,Entire Province,71038.25,103626.25,1775.802251
+3526,ON,The District of Algoma Health Unit,Ontario,Algoma,995.0625,150005.2969,2788.598488
+3527,ON,Brant County Health Unit,Ontario,Brant,3046.1875,662999.0625,3963.455523
+3530,ON,Durham Regional Health Unit,Ontario,Durham,14729.1875,150929.5781,1057.854517
+3533,ON,Grey Bruce Health Unit,Ontario,Grey Bruce,5163.625,111332.0781,1077.641611
+3534,ON,Haldimand-Norfolk Health Unit,Ontario,Haldimand-Norfolk,16515.9375,176971.625,1083.207503
+3535,ON,"Haliburton, Kawartha, Pine Ridge District Health Unit",Ontario,Haliburton Kawartha Pineridge,935.75,571292.6875,4519.667275
+3536,ON,Halton Regional Health Unit,Ontario,Halton,1117.625,542073.4375,5051.532229
+3537,ON,City of Hamilton Health Unit,Ontario,Hamilton,1414025.438,13554385,5713.336448
+3538,ON,Hastings and Prince Edward Counties Health Unit,Ontario,Hastings Prince Edward,8948.0625,144873.3125,1485.808727
+3539,ON,Huron Perth Public Health Unit,Ontario,Huron Perth,6088.75,135608.5469,1387.903789
+3540,ON,Chatham-Kent Health Unit,Ontario,Chatham-Kent,3640.4375,102209.1563,1702.125704
+3541,ON,"Kingston, Frontenac and Lennox and Addington Health Unit",Ontario,Kingston Frontenac Lennox & Addington,5834.5,198955.9688,2692.226483
+3542,ON,Lambton Health Unit,Ontario,Lambton,9074.8125,110999.2969,1965.377927
+3543,ON,"Leeds, Grenville and Lanark District Health Unit",Ontario,Leeds Grenville and Lanark,5710.5625,151272.2813,1284.338191
+3544,ON,Middlesex-London Health Unit,Ontario,Middlesex-London,4426.9375,463905.2813,3666.36609
+3546,ON,Niagara Regional Area Health Unit,Ontario,Niagara,1467.25,432803.8438,2466.237912
+3547,ON,North Bay Parry Sound District Health Unit,Ontario,North Bay Parry Sound,28424.6875,128385.8672,1638.452866
+3549,ON,Northwestern Health Unit,Ontario,Northwestern,524745.8125,69071.78125,1080.920611
+3551,ON,City of Ottawa Health Unit,Ontario,Ottawa,2732.8125,967505.9375,5482.752354
+3553,ON,Peel Regional Health Unit,Ontario,Peel,939,1452108.75,8117.647795
+3555,ON,Peterborough County–City Health Unit,Ontario,Peterborough,5023.375,139767.8281,1953.271934
+3556,ON,Porcupine Health Unit,Ontario,Porcupine,344817.125,81447.67188,2126.965449
+3557,ON,Renfrew County and District Health Unit,Ontario,Renfrew,10594.4375,108272.375,1270.76758
+3558,ON,The Eastern Ontario Health Unit,Ontario,Eastern,6508.5625,179621.5781,1435.684881
+3560,ON,Simcoe Muskoka District Health Unit,Ontario,Simcoe Muskoka,23911.125,517672.0313,2209.350158
+3561,ON,Sudbury and District Health Unit,Ontario,Sudbury,67837.6875,199948.1094,1750.092947
+3562,ON,Thunder Bay District Health Unit,Ontario,Thunder Bay,740512.8125,146974.0938,2030.268875
+3563,ON,Timiskaming Health Unit,Ontario,Timiskaming,16975.9375,33640.26172,1170.855813
+3565,ON,Waterloo Health Unit,Ontario,Waterloo,927.0625,544119.3125,3947.831085
+3566,ON,Wellington-Dufferin-Guelph Health Unit,Ontario,Wellington Dufferin Guelph,6771.9375,280513.125,2524.550906
+3568,ON,Windsor-Essex County Health Unit,Ontario,Windsor-Essex,3388.3125,333846.25,2497.24498
+3570,ON,York Regional Health Unit,Ontario,York,4238.5,1187996.625,4999.562755
+3575,ON,Southwestern Health Unit,Ontario,Southwestern,11695.875,201947.7969,1896.939021
+3595,ON,City of Toronto Health Unit,Ontario,Toronto,913.4375,2771684,12289.38692
+46,MB,Entire Province,Manitoba,Entire Province,1083896.188,720808,4815.639338
+4601,MB,Winnipeg Regional Health Authority,Manitoba,Winnipeg,150701.625,169258.0938,1423.908935
+4602,MB,Prairie Mountain Health,Manitoba,Prairie Mountain,155838.375,126953.7578,1085.157953
+4603,MB,Interlake-Eastern Regional Health Authority,Manitoba,Interlake-Eastern,1275620.688,1284942.375,3336.733702
+4604,MB,Northern Regional Health Authority,Manitoba,Northern,473640.0625,72554.49219,2694.245306
+4605,MB,Southern Health—Santé Sud,Manitoba,Southern Health,41661.75,195367.3906,1239.219704
+47,SK,Entire Province,Saskatchewan,Entire Province,1423537.563,1115509,2396.7082
+471,SK,Far North,Saskatchewan,Far North,425561.9375,37219.38281,1737.547566
+472,SK,North,Saskatchewan,North,108702.125,199531.2656,1618.843799
+473,SK,Central,Saskatchewan,Central,109171.1875,101399.2188,992.1274073
+474,SK,Saskatoon,Saskatchewan,Saskatoon,47509.5,342714.5625,3303.699101
+475,SK,Regina,Saskatchewan,Regina,35356,276154.5313,3013.506953
+476,SK,South,Saskatchewan,South,66758,158491.375,1393.450918
+48,AB,Entire Province,Alberta,Entire Province,1177916.063,4054766.5,3675.168838
+4831,AB,South Zone,Alberta,South,108318.0625,297181.5938,2182.488006
+4832,AB,Calgary Zone,Alberta,Calgary,37988.25,1531029.75,4526.868221
+4833,AB,Central Zone,Alberta,Central,117087.9375,469241.125,1777.180429
+4834,AB,Edmonton Zone,Alberta,Edmonton,14025.4375,1297844.375,4164.25447
+4835,AB,North Zone,Alberta,Northern,780036.9375,459472.125,2359.492341
+59,BC,Entire Province,BC,Entire Province,15740.625,1742492.375,5444.808418
+591,BC,Fraser Health,BC,Fraser,1344914.188,4658125,5079.878435
+592,BC,Interior Health,BC,Interior,72713.0625,756262.5625,1983.317787
+593,BC,Vancouver Island Health,BC,Island,107227.3125,725143.8125,2637.907901
+594,BC,Northern Health,BC,Northern,940459.375,279654.4375,1552.591219
+595,BC,Vancouver  Coastal Health,BC,Vancouver Coastal,160409.3125,1154569.625,8945.487288
+6001,YT,Yukon,Yukon,Yukon,1208176.25,37893.23828,1870.11771
+6101,NT,Northwest Territories,NWT,NWT,5320873.188,41342.83594,2596.252278
+6201,NU,Nunavut,Nunavut,Nunavut,11447660.81,25998.5332,2591.569281
