@@ -209,21 +209,23 @@ app.layout = html.Div(
                                 dcc.Slider(
                                     id='forecast-slider',
                                     min=0,
-                                    max=100,
+                                    max=12,
                                     step=1,
-                                    value=10,
+                                    value=1,
                                     marks={
                                         0: '0 days',
-                                        10: '1 mo',
-                                        20: '2 mo',
-                                        30: '3 mo',
-                                        40: '4 mo',
-                                        50: '5 mo',
-                                        60: '6 mo',
-                                        70: '7 mo',
-                                        80: '8 mo',
-                                        90: '9 mo',
-                                        100: '1 yr'
+                                        1: '1 mo',
+                                        2: '2 mo',
+                                        3: '3 mo',
+                                        4: '4 mo',
+                                        5: '5 mo',
+                                        6: '6 mo',
+                                        7: '7 mo',
+                                        8: '8 mo',
+                                        9: '9 mo',
+                                        10: '10 mo',
+                                        11: '11 mo',
+                                        12: '1 yr'
                                     },
                                 ),
                             ]
@@ -321,9 +323,10 @@ def display_info_box(btn_click):
               [Input('facemask-slider', 'drag_value'), Input('facemask-slider', 'value')])
 def display_value(drag_value, value):
     return 'For testing purposes: Drag Value: {} | Value: {}'.format(drag_value, value)
+    
 
 @app.callback(
-    [Output("simulation-chart", "figure"), Output("covid-chart", "figure"), Output("cases-chart", "figure"), Output("mobility-chart", "figure"), Output("weather-chart", "figure")],
+    Output("simulation-chart", "figure"),
     [
         Input("region-dropdown", "value"),
         Input("subregion-dropdown", "value"),
@@ -332,7 +335,52 @@ def display_value(drag_value, value):
         Input('forecast-slider', 'drag_value'),
     ],
 )
-def update_charts(province_name, region, start_date, end_date, days_to_forecast):
+def update_forecast_chart(province_name, region, start_date, end_date, days_to_forecast):
+    if (province_name == "Newfoundland and Labrador"):
+        province_name = "NL"
+    elif (province_name == "British Columbia"):
+        province_name = "BC"
+    elif (province_name == "Prince Edward Island"):
+        province_name == "PEI"
+    elif (province_name == "Northwest Territories"):
+        province_name == "NWT"
+
+    
+    # ============== SIMULATION GRAPH ==============
+    filtered_df2 = df_mort[df_mort.date_death_report.between(
+        "01-02-21", "03-26-21"
+    )]
+    df_province = filtered_df2[filtered_df2.province == province_name]
+    ans = df_province[df_province.health_region == region]
+
+    pred_fig = go.Figure()
+    pred_fig.add_trace(go.Scatter(
+        x=date(province_name, region, start_date, end_date),
+        y=r_avg(province_name, region, start_date, end_date),
+        name='Previous Deaths',
+    ))
+    pred_fig.add_trace(go.Scatter(
+        x=predicted_dates(province_name, region, start_date, end_date, days_to_forecast),
+        y=predicted_deaths(province_name, region, start_date, end_date, days_to_forecast),
+        name='Predicted Deaths',
+    ))
+
+    pred_fig.update_layout(title='Daily Predicted Deaths in ' + region + ', ' + province_name,
+                   xaxis_title='Date',
+                   yaxis_title='Daily Mortality (7-day Rolling Average)')
+
+    return pred_fig
+
+@app.callback(
+    [Output("covid-chart", "figure"), Output("cases-chart", "figure"), Output("mobility-chart", "figure"), Output("weather-chart", "figure")],
+    [
+        Input("region-dropdown", "value"),
+        Input("subregion-dropdown", "value"),
+        Input("date-range", "start_date"),
+        Input("date-range", "end_date"),
+    ],
+)
+def update_charts(province_name, region, start_date, end_date):
     # Update names to abbreviated form
     if (province_name == "Newfoundland and Labrador"):
         province_name = "NL"
@@ -352,41 +400,6 @@ def update_charts(province_name, region, start_date, end_date, days_to_forecast)
     #     }
     # }
     
-    # ============== SIMULATION GRAPH ==============
-    # x = np.arange(10)
-    # x = date(province_name, region, start_date, end_date)
-    dates = ["Oct 2020", "Nov 2020", "Dec 2020", "Jan 2021", "Feb 2021", "Mar 2021", "Apr 2021", "May 2021", "Jun 2021"]
-    # base = datetime.datetime.today()
-    # date_list = [base + datetime.timedelta(days=x) for x in range(30)]
-    # dates2 = date(province_name, region, start_date, end_date)
-    # pred_fig = px.line(x = dates, y = predict_cases(dates, province_name, region, start_date, end_date, days_to_forecast))
-    # pred_fig = px.line(df_mort, x = date(province_name, region, start_date, end_date), y = r_avg(province_name, region, start_date, end_date))
-    # pred_fig = go.Figure()
-    # pred_fig.add_trace(go.Scatter(
-    #     x=date(province_name, region, start_date, end_date),
-    #     y=r_avg(province_name, region, start_date, end_date),
-    #     name='Gaps',
-    # ))
-    # pred_fig.add_trace(go.Scatter(
-    #     x=date2(province_name, region, start_date, end_date),
-    #     y=r_avg2(province_name, region, start_date, end_date),
-    #     name='Gaps',
-    # ))
-
-    date2(province_name, region, start_date, end_date)
-
-    filtered_df2 = df_mort[df_mort.date_death_report.between(
-        "01-02-21", "03-26-21"
-    )]
-    df_province = filtered_df2[filtered_df2.province == province_name]
-    ans = df_province[df_province.health_region == region]
-
-
-    pred_fig = px.line(ans, x = 'date_death_report', y = 'cumulative_deaths')
-
-    pred_fig.update_layout(title='Daily Predicted Deaths in ' + region + ', ' + province_name,
-                   xaxis_title='Date',
-                   yaxis_title='Daily Mortality (7-day Rolling Average)')
 
     # ============== MORTALITY GRAPH ==============
     mort_fig = px.line(df_mort, x = date(province_name, region, start_date, end_date), y = r_avg(province_name, region, start_date, end_date))
@@ -425,7 +438,7 @@ def update_charts(province_name, region, start_date, end_date, days_to_forecast)
                    xaxis_title='Date',
                    yaxis_title='Mean Temperature')
 
-    return pred_fig, mort_fig, cases_fig, mobility_fig, weather_fig
+    return mort_fig, cases_fig, mobility_fig, weather_fig
 
 
 @app.callback(
@@ -443,81 +456,21 @@ def update_table(province_name):
 
 # -------------- MODEL FUNCTION --------------
 
-def date2(province_name, region_name, start_date, end_date):
+def predicted_dates(province_name, region_name, start_date, end_date, days_to_forecast):
+    base = datetime.datetime.strptime(end_date, '%Y-%m-%d')
+    add_dates = [base + datetime.timedelta(days=x) for x in range(days_to_forecast * 30)]
 
-    filtered_df2 = df_mort[df_mort.date_death_report.between(
-        "01-02-21", "03-26-21"
-    )]
-    df_province = filtered_df2[filtered_df2.province == province_name]
-    
-    ans = df_province[df_province.health_region == region_name]
-    date_list = ans['date_death_report'].values
-    dates = []
-    for i in range(len(date_list)):
-        dates.append(str(date_list[i]).split("T")[0])
-        # print(str(date_list[i]).split("T")[0])
-
-        # print("b" + str(date_list[i]).split("T")[0])
-        # date_list[i] = datetime.datetime.strptime(str(date_list[i]).split("T")[0], '%Y-%m-%d').strftime('%d-%m-%Y')
-        # print(date_list[i])
-    for d in dates:
-        print(d)
-    
-    return dates
-
-    # for i in range(len(date_list)):
-    #     # date_list[i] = str(date_list[i]).split("T")[0]
-    #     # print("a" + str(date_list[i]))
-
-    #     # print("b" + str(date_list[i]).split("T")[0])
-    #     # date_list[i] = datetime.datetime.strptime(str(date_list[i]).split("T")[0], '%Y-%m-%d').strftime('%d-%m-%Y')
-    #     print(date_list[i])
-
-
-    # base = datetime.datetime.strptime(start_date, '%Y-%m-%d')
-    # # base = datetime.datetime.today()
-    # date_list = [base + datetime.timedelta(days=x) for x in range(30)]
-
-    # for i in range(len(date_list)):
-    #     date_list[i] = datetime.datetime.strptime(str(date_list[i]), '%Y-%m-%d %H:%M:%S').strftime('%d-%m-%Y')
-    # for date in date_list:
-    #     print(date)
-
-    # filtered_df2 = df_mort[df_mort.date_death_report.between(
-    #     "01-02-21", "03-26-21"
-    # )]
+    for i in range(len(add_dates)):
+        add_dates[i] = datetime.datetime.strptime(str(add_dates[i]), '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d')
 
     
-    # df_province = filtered_df2[filtered_df2.province == province_name]
-    # return df_province.date_death_report[df_province.health_region == region_name]
-    # return date_list
+    return add_dates
 
-def r_avg2(province_name, region_name, start_date, end_date):
+def predicted_deaths(province_name, region_name, start_date, end_date, days_to_forecast):
+    base = datetime.datetime.strptime(end_date, '%Y-%m-%d')
+    add_dates = [base + datetime.timedelta(days=x) for x in range(days_to_forecast * 30)]
+    yVals = []
 
-    # start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d').strftime('%d-%m-%Y')
-    # end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d').strftime('%d-%m-%Y')
-    filtered_df2 = df_mort[df_mort.date_death_report.between(
-        "01-02-21", "03-26-21"
-    )]
-    
-    df_province2 = filtered_df2[filtered_df2.province == province_name]
-    val2 = df_province2.deaths[df_province2.health_region == region_name].rolling(window=7).mean() + 10
-
-    # base = datetime.datetime.today()
-    base = datetime.datetime.strptime(start_date, '%Y-%m-%d')
-
-    date_list = [base + datetime.timedelta(days=x) for x in range(30)]
-    yValues = []
-
-
-    for i in range(len(date_list)):
-        date_list[i] = datetime.datetime.strptime(str(date_list[i]), '%Y-%m-%d %H:%M:%S').strftime('%d-%m-%Y')
-        yValues.append(i*1.5)
-    
-
-    return yValues
-
-def predict_cases(dates, province_name, region_name, start_date, end_date, days_to_forecast):
     annDeath = 2000
     tau = 25.1009
     lS0 = -2.70768
@@ -552,60 +505,57 @@ def predict_cases(dates, province_name, region_name, start_date, end_date, days_
     # What is the base for the logs?
     # what is Exp? -> Exponential
     # How far should we predict for? -> e.g. have slider that decides how far to predict for, have a default of 1month?
-
-    yValues = []
-    y = 10 # temp value
-    for date in dates:
-        # y = lambda = Exp[.5*(lS0 + Log[10]*xLogPWPD + Log[.25] + 
-        #  2/(4 - xBeta)*Log[(2 - xBeta/2)/(2*10^xLogPWPD*.25^2)] - 
+    y = 3
+    for i in range(len(add_dates)):
+        add_dates[i] = datetime.datetime.strptime(str(add_dates[i]), '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d')
+        # y = math.exp(.5*(lS0 + math.log(10)*xLogPWPD + math.log(0.25) + #clarify log 0.25 and 10
+        #  2/(4 - xBeta)*math.log((2 - xBeta/2)/(2*10^xLogPWPD*.25^2)) - 
         #  H0*xHerd - H2*(xHerd - xHerd2)*6 - v1*Vax1 + mob1*xMob + 
         #  trend1*xTrends1 + dT2*(xTemp - Tmin2)^2 + dT3*(xTemp - Tmin2)^3 -
-        #   Log[tau])] - 1/tau + house2*(xHouse - 2.75) + Anl*(xAnnual - 3.65) - v2*Vax2
-        # PWD -> from email
-        yValues.append(y)
-        y += 10
+        #   math.log(tau))) - 1/tau + house2*(xHouse - 2.75) + Anl*(xAnnual - 3.65) - v2*Vax2 # y = lambda
+        # cases_today = 
+        # PWD from email
+        yVals.append(y)
+        y = y + 0.05
+
     
-    return yValues
+    return yVals
 
 
 # -------------- MORTALITY HELPER FUNCTIONS --------------
 def date(province_name, region_name, start_date, end_date):
-    # start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d').strftime('%d-%m-%Y')
-    # end_date = pd.to_datetime(end_date)
-    # start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d').strftime('%d-%m-%Y')
-    # end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d').strftime('%d-%m-%Y')
+    start_date_str = datetime.datetime.strptime(start_date, '%Y-%m-%d').strftime('%d-%m-%Y')
+    end_date_str = datetime.datetime.strptime(end_date, '%Y-%m-%d').strftime('%d-%m-%Y')
 
-    # issue: python is treating d-m as m-d
-
-    filtered_df = df_mort[df_mort.date_death_report.between(
-        datetime.datetime.strptime(start_date, '%Y-%m-%d').strftime('%d-%m-%Y'),
-        # datetime.datetime.strptime(end_date, '%Y-%m-%d').strftime('%d-%m-%Y')
-        "25-04-21"
-        # start_date, end_date
+    filtered_df2 = df_mort[df_mort.date_death_report.between(
+        start_date_str, end_date_str
     )]
-    # filtered_df1 = df_mort[df_mort.date_death_report.between(
-    #     start_date, "01-02-21"
-    # )]
+    df_province = filtered_df2[filtered_df2.province == province_name]
     
-    df_province = filtered_df[filtered_df.province == province_name]
-    return df_province.date_death_report[df_province.health_region == region_name]
+    ans = df_province[df_province.health_region == region_name]
+    date_list = ans['date_death_report'].values
+    dates = []
+    for i in range(len(date_list)):
+        dates.append(str(date_list[i]).split("T")[0])
     
+    return dates
+
+
 def r_avg(province_name, region_name, start_date, end_date):
-    start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d').strftime('%d-%m-%Y')
-    end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d').strftime('%d-%m-%Y')
+    start_date_str = datetime.datetime.strptime(start_date, '%Y-%m-%d').strftime('%d-%m-%Y')
+    end_date_str = datetime.datetime.strptime(end_date, '%Y-%m-%d').strftime('%d-%m-%Y')
 
-    # filtered_df1 = df_mort[df_mort.date_death_report.between(
-    #     start_date, "01-02-21"
-    # )]
-
-    filtered_df = df_mort[df_mort.date_death_report.between(
-        start_date, 
-        "25-04-21"
-        # end_date
+    filtered_df2 = df_mort[df_mort.date_death_report.between(
+        start_date_str, end_date_str
     )]
+    df_province = filtered_df2[filtered_df2.province == province_name]
     
-    df_province = filtered_df[filtered_df.province == province_name]
-    return df_province.deaths[df_province.health_region == region_name].rolling(window=7).mean()
+    ans = df_province.deaths[df_province.health_region == region_name].rolling(window=7).mean()
+    vals1 = []
+    for key in ans:
+        vals1.append(key)
+    
+    return vals1
 
 
 # -------------- CASES HELPER FUNCTIONS --------------
