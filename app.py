@@ -13,6 +13,10 @@ import datetime as datetime
 
 from textwrap import dedent
 
+# todo:
+# fix dates
+# quebec names
+
 
 df_mort = pd.read_csv('https://raw.githubusercontent.com/ccodwg/Covid19Canada/master/timeseries_hr/mortality_timeseries_hr.csv', parse_dates=[0], dayfirst=True)
 df_mort["date_death_report"] = pd.to_datetime(df_mort["date_death_report"], format="%d-%m-%Y", dayfirst =True)
@@ -391,15 +395,6 @@ def update_charts(province_name, region, start_date, end_date):
     elif (province_name == "Northwest Territories"):
         province_name == "NWT"
 
-    # if (start_date.day > 12) {
-    #     if (start_date.day <= 23) {
-    #         start_date.day = 12
-    #     } else {
-    #         start_date.day = 1
-    #         start_date.month = start_date.month + 1
-    #     }
-    # }
-    
 
     # ============== MORTALITY GRAPH ==============
     mort_fig = px.line(df_mort, x = date(province_name, region, start_date, end_date), y = r_avg(province_name, region, start_date, end_date))
@@ -420,20 +415,11 @@ def update_charts(province_name, region, start_date, end_date):
                    yaxis_title='Social Mobility')
 
     # ============== WEATHER GRAPH ==============
-    prov_id = provinceid(province_name, region)
-    climate_id = climateid(province_name, region)
-    target_url = weather_base_url + prov_id + '/climate_daily_' + prov_id + '_' + climate_id + '_' + gloabl_date + '_P1D.csv'
-    weat_data =  pd.read_csv(target_url, encoding='Latin-1')
-    # weat_data['Date'] = weat_data['Date/Time']
+    temp_files = get_temp_files(province_name, region, start_date, end_date)
+    temp_dates = get_temp_dates(temp_files)
+    temp_vals = get_temp_vals(temp_files)
 
-    # weat_city = weat_data['Mean Temp (°C)']
-    date_city = weat_data['Date/Time']
-    # date_city = weat_date(province_name, region, start_date, end_date, weat_data)
-
-    x = np.arange(10)
-    weat_city = x
-
-    weather_fig = px.line(df_mort, x = date_city, y = weat_city)
+    weather_fig = px.line(df_mort, x = temp_dates, y = temp_vals)
     weather_fig.update_layout(title='Daily Reported Temperature in ' + region + ', ' + province_name,
                    xaxis_title='Date',
                    yaxis_title='Mean Temperature')
@@ -521,8 +507,8 @@ def predicted_deaths(province_name, region_name, start_date, end_date, days_to_f
     
     return yVals
 
-
 # -------------- MORTALITY HELPER FUNCTIONS --------------
+
 def date(province_name, region_name, start_date, end_date):
     start_date_str = datetime.datetime.strptime(start_date, '%Y-%m-%d').strftime('%d-%m-%Y')
     end_date_str = datetime.datetime.strptime(end_date, '%Y-%m-%d').strftime('%d-%m-%Y')
@@ -540,7 +526,6 @@ def date(province_name, region_name, start_date, end_date):
     
     return dates
 
-
 def r_avg(province_name, region_name, start_date, end_date):
     start_date_str = datetime.datetime.strptime(start_date, '%Y-%m-%d').strftime('%d-%m-%Y')
     end_date_str = datetime.datetime.strptime(end_date, '%Y-%m-%d').strftime('%d-%m-%Y')
@@ -556,7 +541,6 @@ def r_avg(province_name, region_name, start_date, end_date):
         vals1.append(key)
     
     return vals1
-
 
 # -------------- CASES HELPER FUNCTIONS --------------
 
@@ -605,6 +589,66 @@ def date_mob(province_name, region_name, start_date, end_date):
     return filtered_df.date[mobility_info.sub_region_2 == sub_region]
 
 # -------------- WEATHER HELPER FUNCTIONS --------------
+
+gloabl_date = current_date.strftime('%Y-%m')
+    
+    # # weat_data['Date'] = weat_data['Date/Time']
+
+    # # weat_city = weat_data['Mean Temp (°C)']
+    # date_city = weat_data['Date/Time']
+    # # date_city = weat_date(province_name, region, start_date, end_date, weat_data)
+
+    # x = np.arange(10)
+    # weat_city = x
+
+def get_temp_dates(temp_files):
+    dates = []
+    for file in temp_files:
+        print (file)
+        weat_data =  pd.read_csv(file, encoding='Latin-1')
+        temp_dates = weat_data['Date/Time'].values
+        dates.extend(temp_dates)
+
+    return dates
+
+def get_temp_vals(temp_files):
+    temps = []
+    # temps = np.arange(10)
+    for file in temp_files:
+        print (file)
+        weat_data =  pd.read_csv(file, encoding='Latin-1')
+        temp_dates = weat_data['Mean Temp (°C)'].values
+        temps.extend(temp_dates)
+    return temps
+
+def get_temp_files(province_name, region, start_date, end_date):
+    start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d')
+    end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d')
+    num_months = (end_date.year - start_date.year) * 12 + end_date.month - start_date.month + 1
+    temp_files = []
+
+    prov_id = provinceid(province_name, region)
+    climate_id = climateid(province_name, region)
+
+    for i in range(num_months): # what if file doesn't exist
+        year = start_date.year
+        month = start_date.month + i
+        if (month > 12):
+            year = year + 1
+            month = month % 12
+        
+        if (month < 10):
+            month = "0" + str(month)
+        else:
+            month = str(month)
+
+        gloabl_date = str(year) + "-" + month 
+        target_url = weather_base_url + prov_id + '/climate_daily_' + prov_id + '_' + climate_id + '_' + gloabl_date + '_P1D.csv'
+        temp_files.append(target_url)
+
+    return temp_files
+
+
 
 def weat_date(province_name, region_name, start_date, end_date, weat_data):
     # weat_data['Date'] = weat_data['Date/Time']
