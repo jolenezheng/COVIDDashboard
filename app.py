@@ -25,7 +25,7 @@ df_cases = pd.read_csv('https://raw.githubusercontent.com/ccodwg/Covid19Canada/m
 df_cases["date_report"] = pd.to_datetime(df_cases["date_report"], format="%d-%m-%Y", dayfirst =True)
 
 weather_base_url = 'https://dd.weather.gc.ca/climate/observations/daily/csv/'
-weat_info = pd.read_csv(r'data/health_regions_weather.csv', encoding='Latin-1')
+static_data = pd.read_csv(r'data/health_regions_static_data.csv', encoding='Latin-1')
 
 mobility_info = pd.read_csv(r'data/2020_CA_Region_Mobility_Report.csv')
 mobility_info["sub_region_2"] = mobility_info["sub_region_2"]
@@ -292,12 +292,17 @@ app.layout = html.Div(
                             ],
                         #     # className="card",
                         ),
-                        # html.Div(
-                        #     children=dcc.Graph(
-                        #         id="weather-chart", config={"displayModeBar": False},
-                        #     ),
-                        #     className="card",
-                        # ),
+                        html.Div(
+                            children=[
+                                dcc.Graph(
+                                    id="map1", config={"displayModeBar": False},
+                                ),
+                                dcc.Graph(
+                                    id="map2", config={"displayModeBar": False},
+                                ),
+                            ],
+                            className="card",
+                        ),
                     ],
                 ),
             ],
@@ -327,6 +332,19 @@ def display_info_box(btn_click):
               [Input('facemask-slider', 'drag_value'), Input('facemask-slider', 'value')])
 def display_value(drag_value, value):
     return 'For testing purposes: Drag Value: {} | Value: {}'.format(drag_value, value)
+
+# Update names to abbreviated form
+def update_province_name(province_name):
+    if (province_name == "Newfoundland and Labrador"):
+        province_name = "NL"
+    elif (province_name == "British Columbia"):
+        province_name = "BC"
+    elif (province_name == "Prince Edward Island"):
+        province_name == "PEI"
+    elif (province_name == "Northwest Territories"):
+        province_name == "NWT"
+    
+    return province_name
     
 
 @app.callback(
@@ -340,16 +358,8 @@ def display_value(drag_value, value):
     ],
 )
 def update_forecast_chart(province_name, region, start_date, end_date, days_to_forecast):
-    if (province_name == "Newfoundland and Labrador"):
-        province_name = "NL"
-    elif (province_name == "British Columbia"):
-        province_name = "BC"
-    elif (province_name == "Prince Edward Island"):
-        province_name == "PEI"
-    elif (province_name == "Northwest Territories"):
-        province_name == "NWT"
+    province_name = update_province_name(province_name)
 
-    
     # ============== SIMULATION GRAPH ==============
     filtered_df2 = df_mort[df_mort.date_death_report.between(
         "01-02-21", "03-26-21"
@@ -376,7 +386,29 @@ def update_forecast_chart(province_name, region, start_date, end_date, days_to_f
     return pred_fig
 
 @app.callback(
-    [Output("covid-chart", "figure"), Output("cases-chart", "figure"), Output("mobility-chart", "figure"), Output("weather-chart", "figure")],
+    Output("weather-chart", "figure"),
+    [
+        Input("region-dropdown", "value"),
+        Input("subregion-dropdown", "value"),
+        Input("date-range", "start_date"),
+        Input("date-range", "end_date"),
+    ],
+)
+def update_weather_chart(province_name, region, start_date, end_date):
+    # ============== WEATHER GRAPH ==============
+    temp_files = get_temp_files(province_name, region, start_date, end_date)
+    temp_dates = get_temp_dates(temp_files)
+    temp_vals = get_temp_vals(temp_files)
+
+    weather_fig = px.line(df_mort, x = temp_dates, y = temp_vals)
+    weather_fig.update_layout(title='Daily Reported Temperature in ' + region + ', ' + province_name,
+                   xaxis_title='Date',
+                   yaxis_title='Mean Temperature')
+    
+    return weather_fig
+
+@app.callback(
+    [Output("covid-chart", "figure"), Output("cases-chart", "figure"), Output("mobility-chart", "figure"), Output("map1", "figure"), Output("map2", "figure")],
     [
         Input("region-dropdown", "value"),
         Input("subregion-dropdown", "value"),
@@ -385,22 +417,14 @@ def update_forecast_chart(province_name, region, start_date, end_date, days_to_f
     ],
 )
 def update_charts(province_name, region, start_date, end_date):
-    # Update names to abbreviated form
-    if (province_name == "Newfoundland and Labrador"):
-        province_name = "NL"
-    elif (province_name == "British Columbia"):
-        province_name = "BC"
-    elif (province_name == "Prince Edward Island"):
-        province_name == "PEI"
-    elif (province_name == "Northwest Territories"):
-        province_name == "NWT"
-
+    province_name = update_province_name(province_name)
 
     # ============== MORTALITY GRAPH ==============
     mort_fig = px.line(df_mort, x = date(province_name, region, start_date, end_date), y = r_avg(province_name, region, start_date, end_date))
     mort_fig.update_layout(title='Daily Reported Deaths in ' + region + ', ' + province_name,
                    xaxis_title='Date',
                    yaxis_title='Daily Mortality (7-day Rolling Average)')
+    
 
     # ============== CASES GRAPH ==============
     cases_fig = px.line(df_mort, x = date_cases(province_name, region, start_date, end_date), y = ravg_cases(province_name, region, start_date, end_date))
@@ -414,33 +438,83 @@ def update_charts(province_name, region, start_date, end_date):
                    xaxis_title='Date',
                    yaxis_title='Social Mobility')
 
-    # ============== WEATHER GRAPH ==============
-    temp_files = get_temp_files(province_name, region, start_date, end_date)
-    temp_dates = get_temp_dates(temp_files)
-    temp_vals = get_temp_vals(temp_files)
 
-    weather_fig = px.line(df_mort, x = temp_dates, y = temp_vals)
-    weather_fig.update_layout(title='Daily Reported Temperature in ' + region + ', ' + province_name,
-                   xaxis_title='Date',
-                   yaxis_title='Mean Temperature')
+    # ============== MAP ==============
 
-    return mort_fig, cases_fig, mobility_fig, weather_fig
+    map_fig = go.Figure(go.Scattermapbox(
+    fill = "toself",
+    lon = [-74, -70, -70, -74], lat = [47, 47, 45, 45],
+    marker = { 'size': 10, 'color': "orange" }))
+
+    map_fig.update_layout(
+        mapbox = {
+            'style': "stamen-terrain",
+            'center': {'lon': -73, 'lat': 46 },
+            'zoom': 5},
+        showlegend = False)
+
+    df_test = pd.read_csv("https://raw.githubusercontent.com/plotly/datasets/master/fips-unemp-16.csv",
+                   dtype={"fips": str})
+
+    fig = px.choropleth(df_test, locations='fips', color='unemp',
+                           color_continuous_scale="Viridis",
+                           range_color=(0, 12),
+                           scope="usa",
+                           labels={'unemp':'unemployment rate'}
+                          )
+    fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+
+
+    return mort_fig, cases_fig, mobility_fig, map_fig, fig
 
 
 @app.callback(
     Output("data-chart", "figure"),
-    Input("region-dropdown", "value"),
+    [
+        Input("region-dropdown", "value"),
+        Input("subregion-dropdown", "value"),
+    ],
 )
-def update_table(province_name):
-    data_headers = ["Total Covid Death", "Total Population", "% of Population > 80 yrs"]
-    data_values = [7280, 14755211, "4.45%"]
+def update_table(province_name, region_name):
+    data_headers = ["Land Area", "Total Population", "Fraction of Population > 80 yrs", "PWPD", "Average number / house"]
+    data_values = [get_land_area(province_name, region_name), get_total_pop(province_name, region_name), get_frac_pop_over_80(province_name, region_name), get_pwpd(province_name, region_name), get_avg_house(province_name, region_name)]
     fig = go.Figure(
         data=[go.Table(header=dict(values=['Category', 'Value']),
             cells=dict(values=[data_headers, data_values]))]
         )
     return fig
 
-# -------------- MODEL FUNCTION --------------
+
+# -------------- STATIC DATA HELPER FUNCTIONS --------------
+
+def get_region_info(province_name, region_name):
+    prov_info = static_data[static_data.province_name == province_name]
+    region_info = prov_info[prov_info.health_region == region_name]
+    return region_info
+
+def get_avg_house(province_name, region_name):
+    avg_house = get_region_info(province_name, region_name).house.item()
+    # avg_house = house_info.house[house_info.health_region == region_name].item()
+    print (avg_house)
+    return avg_house
+
+def get_land_area(province_name, region_name):
+    land_area = get_region_info(province_name, region_name).landarea.item()
+    return land_area
+
+def get_total_pop(province_name, region_name):
+    total_pop = get_region_info(province_name, region_name).total_pop.item()
+    return total_pop
+
+def get_frac_pop_over_80(province_name, region_name):
+    frac_over_80 = get_region_info(province_name, region_name).pop80.item()
+    return frac_over_80
+
+def get_pwpd(province_name, region_name):
+    pwpd = get_region_info(province_name, region_name).pwpd.item()
+    return pwpd
+
+# -------------- PREDICTIVE MODEL HELPER FUNCTIONS --------------
 
 def predicted_dates(province_name, region_name, start_date, end_date, days_to_forecast):
     base = datetime.datetime.strptime(end_date, '%Y-%m-%d')
@@ -474,7 +548,7 @@ def predicted_deaths(province_name, region_name, start_date, end_date, days_to_f
     H2 = 5.89094
     xAnnual = math.log(annDeath, 10) # Log10[Annual Death] -> calendar year
     Anl = -0.007345
-    xHouse = 1 # Average number/household -> is average number = avg number of covid cases?
+    xHouse = get_avg_house(province_name, region_name) # Average number of people/household
     house2 = 0.0198985
     xMob = -35 # Google Workplace Mobility -> given day, month, etc.?
     mob1 = 0.0379239
@@ -570,7 +644,7 @@ def mobility(province_name, region_name, start_date, end_date):
         # datetime.datetime.strptime(end_date, '%Y-%m-%d').strftime('%d-%m-%Y')
     )]
     
-    weat_info_province = weat_info[weat_info.province_name == province_name]
+    weat_info_province = static_data[static_data.province_name == province_name]
     sub_region = weat_info_province.sub_region_2[weat_info_province.health_region == region_name].item()
 
     return filtered_df.workplaces_percent_change_from_baseline[mobility_info.sub_region_2 == sub_region].rolling(window=7).mean()
@@ -583,23 +657,12 @@ def date_mob(province_name, region_name, start_date, end_date):
         # datetime.datetime.strptime(end_date, '%Y-%m-%d').strftime('%d-%m-%Y')
     )]
     
-    weat_info_province = weat_info[weat_info.province_name == province_name]
+    weat_info_province = static_data[static_data.province_name == province_name]
     sub_region = weat_info_province.sub_region_2[weat_info_province.health_region == region_name].item()
     
     return filtered_df.date[mobility_info.sub_region_2 == sub_region]
 
 # -------------- WEATHER HELPER FUNCTIONS --------------
-
-gloabl_date = current_date.strftime('%Y-%m')
-    
-    # # weat_data['Date'] = weat_data['Date/Time']
-
-    # # weat_city = weat_data['Mean Temp (°C)']
-    # date_city = weat_data['Date/Time']
-    # # date_city = weat_date(province_name, region, start_date, end_date, weat_data)
-
-    # x = np.arange(10)
-    # weat_city = x
 
 def get_temp_dates(temp_files):
     dates = []
@@ -649,35 +712,19 @@ def get_temp_files(province_name, region, start_date, end_date):
     return temp_files
 
 
-
-def weat_date(province_name, region_name, start_date, end_date, weat_data):
-    # weat_data['Date'] = weat_data['Date/Time']
-    filtered_df = weat_data['Date/Time'].between(
-        start_date, end_date
-    )
-
-    return filtered_df['Date/Time']
-
-# def weat_avg(province_name, region_name, start_date, end_date):
-
 # Gets the climate ID for the health region
 def climateid(province_name, region_name):
     # filtered_df = mobility_info[mobility_info.date.between(
     #     start_date, end_date
     # )]
 
-    weat_info_province = weat_info[weat_info.province_name == province_name]
+    weat_info_province = static_data[static_data.province_name == province_name]
     return weat_info_province.climate_id[weat_info_province.health_region == region_name].item()
 
 # Gets the province abbreviation for the health region
 def provinceid(province_name, region_name):
-    weat_info_province = weat_info[weat_info.province_name == province_name]
+    weat_info_province = static_data[static_data.province_name == province_name]
     return weat_info_province.prov_id[weat_info_province.health_region == region_name].item()
-
-# Gets the weather station name for the health region
-def weatregion(province_name, region_name):
-    weat_info_province = weat_info[weat_info.province_name == province_name]
-    return weat_info_province.temp_region[weat_info_province.health_region == region_name].item()
 
 
 if __name__ == "__main__":
