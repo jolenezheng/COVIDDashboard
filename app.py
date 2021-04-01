@@ -12,6 +12,7 @@ import plotly.graph_objects as go
 import datetime as datetime
 
 from textwrap import dedent
+from dateutil.relativedelta import relativedelta
 
 # todo:
 # fix dates
@@ -44,6 +45,9 @@ date_city = None
 # region = "Waterloo"
 # start_date = "15-03-2020"
 # end_date = datetime.datetime.strftime(datetime.datetime.now(), "%d-%m-%Y")
+
+last_mort = 0
+total_deaths = 0
 
 
 # df_mob = pd.read_csv('https://www.gstatic.com/covid19/mobility/Global_Mobility_Report.csv')
@@ -179,8 +183,8 @@ app.layout = html.Div(
                                     step=1,
                                     value=10,
                                     marks={
-                                        0: '0%',
-                                        100: '100%'
+                                        0: '-100% (total lockdown)',
+                                        100: '0% (normal activity)'
                                     },
                                 ),
                             ]
@@ -494,7 +498,6 @@ def get_region_info(province_name, region_name):
 
 def get_avg_house(province_name, region_name):
     avg_house = get_region_info(province_name, region_name).house.item()
-    # avg_house = house_info.house[house_info.health_region == region_name].item()
     print (avg_house)
     return avg_house
 
@@ -508,11 +511,19 @@ def get_total_pop(province_name, region_name):
 
 def get_frac_pop_over_80(province_name, region_name):
     frac_over_80 = get_region_info(province_name, region_name).pop80.item()
-    return frac_over_80
+    return frac_over_80 / get_total_pop(province_name, region_name)
 
 def get_pwpd(province_name, region_name):
     pwpd = get_region_info(province_name, region_name).pwpd.item()
     return pwpd
+
+def get_past_temp(province_name, region_name, end_date):
+    # temperature? -> temperature from when? -> avg temp from 42-14 days ago (1.5months - 2 weeks ago), take mean from past 5 years if too far in the future
+    # 42 - 14 days ago
+    # if 12 days ago > end_date (no past data for this date), then get historical average
+    #else:
+
+    return 12
 
 # -------------- PREDICTIVE MODEL HELPER FUNCTIONS --------------
 
@@ -522,7 +533,6 @@ def predicted_dates(province_name, region_name, start_date, end_date, days_to_fo
 
     for i in range(len(add_dates)):
         add_dates[i] = datetime.datetime.strptime(str(add_dates[i]), '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d')
-
     
     return add_dates
 
@@ -531,52 +541,70 @@ def predicted_deaths(province_name, region_name, start_date, end_date, days_to_f
     add_dates = [base + datetime.timedelta(days=x) for x in range(days_to_forecast * 30)]
     yVals = []
 
-    annDeath = 2000
+    annDeath = 100 # todo:
     tau = 25.1009
     lS0 = -2.70768
     trend1=-0.0311442
-    xTrends1 = 1 # Google Trends for face mask
+    xTrends1 = 0 # todo: Google Trends for face mask
     dtrends= 0.00722183
-    xTemp = 15 # temperature? -> temperature from when? -> avg temp from 42-14 days ago (1.5months - 2 weeks ago), take mean from past 5 years if too far in the future
+    xTemp = get_past_temp(province_name, region_name, end_date)
     Tmin2 = 24.6497
     dT2 = 0.00562779
     dT3 = 0.000182757
-    xLogPWPD = 1 # Log10[PWD*AgreFrac[>80]] -> base 10
-    xHerd = 7/2 # Total Covid Death/Annual Death -> Annual death as in 2021
-    xHerd2 = 1/2 # Total Covid Death (more than 2 months ago)/Annual Death -> what does more than 2 months ago mean? 2 months prior
+    xLogPWPD = math.log(get_pwpd(province_name, region_name) * get_frac_pop_over_80(province_name, region_name), 10) # Log10[PWD*AgreFrac[>80]] -> base 10
+    xHerd = total_deaths / get_total_deaths_this_year(province_name, region_name, end_date)  #3/1 # Total Covid Death/Annual Death -> Annual death as in 2021
+    xHerd2 = get_total_deaths_2_months_prior(province_name, region_name, end_date) / get_total_deaths_this_year(province_name, region_name, end_date) #2.5/1 # Total Covid Death (more than 2 months ago)/Annual Death -> what does more than 2 months ago mean? 2 months prior
     H0 = 2.30833
     H2 = 5.89094
     xAnnual = math.log(annDeath, 10) # Log10[Annual Death] -> calendar year
     Anl = -0.007345
     xHouse = get_avg_house(province_name, region_name) # Average number of people/household
     house2 = 0.0198985
-    xMob = -35 # Google Workplace Mobility -> given day, month, etc.?
+    xMob = -20 # get_mob(province_name, region_name, start_date) # todo: Google Workplace Mobility -> given day, month, etc.?
     mob1 = 0.0379239
-    v2 = 0
-    v1 = 0.05 # Fraction of vaccinated population (unto a month ago) -> time frame?
-    xVax1 = 0.05 # Fraction of vaccinated population (unto a month ago) -> time frame?
+    v2 = 0  
+    v1 = 0 # Fraction of vaccinated population (unto a month ago) -> time frame?
+    xVax1 = 0 # Fraction of vaccinated population (unto a month ago) -> time frame?
     v1= 11.9697
-    xBeta = 4 # Population Sparsity
-    # Daily Cases Tomorrow = Exp[lambda]*Daily cases today -> what is lambda? -> equation (2 weeks)
+    xBeta = math.log(get_total_pop(province_name, region_name)/(get_pwpd(province_name, region_name) * get_land_area(province_name, region_name))) / math.log(0.25**2/get_land_area(province_name, region_name)) #get_total_pop(province_name, region_name) / get_land_area(province_name, region_name) # Population Sparsity -> todo: is this how you calculate it?
+    print("pop: " + str(get_total_pop(province_name, region_name)))
+    print("area: " + str(get_land_area(province_name, region_name)))
+    # Daily Cases Tomorrow = Exp[lambda]*Daily cases today -> lambda
 
-    # what is xVax1, Vax1, Vax2?
+    # Vaccination data:
     Vax1 = 0
     Vax2 = 0
-    # What is the base for the logs?
-    # what is Exp? -> Exponential
-    # How far should we predict for? -> e.g. have slider that decides how far to predict for, have a default of 1month?
-    y = 3
+    # Exp? -> Exponential
+    first = True
+    deaths_tomorrow = 0
+    deaths_today = last_mort
+    print("last mort: " + str(last_mort))
     for i in range(len(add_dates)):
-        add_dates[i] = datetime.datetime.strptime(str(add_dates[i]), '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d')
+        # add_dates[i] = datetime.datetime.strptime(str(add_dates[i]), '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d')
+        # deaths_today = 3 #get_mort(province_name, region_name, add_dates[i])
+        if (first == False):
+            # print("pwd: " + str(xBeta))
+            # print("logging: " + str((2 - (xBeta)/2)/(2*10**xLogPWPD*.25**2.0)))
+            # print("num: " + str(2 - xBeta/2))
+            # print("den: " + str(2*10**xLogPWPD*.25**2.0))
+            lambda_ = math.exp(.5*(lS0 + math.log(10)*xLogPWPD + math.log(0.25) +
+                    2/(4 - xBeta)*math.log((2 - xBeta/2)/(2*10**xLogPWPD*.25**2)) - 
+                    H0*xHerd - H2*(xHerd - xHerd2)*6 - v1*Vax1 + mob1*xMob + 
+                    trend1*xTrends1 + dT2*(xTemp - Tmin2)**2.0 + dT3*(xTemp - Tmin2)**3.0 -
+                    math.log(tau))) - 1/tau + house2*(xHouse - 2.75) + Anl*(xAnnual - 3.65) - v2*Vax2
+            deaths_tomorrow = math.exp(lambda_) * deaths_today
+            yVals.append(deaths_tomorrow)
+            deaths_today = deaths_tomorrow
+        else:
+            first = False
+            yVals.append(last_mort)
         # y = math.exp(.5*(lS0 + math.log(10)*xLogPWPD + math.log(0.25) + #clarify log 0.25 and 10
         #  2/(4 - xBeta)*math.log((2 - xBeta/2)/(2*10^xLogPWPD*.25^2)) - 
         #  H0*xHerd - H2*(xHerd - xHerd2)*6 - v1*Vax1 + mob1*xMob + 
         #  trend1*xTrends1 + dT2*(xTemp - Tmin2)^2 + dT3*(xTemp - Tmin2)^3 -
         #   math.log(tau))) - 1/tau + house2*(xHouse - 2.75) + Anl*(xAnnual - 3.65) - v2*Vax2 # y = lambda
         # cases_today = 
-        # PWD from email
-        yVals.append(y)
-        y = y + 0.05
+        # yVals.append(y)
 
     
     return yVals
@@ -609,12 +637,62 @@ def r_avg(province_name, region_name, start_date, end_date):
     )]
     df_province = filtered_df2[filtered_df2.province == province_name]
     
-    ans = df_province.deaths[df_province.health_region == region_name].rolling(window=7).mean()
+    rolling_avgs = df_province.deaths[df_province.health_region == region_name].rolling(window=7).mean()
+    deaths = df_province.deaths[df_province.health_region == region_name]
+
+    global total_deaths
+    total_deaths = 0 # reset total deaths
+
+    for d in deaths:
+        total_deaths += d
+
     vals1 = []
-    for key in ans:
+    for key in rolling_avgs:
         vals1.append(key)
+
+    global last_mort
+    last_mort = vals1[-1]
     
     return vals1
+
+def get_total_deaths_this_year(province_name, region_name, end_date):
+    first_day = "13-03-2020" # df_mort.date_death_report.min().date().strftime('%d-%m-%Y')
+    first_day_this_year = "01-01-" + datetime.datetime.now().strftime("%Y") #datetime.datetime.strptime(start_date, '%Y-%m-%d').strftime('%d-%m-%Y')
+    today = datetime.datetime.now().strftime('%d-%m-%Y')
+
+    df_this_year = df_mort[df_mort.date_death_report.between(
+        first_day_this_year, today
+    )]
+    df_province_this_year = df_this_year[df_this_year.province == province_name]
+    deaths_this_year = df_province_this_year.deaths[df_province_this_year.health_region == region_name]
+
+    total_deaths_this_year = 0 # reset total deaths
+
+    for d in deaths_this_year:
+        total_deaths_this_year += d
+
+    return total_deaths_this_year
+
+def get_total_deaths_2_months_prior(province_name, region_name, end_date):
+    first_day = "13-03-2020" # df_mort.date_death_report.min().date().strftime('%d-%m-%Y')
+
+    delta_2_months = datetime.timedelta(days=60)
+    end_date_2_months_ago = datetime.datetime.now() - delta_2_months
+    end_date_2_months_ago = end_date_2_months_ago.strftime('%d-%m-%Y')
+
+    df_2_months = df_mort[df_mort.date_death_report.between(
+        first_day, end_date_2_months_ago
+    )]
+    df_province_2_months = df_2_months[df_2_months.province == province_name]
+    deaths_2_months = df_province_2_months.deaths[df_province_2_months.health_region == region_name]
+
+    total_deaths_2_months = 0 # reset total deaths
+
+    for d in deaths_2_months:
+        total_deaths_2_months += d
+
+    return total_deaths_2_months
+
 
 # -------------- CASES HELPER FUNCTIONS --------------
 
@@ -635,6 +713,16 @@ def ravg_cases(province_name, region_name, start_date, end_date):
     return dfcases_province.cases[dfcases_province.health_region == region_name].rolling(window=7).mean()
 
 # -------------- MOBILITY HELPER FUNCTIONS --------------
+
+def get_mob(province_name, region_name, date):
+    filtered_df = mobility_info[mobility_info.date == date]
+    
+    weat_info_province = static_data[static_data.province_name == province_name]
+    sub_region = weat_info_province.sub_region_2[weat_info_province.health_region == region_name].item()
+
+    mob = filtered_df.workplaces_percent_change_from_baseline[mobility_info.sub_region_2 == sub_region].rolling(window=7).mean().item()
+    print("MOB!!!!!: " + str(mob))
+    return -0.5
 
 def mobility(province_name, region_name, start_date, end_date):
 
@@ -667,7 +755,7 @@ def date_mob(province_name, region_name, start_date, end_date):
 def get_temp_dates(temp_files):
     dates = []
     for file in temp_files:
-        print (file)
+        # print (file)
         weat_data =  pd.read_csv(file, encoding='Latin-1')
         temp_dates = weat_data['Date/Time'].values
         dates.extend(temp_dates)
@@ -678,7 +766,6 @@ def get_temp_vals(temp_files):
     temps = []
     # temps = np.arange(10)
     for file in temp_files:
-        print (file)
         weat_data =  pd.read_csv(file, encoding='Latin-1')
         temp_dates = weat_data['Mean Temp (°C)'].values
         temps.extend(temp_dates)
@@ -693,10 +780,10 @@ def get_temp_files(province_name, region, start_date, end_date):
     prov_id = provinceid(province_name, region)
     climate_id = climateid(province_name, region)
 
-    for i in range(num_months): # what if file doesn't exist
+    for i in range(num_months): # todo: what if file doesn't exist
         year = start_date.year
         month = start_date.month + i
-        if (month > 12):
+        if (month > 12): # todo: change to shafika's
             year = year + 1
             month = month % 12
         
@@ -710,7 +797,6 @@ def get_temp_files(province_name, region, start_date, end_date):
         temp_files.append(target_url)
 
     return temp_files
-
 
 # Gets the climate ID for the health region
 def climateid(province_name, region_name):
