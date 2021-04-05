@@ -168,7 +168,7 @@ app.layout = html.Div(
                                     },
                                     # handleLabel={"showCurrentValue": True,"label": "VALUE"},
                                 ),
-                                html.Div(className='slider-output-container', id='slider-drag-output'),
+                                # html.Div(className='slider-output-container', id='slider-drag-output'),
                             ]
                         ),
                         html.Div(
@@ -275,7 +275,7 @@ app.layout = html.Div(
                                 #     id="covid-chart", config={"displayModeBar": False}, style={'display': 'inline-block'},
                                 # ),
                                 dcc.Graph(
-                                    id="cases-chart", config={"displayModeBar": False}, style={'display': 'inline-block'},
+                                    id="cases-chart", config={"displayModeBar": False}, # style={'display': 'inline-block'},
                                 ),
                             ],
                             # className="card",
@@ -289,25 +289,25 @@ app.layout = html.Div(
                         html.Div(
                             children= [
                                 dcc.Graph(
-                                    id="mobility-chart", config={"displayModeBar": False}, style={'display': 'inline-block'},
+                                    id="mobility-chart", config={"displayModeBar": False}, # style={'display': 'inline-block'},
                                 ),
                                 dcc.Graph(
-                                    id="weather-chart", config={"displayModeBar": False}, style={'display': 'inline-block'},
+                                    id="weather-chart", config={"displayModeBar": False}, # style={'display': 'inline-block'},
                                 ),
                             ],
-                        #     # className="card",
+                            # className="card",
                         ),
-                        html.Div(
-                            children=[
-                                dcc.Graph(
-                                    id="map1", config={"displayModeBar": False},
-                                ),
-                                dcc.Graph(
-                                    id="map2", config={"displayModeBar": False},
-                                ),
-                            ],
-                            className="card",
-                        ),
+                        # html.Div(
+                        #     children=[
+                        #         dcc.Graph(
+                        #             id="map1", config={"displayModeBar": False},
+                        #         ),
+                        #         dcc.Graph(
+                        #             id="map2", config={"displayModeBar": False},
+                        #         ),
+                        #     ],
+                        #     className="card",
+                        # ),
                     ],
                 ),
             ],
@@ -333,10 +333,10 @@ def display_info_box(btn_click):
 
  # ============== SLIDER CALLBACK ==============
 
-@app.callback(Output('slider-drag-output', 'children'),
-              [Input('facemask-slider', 'drag_value'), Input('facemask-slider', 'value')])
-def display_value(drag_value, value):
-    return 'For testing purposes: Drag Value: {} | Value: {}'.format(drag_value, value)
+# @app.callback(Output('slider-drag-output', 'children'),
+#               [Input('facemask-slider', 'drag_value'), Input('facemask-slider', 'value')])
+# def display_value(drag_value, value):
+#     return 'For testing purposes: Drag Value: {} | Value: {}'.format(drag_value, value)
 
 # Update names to abbreviated form
 def update_province_name(province_name):
@@ -360,10 +360,12 @@ def update_province_name(province_name):
         Input("date-range", "start_date"),
         Input("date-range", "end_date"),
         Input('forecast-slider', 'value'),
+        Input('facemask-slider', 'value'),
         Input('mobility-slider', 'value'),
+        Input('vaccine-slider', 'value'),
     ],
 )
-def update_forecast_chart(province_name, region, start_date, end_date, days_to_forecast, xMob):
+def update_forecast_chart(province_name, region, start_date, end_date, days_to_forecast, facemask, xMob, vac):
     province_name = update_province_name(province_name)
 
     # ============== SIMULATION GRAPH ==============
@@ -440,13 +442,13 @@ def update_weather_chart(province_name, region, start_date, end_date, forecasted
     weather_fig.add_trace(go.Scatter(
             x=new_dates,
             y=avg_temp_data(current_date, current_date + forecasted, data),
-            name='Predicted Deaths',
+            name='Average Temp in Last 5 Years',
         ))
     
     return weather_fig
 
 @app.callback(
-    [Output("cases-chart", "figure"), Output("map1", "figure"), Output("map2", "figure")],
+    Output("cases-chart", "figure"), # Output("map1", "figure"), Output("map2", "figure")],
     [
         Input("region-dropdown", "value"),
         Input("subregion-dropdown", "value"),
@@ -454,7 +456,7 @@ def update_weather_chart(province_name, region, start_date, end_date, forecasted
         Input("date-range", "end_date"),
     ],
 )
-def update_charts(province_name, region, start_date, end_date):
+def update_cases_charts(province_name, region, start_date, end_date):
     province_name = update_province_name(province_name)
 
     # ============== CASES GRAPH ==============
@@ -465,31 +467,31 @@ def update_charts(province_name, region, start_date, end_date):
 
     # ============== MAP ==============
 
-    map_fig = go.Figure(go.Scattermapbox(
-    fill = "toself",
-    lon = [-74, -70, -70, -74], lat = [47, 47, 45, 45],
-    marker = { 'size': 10, 'color': "orange" }))
+    # map_fig = go.Figure(go.Scattermapbox(
+    # fill = "toself",
+    # lon = [-74, -70, -70, -74], lat = [47, 47, 45, 45],
+    # marker = { 'size': 10, 'color': "orange" }))
 
-    map_fig.update_layout(
-        mapbox = {
-            'style': "stamen-terrain",
-            'center': {'lon': -73, 'lat': 46 },
-            'zoom': 5},
-        showlegend = False)
+    # map_fig.update_layout(
+    #     mapbox = {
+    #         'style': "stamen-terrain",
+    #         'center': {'lon': -73, 'lat': 46 },
+    #         'zoom': 5},
+    #     showlegend = False)
 
-    df_test = pd.read_csv("https://raw.githubusercontent.com/plotly/datasets/master/fips-unemp-16.csv",
-                   dtype={"fips": str})
+    # df_test = pd.read_csv("https://raw.githubusercontent.com/plotly/datasets/master/fips-unemp-16.csv",
+    #                dtype={"fips": str})
 
-    fig = px.choropleth(df_test, locations='fips', color='unemp',
-                           color_continuous_scale="Viridis",
-                           range_color=(0, 12),
-                           scope="usa",
-                           labels={'unemp':'unemployment rate'}
-                          )
-    fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+    # fig = px.choropleth(df_test, locations='fips', color='unemp',
+    #                        color_continuous_scale="Viridis",
+    #                        range_color=(0, 12),
+    #                        scope="usa",
+    #                        labels={'unemp':'unemployment rate'}
+    #                       )
+    # fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
 
 
-    return cases_fig, map_fig, fig
+    return cases_fig #, map_fig, fig
 
 @app.callback(
     Output("mobility-chart", "figure"),
@@ -518,7 +520,7 @@ def update_mob_charts(province_name, region, start_date, end_date, forecasted_da
     mobility_fig.add_trace(go.Scatter(
             x=dates,
             y=mob_values,
-            name='Predicted Deaths',
+            name='Simulated Mobility',
         ))
 
     return mobility_fig
@@ -532,13 +534,13 @@ def update_mob_charts(province_name, region, start_date, end_date, forecasted_da
 #     ],
 # )
 # def update_table(province_name, region_name):
-    data_headers = ["Land Area", "Total Population", "Fraction of Population > 80 yrs", "PWPD", "Average number / house"]
-    data_values = [get_land_area(province_name, region_name), get_total_pop(province_name, region_name), get_frac_pop_over_80(province_name, region_name), get_pwpd(province_name, region_name), get_avg_house(province_name, region_name)]
-    fig = go.Figure(
-        data=[go.Table(header=dict(values=['Category', 'Value']),
-            cells=dict(values=[data_headers, data_values]))]
-        )
-    return fig
+    # data_headers = ["Land Area", "Total Population", "Fraction of Population > 80 yrs", "PWPD", "Average number / house"]
+    # data_values = [get_land_area(province_name, region_name), get_total_pop(province_name, region_name), get_frac_pop_over_80(province_name, region_name), get_pwpd(province_name, region_name), get_avg_house(province_name, region_name)]
+    # fig = go.Figure(
+    #     data=[go.Table(header=dict(values=['Category', 'Value']),
+    #         cells=dict(values=[data_headers, data_values]))]
+    #     )
+    # return fig
 
 
 # -------------- STATIC DATA HELPER FUNCTIONS --------------
