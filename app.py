@@ -161,7 +161,7 @@ app.layout = html.Div(
                                     min=0,
                                     max=100,
                                     step=1,
-                                    value=10,
+                                    value=0,
                                     marks={
                                         0: '0%',
                                         100: '100%'
@@ -201,7 +201,7 @@ app.layout = html.Div(
                                     min=0,
                                     max=100,
                                     step=1,
-                                    value=10,
+                                    value=0,
                                     marks={
                                         0: '0%',
                                         100: '100%'
@@ -369,8 +369,14 @@ def update_forecast_chart(province_name, region, start_date, end_date, days_to_f
     province_name = update_province_name(province_name)
 
     # ============== SIMULATION GRAPH ==============
-
+    print("vac val before division: " + str(vac))
+    
     xMob = -100 + xMob
+    facemask = facemask * 70 / 100
+    vac = vac / 100.0
+
+    print("fm val: " + str(facemask))
+    print("vac val: " + str(vac))
 
     pred_fig = go.Figure()
     pred_fig.add_trace(go.Scatter(
@@ -381,7 +387,7 @@ def update_forecast_chart(province_name, region, start_date, end_date, days_to_f
     for i in range(10):
         pred_fig.add_trace(go.Scatter(
             x=predicted_dates(province_name, region, start_date, end_date, days_to_forecast),
-            y=predicted_deaths(province_name, region, start_date, end_date, days_to_forecast, xMob),
+            y=predicted_deaths(province_name, region, start_date, end_date, days_to_forecast, xMob, facemask, vac),
             name='Predicted Deaths',
         ))
     updatemenus = [
@@ -561,6 +567,11 @@ def get_total_pop(province_name, region_name):
     total_pop = get_region_info(province_name, region_name).total_pop.item()
     return total_pop
 
+def get_ann_death(province_name, region_name):
+    annDeath = get_region_info(province_name, region_name).anndeath.item()
+    print("ANNUAL DEATH FOR: " + region_name + " = " + str(annDeath))
+    return annDeath
+
 def get_frac_pop_over_80(province_name, region_name):
     frac_over_80 = get_region_info(province_name, region_name).pop80.item()
     return frac_over_80 / get_total_pop(province_name, region_name)
@@ -588,11 +599,14 @@ def predicted_dates(province_name, region_name, start_date, end_date, days_to_fo
     
     return add_dates
 
-def predicted_deaths(province_name, region_name, start_date, end_date, days_to_forecast, xMob):
+def predicted_deaths(province_name, region_name, start_date, end_date, days_to_forecast, xMob, facemask_val, vac_val):
     base = datetime.datetime.strptime(end_date, '%Y-%m-%d')
     add_dates = [base + datetime.timedelta(days=x) for x in range(days_to_forecast * 30)]
     yVals = []
     global total_deaths
+
+    # print("fm val: " + str(facemask_val))
+    # print("vac val: " + str(vac_val))
 
     set_total_deaths(province_name, region_name, start_date, end_date)
     # uncertainty lambda: Sqrt[0.092/(14+Death in Past two weeks)]
@@ -600,11 +614,11 @@ def predicted_deaths(province_name, region_name, start_date, end_date, days_to_f
     # add log graph (swtich back and forth) -> should be built in
 
     # t = r_avg(province_name, region_name, start_date, end_date)
-    annDeath = 4234 # todo:
+    annDeath = get_ann_death(province_name, region_name) # 4234 # todo:
     tau = 25.1009
     lS0 = -2.70768
     trend1=-0.0311442
-    xTrends1 = 0 # todo: Google Trends for face mask
+    xTrends1 = facemask_val # todo: Google Trends for face mask
     dtrends= 0.00722183
     xTemp = get_past_temp(province_name, region_name, end_date)
     Tmin2 = 24.6497
@@ -620,20 +634,20 @@ def predicted_deaths(province_name, region_name, start_date, end_date, days_to_f
     mob1 = 0.0379239
     v2 = 0  
     v1 = 0 # Fraction of vaccinated population (unto a month ago) -> time frame?
-    xVax1 = 0 # Fraction of vaccinated population (unto a month ago) -> time frame?
+    # xVax1 = vac_val # Fraction of vaccinated population (unto a month ago) -> time frame? -> slider value
     v1= 11.9697
     xBeta = math.log(get_total_pop(province_name, region_name) / (get_pwpd(province_name, region_name) * get_land_area(province_name, region_name))) / math.log(0.25**2/get_land_area(province_name, region_name)) #get_total_pop(province_name, region_name) / get_land_area(province_name, region_name) # Population Sparsity
     # Daily Cases Tomorrow = Exp[lambda]*Daily cases today -> lambda
 
     # Vaccination data:
-    Vax1 = 0
+    Vax1 = vac_val # slider value
     Vax2 = 0
     # Exp? -> Exponential
     first = True
     deaths_tomorrow = 0
     deaths_today = last_mort
-    # print("last mort: " + str(last_mort))
     total_deaths_2_months_prior = get_total_deaths_2_months_prior(province_name, region_name, end_date)
+    # total_deaths_2_weeks_prior = get_total_deaths_2_weeks_prior(province_name, region_name, end_date)
 
     for i in range(len(add_dates)):
         xAnnual = math.log(annDeath, 10) # Log10[Annual Death] -> calendar year
@@ -642,22 +656,39 @@ def predicted_deaths(province_name, region_name, start_date, end_date, days_to_f
             if (i <= 60):
                 xHerd2 = total_deaths_2_months_prior / annDeath # Total Covid Death (more than 2 months ago)/Annual Death -> what does more than 2 months ago mean? 2 months prior
             else:
-                # deaths_2_months = 0
                 deaths_2_months = total_deaths_2_months_prior
                 prior = i - 60
                 prior_2_months = yVals[0:prior]
-                # prior_2_months = yVals[-60:]
                 for j in range(len(prior_2_months)):
                     deaths_2_months += prior_2_months[j]
                 xHerd2 = deaths_2_months / annDeath
+            print("\n")
+            if (i < 14):
+                prior = 14 - i
+                deaths_2_weeks = get_total_deaths_2_weeks_prior(province_name, region_name, prior)
+                for j in range(len(yVals)):
+                    deaths_2_weeks += yVals[j]
+            else:
+                deaths_2_weeks = 0
+                prior_2_weeks = yVals[-14:]
+                for j in range(len(prior_2_weeks)):
+                    deaths_2_weeks += prior_2_weeks[j]
+            
+            sigma = math.sqrt(0.092/(14+deaths_2_weeks))
+
+            print("deaths 2 weeks: " + str(deaths_2_weeks))
+            print("sigma: " + str(sigma))
 
             lambda_ = math.exp(.5*(lS0 + math.log(10)*xLogPWPD + math.log(0.25) +
                     2/(4 - xBeta)*math.log((2 - xBeta/2)/(2*10**xLogPWPD*.25**2)) - 
                     H0*xHerd - H2*(xHerd - xHerd2)*6 - v1*Vax1 + mob1*xMob + 
                     trend1*xTrends1 + dT2*(xTemp - Tmin2)**2.0 + dT3*(xTemp - Tmin2)**3.0 -
                     math.log(tau))) - 1/tau + house2*(xHouse - 2.75) + Anl*(xAnnual - 3.65) - v2*Vax2
+            print("lambda before: " + str(lambda_))
+            lambda_ += random.gauss(0, sigma) # Sqrt[0.092/(14 + Death in Past two weeks)
+            print("lambda after: " + str(lambda_))
             deaths_tomorrow = math.exp(lambda_) * deaths_today
-            deaths_tomorrow += random.uniform(-0.01,0.1)
+            # deaths_tomorrow += random.uniform(-0.01,0.1)
             yVals.append(deaths_tomorrow)
             deaths_today = deaths_tomorrow
             total_deaths += deaths_today
@@ -762,6 +793,26 @@ def get_total_deaths_2_months_prior(province_name, region_name, end_date):
         total_deaths_2_months += d
 
     return total_deaths_2_months
+
+def get_total_deaths_2_weeks_prior(province_name, region_name, days_prior):
+    delta = datetime.timedelta(days=days_prior)
+    first_day = current_date - delta
+    first_day = first_day.strftime('%d-%m-%Y')
+    end_date_2_weeks_ago = current_date
+
+    df_2_weeks = df_mort[df_mort.date_death_report.between(
+        first_day, end_date_2_weeks_ago
+    )]
+    df_province_2_weeks = df_2_weeks[df_2_weeks.province == province_name]
+    deaths_2_weeks = df_province_2_weeks.deaths[df_province_2_weeks.health_region == region_name]
+
+    total_deaths_2_weeks = 0.0 # reset total deaths
+
+    for d in deaths_2_weeks:
+        total_deaths_2_weeks += d
+
+    # print("2 weeks function: " + str(total_deaths_2_weeks))
+    return total_deaths_2_weeks
 
 def set_total_deaths(province_name, region_name, start_date, end_date):
     start_date_str = datetime.datetime.strptime(start_date, '%Y-%m-%d').strftime('%d-%m-%Y')
