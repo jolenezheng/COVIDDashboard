@@ -33,7 +33,7 @@ mobility_info = pd.read_csv(r'data/2020_CA_Region_Mobility_Report.csv')
 mobility_info["sub_region_2"] = mobility_info["sub_region_2"]
 
 
-current_date = datetime.datetime.now()
+current_date = datetime.datetime.strptime("03-31-2021", "%m-%d-%Y") #datetime.datetime.now()
 gloabl_date = current_date.strftime('%Y-%m')
 
 prov_id = "ON"
@@ -146,7 +146,7 @@ app.layout = html.Div(
                                     min_date_allowed=df_mort.date_death_report.min().date(),
                                     max_date_allowed=df_mort.date_death_report.max().date(),
                                     start_date="2020-03-13", #df_mort.date_death_report.min().date(),
-                                    end_date=df_mort.date_death_report.max().date(),
+                                    end_date="2021-03-31" #df_mort.date_death_report.max().date(),
                                 ),
                             ]
                         ),
@@ -220,7 +220,7 @@ app.layout = html.Div(
                                     min=0,
                                     max=12,
                                     step=1,
-                                    value=6, # todo: change back to 1
+                                    value=3, # todo: change back to 1
                                     marks={
                                         0: '0 mo',
                                         # 1: '1 mo',
@@ -373,8 +373,7 @@ def update_forecast_chart(province_name, region, start_date, end_date, days_to_f
         y=r_avg(province_name, region, start_date, end_date),
         name='Previous Deaths',
     ))
-    for i in range(2):
-
+    for i in range(3):
         pred_fig.add_trace(go.Scatter(
             x=predicted_dates(province_name, region, start_date, end_date, days_to_forecast),
             y=predicted_deaths(province_name, region, start_date, end_date, days_to_forecast),
@@ -385,10 +384,31 @@ def update_forecast_chart(province_name, region, start_date, end_date, days_to_f
     #     y=predicted_deaths(province_name, region, start_date, end_date, days_to_forecast),
     #     name='Predicted Deaths',
     # ))
+    updatemenus = [
+        dict(
+            type="buttons",
+            direction="left",
+            buttons=list([
+                dict(
+                    args=[{'yaxis.type': 'linear'}],
+                    label="Linear Scale",
+                    method="relayout"
+                ),
+                dict(
+                    args=[{'yaxis.type': 'log'}],
+                    label="Log Scale",
+                    method="relayout"
+                )
+            ])
+        ),
+    ]
+
 
     pred_fig.update_layout(title='Daily Predicted Deaths in ' + region + ', ' + province_name,
                    xaxis_title='Date',
-                   yaxis_title='Daily Mortality (7-day Rolling Average)')
+                   yaxis_title='Daily Mortality (7-day Rolling Average)',
+                   updatemenus=updatemenus)
+
 
     return pred_fig
 
@@ -564,9 +584,7 @@ def predicted_deaths(province_name, region_name, start_date, end_date, days_to_f
     v1 = 0 # Fraction of vaccinated population (unto a month ago) -> time frame?
     xVax1 = 0 # Fraction of vaccinated population (unto a month ago) -> time frame?
     v1= 11.9697
-    xBeta = math.log(get_total_pop(province_name, region_name)/(get_pwpd(province_name, region_name) * get_land_area(province_name, region_name))) / math.log(0.25**2/get_land_area(province_name, region_name)) #get_total_pop(province_name, region_name) / get_land_area(province_name, region_name) # Population Sparsity -> todo: is this how you calculate it?
-    # print("pop: " + str(get_total_pop(province_name, region_name)))
-    # print("area: " + str(get_land_area(province_name, region_name)))
+    xBeta = math.log(get_total_pop(province_name, region_name) / (get_pwpd(province_name, region_name) * get_land_area(province_name, region_name))) / math.log(0.25**2/get_land_area(province_name, region_name)) #get_total_pop(province_name, region_name) / get_land_area(province_name, region_name) # Population Sparsity
     # Daily Cases Tomorrow = Exp[lambda]*Daily cases today -> lambda
 
     # Vaccination data:
@@ -577,23 +595,22 @@ def predicted_deaths(province_name, region_name, start_date, end_date, days_to_f
     deaths_tomorrow = 0
     deaths_today = last_mort
     # print("last mort: " + str(last_mort))
+    total_deaths_2_months_prior = get_total_deaths_2_months_prior(province_name, region_name, end_date)
 
     for i in range(len(add_dates)):
-        # add_dates[i] = datetime.datetime.strptime(str(add_dates[i]), '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d')
-        # deaths_today = 3 #get_mort(province_name, region_name, add_dates[i])
         xAnnual = math.log(annDeath, 10) # Log10[Annual Death] -> calendar year
         if (first == False):
-            xHerd = total_deaths / annDeath  #3/1 # Total Covid Death/Annual Death -> Annual death as in 2021
+            xHerd = total_deaths / annDeath  #Total Covid Death/Annual Death -> Annual death as in 2021
             if (i <= 60):
-                xHerd2 = get_total_deaths_2_months_prior(province_name, region_name, end_date) / annDeath #2.5/1 # Total Covid Death (more than 2 months ago)/Annual Death -> what does more than 2 months ago mean? 2 months prior
+                xHerd2 = total_deaths_2_months_prior / annDeath # Total Covid Death (more than 2 months ago)/Annual Death -> what does more than 2 months ago mean? 2 months prior
             else:
-                deaths_2_months = total_deaths
                 # deaths_2_months = 0
+                deaths_2_months = total_deaths_2_months_prior
                 prior = i - 60
-                prior_2_months = yVals[0:i]
+                prior_2_months = yVals[0:prior]
                 # prior_2_months = yVals[-60:]
-                for i in range(len(prior_2_months)):
-                    deaths_2_months += prior_2_months[i]
+                for j in range(len(prior_2_months)):
+                    deaths_2_months += prior_2_months[j]
                 xHerd2 = deaths_2_months / annDeath
 
             lambda_ = math.exp(.5*(lS0 + math.log(10)*xLogPWPD + math.log(0.25) +
@@ -611,7 +628,7 @@ def predicted_deaths(province_name, region_name, start_date, end_date, days_to_f
             first = False
             yVals.append(last_mort)
             total_deaths += last_mort
-            annDeath += deaths_today
+            # annDeath += last_mort
 
         # y = math.exp(.5*(lS0 + math.log(10)*xLogPWPD + math.log(0.25) + #clarify log 0.25 and 10
         #  2/(4 - xBeta)*math.log((2 - xBeta/2)/(2*10^xLogPWPD*.25^2)) - 
@@ -672,8 +689,8 @@ def r_avg(province_name, region_name, start_date, end_date):
 
 def get_total_deaths_this_year(province_name, region_name, end_date):
     first_day = "13-03-2020" # df_mort.date_death_report.min().date().strftime('%d-%m-%Y')
-    first_day_this_year = "01-01-" + datetime.datetime.now().strftime("%Y") #datetime.datetime.strptime(start_date, '%Y-%m-%d').strftime('%d-%m-%Y')
-    today = datetime.datetime.now().strftime('%d-%m-%Y')
+    first_day_this_year = "01-01-" + current_date.strftime("%Y") #datetime.datetime.strptime(start_date, '%Y-%m-%d').strftime('%d-%m-%Y')
+    today = current_date.strftime('%d-%m-%Y')
 
     df_this_year = df_mort[df_mort.date_death_report.between(
         first_day_this_year, today
@@ -692,7 +709,7 @@ def get_total_deaths_2_months_prior(province_name, region_name, end_date):
     first_day = "13-03-2020" # df_mort.date_death_report.min().date().strftime('%d-%m-%Y')
 
     delta_2_months = datetime.timedelta(days=60)
-    end_date_2_months_ago = datetime.datetime.now() - delta_2_months
+    end_date_2_months_ago = current_date - delta_2_months
     end_date_2_months_ago = end_date_2_months_ago.strftime('%d-%m-%Y')
 
     df_2_months = df_mort[df_mort.date_death_report.between(
@@ -725,7 +742,7 @@ def set_total_deaths(province_name, region_name, start_date, end_date):
     for d in deaths:
         total_deaths += d
 
-    print('TOTAL DEATHS: ' + str(total_deaths))
+    # print('TOTAL DEATHS: ' + str(total_deaths))
 
 # -------------- CASES HELPER FUNCTIONS --------------
 
