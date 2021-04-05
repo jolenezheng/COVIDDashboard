@@ -182,7 +182,7 @@ app.layout = html.Div(
                                     min=0,
                                     max=100,
                                     step=1,
-                                    value=10,
+                                    value=100,
                                     marks={
                                         0: '-100% (total lockdown)',
                                         100: '0% (normal activity)'
@@ -239,14 +239,14 @@ app.layout = html.Div(
                                 ),
                             ]
                         ),
-                        html.Div(
-                            children= [
-                                dcc.Graph(
-                                    id="data-chart", config={"displayModeBar": False},
-                                ),
-                            ],
-                            className="card",
-                        ),
+                        # html.Div(
+                        #     children= [
+                        #         dcc.Graph(
+                        #             id="data-chart", config={"displayModeBar": False},
+                        #         ),
+                        #     ],
+                        #     className="card",
+                        # ),
                     ],
                     className="options-card",
                 ),
@@ -359,13 +359,16 @@ def update_province_name(province_name):
         Input("subregion-dropdown", "value"),
         Input("date-range", "start_date"),
         Input("date-range", "end_date"),
-        Input('forecast-slider', 'drag_value'),
+        Input('forecast-slider', 'value'),
+        Input('mobility-slider', 'value'),
     ],
 )
-def update_forecast_chart(province_name, region, start_date, end_date, days_to_forecast):
+def update_forecast_chart(province_name, region, start_date, end_date, days_to_forecast, xMob):
     province_name = update_province_name(province_name)
 
     # ============== SIMULATION GRAPH ==============
+
+    xMob = -100 + xMob
 
     pred_fig = go.Figure()
     pred_fig.add_trace(go.Scatter(
@@ -373,17 +376,12 @@ def update_forecast_chart(province_name, region, start_date, end_date, days_to_f
         y=r_avg(province_name, region, start_date, end_date),
         name='Previous Deaths',
     ))
-    for i in range(3):
+    for i in range(10):
         pred_fig.add_trace(go.Scatter(
             x=predicted_dates(province_name, region, start_date, end_date, days_to_forecast),
-            y=predicted_deaths(province_name, region, start_date, end_date, days_to_forecast),
+            y=predicted_deaths(province_name, region, start_date, end_date, days_to_forecast, xMob),
             name='Predicted Deaths',
         ))
-    # pred_fig.add_trace(go.Scatter(
-    #     x=predicted_dates(province_name, region, start_date, end_date, days_to_forecast),
-    #     y=predicted_deaths(province_name, region, start_date, end_date, days_to_forecast),
-    #     name='Predicted Deaths',
-    # ))
     updatemenus = [
         dict(
             type="buttons",
@@ -419,23 +417,36 @@ def update_forecast_chart(province_name, region, start_date, end_date, days_to_f
         Input("subregion-dropdown", "value"),
         Input("date-range", "start_date"),
         Input("date-range", "end_date"),
+        Input('forecast-slider', 'value'),
     ],
 )
-def update_weather_chart(province_name, region, start_date, end_date):
+def update_weather_chart(province_name, region, start_date, end_date, forecasted_dates):
     # ============== WEATHER GRAPH ==============
     temp_files = get_temp_files(province_name, region, start_date, end_date)
     temp_dates = get_temp_dates(temp_files)
     temp_vals = get_temp_vals(temp_files)
 
+    new_dates = predicted_dates(province_name, region, start_date, end_date, forecasted_dates)
+
+    # temp_files = get_temp_files(province_name, region, start_date, end_date)
+    data = {'Date':  get_temp_dates(temp_files),
+        'Mean Temperature': get_temp_vals(temp_files)}
+    forecasted = datetime.timedelta(days=forecasted_dates)
+
     weather_fig = px.line(df_mort, x = temp_dates, y = temp_vals)
     weather_fig.update_layout(title='Daily Reported Temperature in ' + region + ', ' + province_name,
                    xaxis_title='Date',
                    yaxis_title='Mean Temperature')
+    weather_fig.add_trace(go.Scatter(
+            x=new_dates,
+            y=avg_temp_data(current_date, current_date + forecasted, data),
+            name='Predicted Deaths',
+        ))
     
     return weather_fig
 
 @app.callback(
-    [Output("cases-chart", "figure"), Output("mobility-chart", "figure"), Output("map1", "figure"), Output("map2", "figure")],
+    [Output("cases-chart", "figure"), Output("map1", "figure"), Output("map2", "figure")],
     [
         Input("region-dropdown", "value"),
         Input("subregion-dropdown", "value"),
@@ -451,13 +462,6 @@ def update_charts(province_name, region, start_date, end_date):
     cases_fig.update_layout(title='Daily Reported Cases in ' + region + ', ' + province_name,
                    xaxis_title='Date',
                    yaxis_title='Daily Cases (7-day Rolling Average)')
-
-     # ============== MOBILITY GRAPH ==============
-    mobility_fig = px.line(df_mort, x = date_mob(province_name, region, start_date, end_date), y = mobility(province_name, region, start_date, end_date))
-    mobility_fig.update_layout(title='Social Mobility in ' + region + ', ' + province_name,
-                   xaxis_title='Date',
-                   yaxis_title='Social Mobility')
-
 
     # ============== MAP ==============
 
@@ -485,17 +489,49 @@ def update_charts(province_name, region, start_date, end_date):
     fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
 
 
-    return cases_fig, mobility_fig, map_fig, fig
-
+    return cases_fig, map_fig, fig
 
 @app.callback(
-    Output("data-chart", "figure"),
+    Output("mobility-chart", "figure"),
     [
         Input("region-dropdown", "value"),
         Input("subregion-dropdown", "value"),
+        Input("date-range", "start_date"),
+        Input("date-range", "end_date"),
+        Input('forecast-slider', 'value'),
+        Input('mobility-slider', 'value'),
     ],
 )
-def update_table(province_name, region_name):
+def update_mob_charts(province_name, region, start_date, end_date, forecasted_dates, xMob):
+    province_name = update_province_name(province_name)
+    xMob = -100 + xMob
+    dates = predicted_dates(province_name, region, start_date, end_date, forecasted_dates)
+    mob_values = []
+    for i in range(len(dates)):
+        mob_values.append(xMob)
+
+     # ============== MOBILITY GRAPH ==============
+    mobility_fig = px.line(df_mort, x = date_mob(province_name, region, start_date, end_date), y = mobility(province_name, region, start_date, end_date))
+    mobility_fig.update_layout(title='Social Mobility in ' + region + ', ' + province_name,
+                   xaxis_title='Date',
+                   yaxis_title='Social Mobility')
+    mobility_fig.add_trace(go.Scatter(
+            x=dates,
+            y=mob_values,
+            name='Predicted Deaths',
+        ))
+
+    return mobility_fig
+
+
+# @app.callback(
+#     Output("data-chart", "figure"),
+#     [
+#         Input("region-dropdown", "value"),
+#         Input("subregion-dropdown", "value"),
+#     ],
+# )
+# def update_table(province_name, region_name):
     data_headers = ["Land Area", "Total Population", "Fraction of Population > 80 yrs", "PWPD", "Average number / house"]
     data_values = [get_land_area(province_name, region_name), get_total_pop(province_name, region_name), get_frac_pop_over_80(province_name, region_name), get_pwpd(province_name, region_name), get_avg_house(province_name, region_name)]
     fig = go.Figure(
@@ -550,7 +586,7 @@ def predicted_dates(province_name, region_name, start_date, end_date, days_to_fo
     
     return add_dates
 
-def predicted_deaths(province_name, region_name, start_date, end_date, days_to_forecast):
+def predicted_deaths(province_name, region_name, start_date, end_date, days_to_forecast, xMob):
     base = datetime.datetime.strptime(end_date, '%Y-%m-%d')
     add_dates = [base + datetime.timedelta(days=x) for x in range(days_to_forecast * 30)]
     yVals = []
@@ -578,7 +614,7 @@ def predicted_deaths(province_name, region_name, start_date, end_date, days_to_f
     Anl = -0.007345
     xHouse = get_avg_house(province_name, region_name) # Average number of people/household
     house2 = 0.0198985
-    xMob = -30 # get_mob(province_name, region_name, start_date) # todo: Google Workplace Mobility -> get from slider
+    # xMob = -30 # get_mob(province_name, region_name, start_date) # todo: Google Workplace Mobility -> get from slider
     mob1 = 0.0379239
     v2 = 0  
     v1 = 0 # Fraction of vaccinated population (unto a month ago) -> time frame?
@@ -763,17 +799,6 @@ def ravg_cases(province_name, region_name, start_date, end_date):
     return dfcases_province.cases[dfcases_province.health_region == region_name].rolling(window=7).mean()
 
 # -------------- MOBILITY HELPER FUNCTIONS --------------
-
-def get_mob(province_name, region_name, date):
-    filtered_df = mobility_info[mobility_info.date == date]
-    
-    weat_info_province = static_data[static_data.province_name == province_name]
-    sub_region = weat_info_province.sub_region_2[weat_info_province.health_region == region_name].item()
-
-    mob = filtered_df.workplaces_percent_change_from_baseline[mobility_info.sub_region_2 == sub_region].rolling(window=7).mean().item()
-    # print("MOB!!!!!: " + str(mob))
-    return -0.5
-
 def mobility(province_name, region_name, start_date, end_date):
 
     filtered_df = mobility_info[mobility_info.date.between(
@@ -862,6 +887,20 @@ def provinceid(province_name, region_name):
     weat_info_province = static_data[static_data.province_name == province_name]
     return weat_info_province.prov_id[weat_info_province.health_region == region_name].item()
 
+def avg_temp_data(begin_year, end_year, data):
+    df_weat = pd.DataFrame(data, columns = ['Date','Mean Temperature'])
+    one_day = datetime.timedelta(days=1)
+
+    next_day = begin_year
+    for day in range(0, 366):  # Includes leap year
+        if next_day > end_year:
+            break
+        
+        # Adds a day to the current date
+        next_day += one_day
+        date_range = next_day.strftime('%m-%d')
+        df_weat_date = df_weat.groupby('Date')['Mean Temperature'].mean()
+    return df_weat_date
 
 if __name__ == "__main__":
     app.run_server(debug=True)
