@@ -20,6 +20,18 @@ from dateutil.relativedelta import relativedelta
 # fix dates
 # quebec names
 
+external_stylesheets = [
+    {
+        "href": "https://fonts.googleapis.com/css2?"
+        "family=Lato:wght@400;700&display=swap",
+        "rel": "stylesheet",
+    },
+]
+# app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+app = dash.Dash(
+    external_stylesheets=[dbc.themes.BOOTSTRAP, external_stylesheets]
+)
+
 
 df_mort = pd.read_csv('https://raw.githubusercontent.com/ccodwg/Covid19Canada/master/timeseries_hr/mortality_timeseries_hr.csv', parse_dates=[0]) #, dayfirst=True)
 df_mort["date_death_report"] = pd.to_datetime(df_mort["date_death_report"], format="%d-%m-%Y") #, dayfirst =True)
@@ -44,25 +56,12 @@ target_url = ""
 weat_data = None
 weat_city = None
 date_city = None
-# province_name = "Ontario"
-# region = "Waterloo"
-# start_date = "15-03-2020"
-# end_date = datetime.datetime.strftime(datetime.datetime.now(), "%d-%m-%Y")
-
 last_mort = 0
 total_deaths = 0
-
 
 # df_mob = pd.read_csv('https://www.gstatic.com/covid19/mobility/Global_Mobility_Report.csv')
 
 
-external_stylesheets = [
-    {
-        "href": "https://fonts.googleapis.com/css2?"
-        "family=Lato:wght@400;700&display=swap",
-        "rel": "stylesheet",
-    },
-]
 fnameDict = {    
     "Alberta": ["Calgary","Central","Edmonton","North","Not Reported","South"], 
     "British Columbia":["Fraser","Interior","Island","Northern","Not Reported","Vancouver Coastal"],
@@ -99,10 +98,6 @@ base_intro = """Lorem ipsum dolor sit amet, consectetur adipiscing elit, \
                             anim id est laborum.
 """
 
-# app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
-app = dash.Dash(
-    external_stylesheets=[dbc.themes.BOOTSTRAP]
-)
 server = app.server
 app.title = "COVID Dashboard"
 
