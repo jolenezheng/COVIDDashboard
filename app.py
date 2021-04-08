@@ -28,10 +28,7 @@ external_stylesheets = [
     },
 ]
 # app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
-app = dash.Dash(
-    external_stylesheets=[dbc.themes.BOOTSTRAP, external_stylesheets]
-)
-
+app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP, external_stylesheets])
 
 df_mort = pd.read_csv('https://raw.githubusercontent.com/ccodwg/Covid19Canada/master/timeseries_hr/mortality_timeseries_hr.csv', parse_dates=[0]) #, dayfirst=True)
 df_mort["date_death_report"] = pd.to_datetime(df_mort["date_death_report"], format="%d-%m-%Y") #, dayfirst =True)

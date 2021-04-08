@@ -31,14 +31,7 @@ body {
   color: black;
 }
 
-.wrapper {
-  margin-right: auto;
-  margin-left: auto;
-  max-width: 1024px;
-  padding-right: 10px;
-  padding-left: 10px;
-  margin-top: 32px;
-}
+
 
 .Select-control {
   width: 256px;
@@ -60,14 +53,6 @@ body {
   font-weight: 300;
 }
 
-/* .options-card {
-  padding: 30px 70px 30px 70px;
-} */
-
-/* .card {
-  border: 5px solid;
-} */
-
 
 .column {
   padding: 20px 50px 20px 50px;
@@ -79,20 +64,6 @@ body {
 }
 
 
-.banner {
-  height: 5.5rem;
-  padding: 0rem 2rem 0rem;
-  background-color: rgb(218, 218, 218);
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  font-size: 28px;
-}
-
-#graph-title-intro {
-  padding-bottom: 20px;
-}
-
 .options-header {
   padding-top: 10px;
   padding-bottom: 10px;
@@ -101,10 +72,3 @@ body {
   /* background-color: #4a65ad; */
 }
 
-.slider-output-container {
-  color: #6e6e6e;
-  /* height: 35px;
-  padding: 5px;
-  width: 34px;
-  text-align: center; */
-}
