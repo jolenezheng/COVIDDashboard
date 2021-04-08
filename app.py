@@ -4,6 +4,7 @@ import dash
 import dash_table
 import random
 import dash_core_components as dcc
+import dash_bootstrap_components as dbc
 import dash_html_components as html
 import pandas as pd
 import numpy as np
@@ -98,239 +99,441 @@ base_intro = """Lorem ipsum dolor sit amet, consectetur adipiscing elit, \
                             anim id est laborum.
 """
 
-app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+# app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+app = dash.Dash(
+    external_stylesheets=[dbc.themes.BOOTSTRAP]
+)
 server = app.server
 app.title = "COVID Dashboard"
 
 
+search_bar = dbc.Row(
+    [
+        dbc.Col(dbc.Input(type="search", placeholder="Search")),
+        dbc.Col(
+            dbc.Button("Search", color="primary", className="ml-2"),
+            width="auto",
+        ),
+    ],
+    no_gutters=True,
+    className="ml-auto flex-nowrap mt-3 mt-md-0",
+    align="center",
+)
+
 app.layout = html.Div(
     children=[
         html.Div(
-            id="banner",
-            className="banner",
-            children="COVID Dashboard",
+            dbc.Navbar(
+                [
+                    html.A(
+                        # Use row and col to control vertical alignment of logo / brand
+                        dbc.Row(
+                            [
+                                dbc.Col(dbc.NavbarBrand("COVID-19 Canadian Dashboard", className="ml-2")),
+                            ],
+                            align="center",
+                            no_gutters=True,
+                        ),
+                        href="https://plot.ly",
+                    ),
+                    dbc.NavbarToggler(id="navbar-toggler"),
+                    dbc.Collapse(search_bar, id="navbar-collapse", navbar=True),
+                ],
+                color="dark",
+                dark=True,
+                sticky="top",
+            ),
         ),
-        html.Div(
-            children=[
-                html.Div(
-                    children=[
-                        # html.Div(children="Daily Mortality", className="options-header"),
-                        html.Div(
-                            children=[
-                                html.Div(children="Region", className="dropdown-title"),
-                                dcc.Dropdown(
-                                    id='region-dropdown',
-                                    className='dropdown',
-                                    options=[{'label':name, 'value':name} for name in names],
-                                    value = "Ontario" #list(fnameDict.keys())[0]
-                                ),
-                            ]
-                        ),
-                        html.Div(
-                            children=[
-                                html.Div(children="Sub-Region", className="dropdown-title"),
-                                dcc.Dropdown(
-                                    id='subregion-dropdown',
-                                    className='dropdown',
-                                    value = 'Waterloo'
-                                ),
-                            ]
-                        ),
-                        html.Div(
-                            children=[
-                                html.Div(
-                                    children="Date Range",
-                                    className="dropdown-title",
-                                    id = "placeholder"
-                                    ),
-                                dcc.DatePickerRange(
-                                    id="date-range",
-                                    min_date_allowed=df_mort.date_death_report.min().date(),
-                                    max_date_allowed=df_mort.date_death_report.max().date(),
-                                    start_date=df_mort.date_death_report.min().date(), # "2020-03-13"
-                                    end_date=df_mort.date_death_report.max().date(), #"2021-03-31"
-                                ),
-                            ]
-                        ),
-                        html.Div(
-                            children=[
-                                html.Div(
-                                    children="Face Mask Use",
-                                    className="dropdown-title"
-                                    ),
-                                dcc.Slider(
-                                    id='facemask-slider',
-                                    min=0,
-                                    max=100,
-                                    step=1,
-                                    value=0,
-                                    marks={
-                                        0: '0%',
-                                        100: '100%'
-                                    },
-                                    # handleLabel={"showCurrentValue": True,"label": "VALUE"},
-                                ),
-                                # html.Div(className='slider-output-container', id='slider-drag-output'),
-                            ]
-                        ),
-                        html.Div(
-                            children=[
-                                html.Div(
-                                    children="New Social Mobility vs Baseline",
-                                    className="dropdown-title"
-                                    ),
-                                dcc.Slider(
-                                    id='mobility-slider',
-                                    min=0,
-                                    max=100,
-                                    step=1,
-                                    value=100,
-                                    marks={
-                                        0: '-100% (total lockdown)',
-                                        100: '0% (normal activity)'
-                                    },
-                                ),
-                            ]
-                        ),
-                        html.Div(
-                            children=[
-                                html.Div(
-                                    children="Vaccination",
-                                    className="dropdown-title"
-                                    ),
-                                dcc.Slider(
-                                    id='vaccine-slider',
-                                    min=0,
-                                    max=100,
-                                    step=1,
-                                    value=0,
-                                    marks={
-                                        0: '0%',
-                                        100: '100%'
-                                    },
-                                ),
-                            ]
-                        ),
-                        html.Div(
-                            children=[
-                                html.Div(
-                                    children="Number of Days to Forecast",
-                                    className="dropdown-title"
-                                    ),
-                                dcc.Slider(
-                                    id='forecast-slider',
-                                    min=0,
-                                    max=12,
-                                    step=1,
-                                    value=3, # todo: change back to 1
-                                    marks={
-                                        0: '0 mo',
-                                        # 1: '1 mo',
-                                        2: '2 mo',
-                                        # 3: '3 mo',
-                                        4: '4 mo',
-                                        # 5: '5 mo',
-                                        6: '6 mo',
-                                        # 7: '7 mo',
-                                        8: '8 mo',
-                                        # 9: '9 mo',
-                                        10: '10 mo',
-                                        # 11: '11 mo',
-                                        12: '1 yr'
-                                    },
-                                ),
-                            ]
-                        ),
-                        # html.Div(
-                        #     children= [
-                        #         dcc.Graph(
-                        #             id="data-chart", config={"displayModeBar": False},
-                        #         ),
-                        #     ],
-                        #     className="card",
-                        # ),
-                    ],
-                    className="options-card",
+        dbc.Row(
+            [
+                dbc.Col([ 
+                    dbc.Row(dbc.Col(
+                        dbc.Card(
+                            [
+                                dbc.CardHeader("Static Input"),
+                                dbc.CardBody([
+                                    dbc.Row(dbc.Col(
+                                        html.Div(
+                                            children=[
+                                                html.Div(children="Region", className="dropdown-title"),
+                                                dcc.Dropdown(
+                                                    id='region-dropdown',
+                                                    className='dropdown',
+                                                    options=[{'label':name, 'value':name} for name in names],
+                                                    value = "Ontario" #list(fnameDict.keys())[0]
+                                                ),
+                                            ]
+                                        ),
+                                    )),
+                                    dbc.Row(dbc.Col(
+                                        html.Div(
+                                            children=[
+                                                html.Div(children="Sub-Region", className="dropdown-title"),
+                                                dcc.Dropdown(
+                                                    id='subregion-dropdown',
+                                                    className='dropdown',
+                                                    value = 'Waterloo'
+                                                ),
+                                            ]
+                                        ),
+                                    )),
+                                    dbc.Row(dbc.Col(
+                                        html.Div(
+                                            children=[
+                                                html.Div(
+                                                    children="Date Range",
+                                                    className="dropdown-title",
+                                                    id = "placeholder"
+                                                    ),
+                                                dcc.DatePickerRange(
+                                                    id="date-range",
+                                                    min_date_allowed=df_mort.date_death_report.min().date(),
+                                                    max_date_allowed=df_mort.date_death_report.max().date(),
+                                                    start_date=df_mort.date_death_report.min().date(), # "2020-03-13"
+                                                    end_date=df_mort.date_death_report.max().date(), #"2021-03-31"
+                                                ),
+                                            ]
+                                        ),
+                                    )),
+                                ]),
+                            ], color="dark", outline=True),
+                    ), className="mb-4"),
+                    dbc.Row(dbc.Col(
+                        dbc.Card(
+                            [
+                                dbc.CardHeader("Prediction Input"),
+                                dbc.CardBody([
+                                    dbc.Row(dbc.Col(
+                                        html.Div(
+                                            children=[
+                                                html.Div(
+                                                    children="Face Mask Use",
+                                                    className="dropdown-title"
+                                                    ),
+                                                dcc.Slider(
+                                                    id='facemask-slider',
+                                                    min=0,
+                                                    max=100,
+                                                    step=1,
+                                                    value=0,
+                                                    marks={
+                                                        0: '0%',
+                                                        100: '100%'
+                                                    },
+                                                    # handleLabel={"showCurrentValue": True,"label": "VALUE"},
+                                                ),
+                                                # html.Div(className='slider-output-container', id='slider-drag-output'),
+                                            ]
+                                        ),
+                                    )),
+                                    dbc.Row(dbc.Col(
+                                        html.Div(
+                                            children=[
+                                                html.Div(
+                                                    children="New Social Mobility vs Baseline",
+                                                    className="dropdown-title"
+                                                    ),
+                                                dcc.Slider(
+                                                    id='mobility-slider',
+                                                    min=0,
+                                                    max=100,
+                                                    step=1,
+                                                    value=100,
+                                                    marks={
+                                                        0: '-100% (total lockdown)',
+                                                        100: '0% (normal activity)'
+                                                    },
+                                                ),
+                                            ]
+                                        ),
+                                    )),
+                                    dbc.Row(dbc.Col(
+                                        html.Div(
+                                            children=[
+                                                html.Div(
+                                                    children="Vaccination",
+                                                    className="dropdown-title"
+                                                    ),
+                                                dcc.Slider(
+                                                    id='vaccine-slider',
+                                                    min=0,
+                                                    max=100,
+                                                    step=1,
+                                                    value=0,
+                                                    marks={
+                                                        0: '0%',
+                                                        100: '100%'
+                                                    },
+                                                ),
+                                            ]
+                                        ),
+                                    )),
+                                    dbc.Row(dbc.Col(
+                                        html.Div(
+                                            children=[
+                                                html.Div(
+                                                    children="Number of Days to Forecast",
+                                                    className="dropdown-title"
+                                                    ),
+                                                dcc.Slider(
+                                                    id='forecast-slider',
+                                                    min=0,
+                                                    max=12,
+                                                    step=1,
+                                                    value=3, # todo: change back to 1
+                                                    marks={ 0: '0 mo', 2: '2 mo', 4: '4 mo',
+                                                        6: '6 mo', 8: '8 mo', 10: '10 mo', 12: '1 yr'
+                                                    },
+                                                ),
+                                            ]
+                                        ),
+                                    )),
+                                ]),
+                            ], color="dark", outline=True),
+                    ), className="mb-4"),
+                ],
+                    width=3,
+                    className="column",
                 ),
-            ],
-            className="left-column columns",
-        ),
-        html.Div(
-            children=[
-                dcc.Markdown(
-                    dedent(base_intro), id="graph-title-intro"
-                ),
-                # html.Button(
-                #     "Learn More", id="learn-more-btn", n_clicks=0
-                # ),
-                html.Div(
-                    children=[
-                        html.Div(
-                            children=dcc.Graph(
-                                id="simulation-chart", config={"displayModeBar": False},
+                dbc.Col(
+                    html.Div([
+                        dbc.Row([
+                            dbc.Col(
+                                dbc.Card(
+                                    [
+                                        dbc.CardHeader("Total Population"),
+                                        dbc.CardBody(
+                                            [
+                                                html.H5(id="total-pop-card",className="card-title"),
+                                                # html.P(
+                                                #     "This is some card content that we'll reuse",
+                                                #     className="card-text",
+                                                # ),
+                                            ]
+                                        ),
+                                    ],
+                                    color="danger",
+                                    inverse=True
+                                )
                             ),
-                            className="card",
-                        ),
-                        html.Div(
-                            children= [
-                                # dcc.Graph(
-                                #     id="covid-chart", config={"displayModeBar": False}, style={'display': 'inline-block'},
-                                # ),
-                                dcc.Graph(
-                                    id="cases-chart", config={"displayModeBar": False}, # style={'display': 'inline-block'},
-                                ),
-                            ],
-                            # className="card",
-                        ),
-                        # html.Div(
-                        #     children=dcc.Graph(
-                        #         id="cases-chart", config={"displayModeBar": False},
+                            dbc.Col(
+                                dbc.Card(
+                                    [
+                                        dbc.CardHeader("Land Area"),
+                                        dbc.CardBody(
+                                            [
+                                                html.H5(id="land-area-card",className="card-title"),
+                                            ]
+                                        ),
+                                    ],
+                                    color="warning",
+                                    inverse=True
+                                )
+                            ),
+                            dbc.Col(
+                                dbc.Card(
+                                    [
+                                        dbc.CardHeader("Fraction of Population > 80"),
+                                        dbc.CardBody(
+                                            [
+                                                html.H5(id="frac-pop-card", className="card-title"),
+                                            ]
+                                        ),
+                                    ],
+                                    color="success",
+                                    inverse=True
+                                )
+                            ),
+                            dbc.Col(
+                                dbc.Card(
+                                    [
+                                        dbc.CardHeader("PWPD"),
+                                        dbc.CardBody(
+                                            [
+                                                html.H5(id="pwpd-card", className="card-title"),
+                                            ]
+                                        ),
+                                    ],
+                                    color="primary",
+                                    inverse=True
+                                )
+                            ),
+                            dbc.Col(
+                                dbc.Card(
+                                    [
+                                        dbc.CardHeader("Average Number / House"),
+                                        dbc.CardBody(
+                                            [
+                                                html.H5(id="avg-house-card", className="card-title"),
+                                            ]
+                                        ),
+                                    ],
+                                    color="dark",
+                                    inverse=True
+                                )
+                            ),
+                        ], className="mb-4"),
+                        dbc.Row(dbc.Col(
+                            dbc.Card(
+                                [
+                                    dbc.CardHeader(id="simulation-header"),
+                                    dbc.CardBody(
+                                        dcc.Graph(
+                                            id="simulation-chart", config={"displayModeBar": False}, # style={'display': 'inline-block'},
+                                        ),
+                                    ),
+                                ], color="dark", inverse=True),
+                        ), className="mb-4"),
+                        dbc.Row(dbc.Col(
+                            dbc.Card(
+                                [
+                                    dbc.CardHeader(id="cases-header"),
+                                    dbc.CardBody(
+                                        dcc.Graph(
+                                            id="cases-chart", config={"displayModeBar": False}, # style={'display': 'inline-block'},
+                                        ),
+                                    ),
+                                ], color="dark", inverse=True),
+                        ), className="mb-4"),
+                        dbc.Row([
+                            dbc.Col(
+                                dbc.Card(
+                                    [
+                                        dbc.CardHeader(id="mob-header"),
+                                        dbc.CardBody(
+                                            dcc.Graph(
+                                                id="mobility-chart", config={"displayModeBar": False}, # style={'display': 'inline-block'},
+                                            ),
+                                        ),
+                                    ], color="dark", inverse=True),
+                            ), 
+                            dbc.Col(
+                                dbc.Card(
+                                    [
+                                        dbc.CardHeader(id="temp-header"),
+                                        dbc.CardBody(
+                                            dcc.Graph(
+                                                id="weather-chart", config={"displayModeBar": False}, # style={'display': 'inline-block'},
+                                            ),
+                                        ),
+                                    ], color="dark", inverse=True),
+                            ),
+                    ], className="mb-4"),
+                        # dbc.Row(dbc.Col(
+                        #     dbc.Card(
+                        #         [
+                        #             dbc.CardHeader(id="temp-header"),
+                        #             dbc.CardBody(
+                        #                 dcc.Graph(
+                        #                     id="weather-chart", config={"displayModeBar": False}, # style={'display': 'inline-block'},
+                        #                 ),
+                        #             ),
+                        #         ], color="dark", inverse=True),
+                        # ), className="mb-4"),
+                        # dbc.Row(dbc.Col(
+                        #     html.Div(
+                        #         children=[
+                        #             # dcc.Markdown(
+                        #             #     dedent(base_intro), id="graph-title-intro"
+                        #             # ),
+                        #             html.Div(
+                        #                 children=[
+                        #                     html.Div(
+                        #                         children=dcc.Graph(
+                        #                             id="simulation-chart", config={"displayModeBar": False},
+                        #                         ),
+                        #                         className="card",
+                        #                     ),
+                        #                     html.Div(
+                        #                         children= [
+                        #                             # dcc.Graph(
+                        #                             #     id="cases-chart", config={"displayModeBar": False}, # style={'display': 'inline-block'},
+                        #                             # ),
+                        #                         ],
+                        #                         # className="card",
+                        #                     ),
+                        #                     # html.Div(
+                        #                     #     children=dcc.Graph(
+                        #                     #         id="cases-chart", config={"displayModeBar": False},
+                        #                     #     ),
+                        #                     #     className="card",
+                        #                     # ),
+                        #                     html.Div(
+                        #                         children= [
+                        #                             dcc.Graph(
+                        #                                 id="mobility-chart", config={"displayModeBar": False}, # style={'display': 'inline-block'},
+                        #                             ),
+                        #                             dcc.Graph(
+                        #                                 id="weather-chart", config={"displayModeBar": False}, # style={'display': 'inline-block'},
+                        #                             ),
+                        #                         ],
+                        #                         # className="card",
+                        #                     ),
+                        #                     # html.Div(
+                        #                     #     children=[
+                        #                     #         dcc.Graph(
+                        #                     #             id="map1", config={"displayModeBar": False},
+                        #                     #         ),
+                        #                     #         dcc.Graph(
+                        #                     #             id="map2", config={"displayModeBar": False},
+                        #                     #         ),
+                        #                     #     ],
+                        #                     #     className="card",
+                        #                     # ),
+                        #                 ],
+                        #             ),
+                        #         ],
                         #     ),
-                        #     className="card",
-                        # ),
-                        html.Div(
-                            children= [
-                                dcc.Graph(
-                                    id="mobility-chart", config={"displayModeBar": False}, # style={'display': 'inline-block'},
-                                ),
-                                dcc.Graph(
-                                    id="weather-chart", config={"displayModeBar": False}, # style={'display': 'inline-block'},
-                                ),
-                            ],
-                            # className="card",
-                        ),
-                        # html.Div(
-                        #     children=[
-                        #         dcc.Graph(
-                        #             id="map1", config={"displayModeBar": False},
-                        #         ),
-                        #         dcc.Graph(
-                        #             id="map2", config={"displayModeBar": False},
-                        #         ),
-                        #     ],
-                        #     className="card",
-                        # ),
-                    ],
+                        # )),
+                    ]),
+                    className="column",
                 ),
-            ],
-            className="right-column columns",
+            ], className="mb-4"
         ),
     ]
 )
 
 @app.callback(
+    [
+        dash.dependencies.Output('total-pop-card', 'children'),
+        dash.dependencies.Output('land-area-card', 'children'),
+        dash.dependencies.Output('frac-pop-card', 'children'),
+        dash.dependencies.Output('pwpd-card', 'children'),
+        dash.dependencies.Output('avg-house-card', 'children'),
+        Output("simulation-header", "children"),
+        Output("cases-header", "children"),
+        Output("mob-header", "children"),
+        Output("temp-header", "children"),
+    ],
+    [dash.dependencies.Input('region-dropdown', 'value'), dash.dependencies.Input('subregion-dropdown', 'value'),]
+)
+def update_region_names(province_name, region_name):
+    # Card Values
+    total_pop = round(get_total_pop(province_name, region_name), 2)
+    land_area = round(get_land_area(province_name, region_name), 2)
+    pop_80 = round(get_frac_pop_over_80(province_name, region_name), 2)
+    pwpd = round(get_pwpd(province_name, region_name), 2)
+    avg_house = round(get_avg_house(province_name, region_name), 2)
+    # Graph Titles
+    deaths_label = 'Daily Predicted Deaths in ' + region_name + ', ' + province_name
+    cases_label = 'Daily Reported Cases in ' + region_name + ', ' + province_name
+    mob_label = 'Social Mobility in ' + region_name + ', ' + province_name
+    temp_label = 'Daily Reported Temperature in ' + region_name + ', ' + province_name
+    return total_pop, land_area, pop_80, pwpd, avg_house, deaths_label, cases_label, mob_label, temp_label
+
+
+@app.callback(
     dash.dependencies.Output('subregion-dropdown', 'options'),
     [dash.dependencies.Input('region-dropdown', 'value')]
 )
-
 def update_date_dropdown(name):
     return [{'label': i, 'value': i} for i in fnameDict[name]]
 
-def display_info_box(btn_click):
-    if (btn_click % 2) == 1:
-        return dedent(extend_intro), "Close"
-    else:
-        return dedent(base_intro), "Learn More"
+# def display_info_box(btn_click):
+#     if (btn_click % 2) == 1:
+#         return dedent(extend_intro), "Close"
+#     else:
+#         return dedent(base_intro), "Learn More"
 
 
  # ============== SLIDER CALLBACK ==============
@@ -353,7 +556,6 @@ def update_province_name(province_name):
     
     return province_name
     
-
 @app.callback(
     Output("simulation-chart", "figure"),
     [
@@ -387,14 +589,12 @@ def update_forecast_chart(province_name, region, start_date, end_date, days_to_f
             y=predicted_deaths(province_name, region, start_date, end_date, days_to_forecast, xMob, facemask, vac),
             name='Predicted Deaths',
         ))
+
     updatemenus = [
         dict(
             type="buttons",
-            # font=Font(3),
             xanchor="right",
-            yanchor="top",
-            # x=0.1,
-            # y=0,
+            yanchor="bottom",
             direction="left",
             buttons=list([
                 dict(
@@ -410,10 +610,8 @@ def update_forecast_chart(province_name, region, start_date, end_date, days_to_f
             ])
         ),
     ]
-
-    pred_fig.update_layout(title='Daily Predicted Deaths in ' + region + ', ' + province_name,
-                   xaxis_title='Date',
-                   yaxis_title='Daily Mortality (7-day Rolling Average)',
+    pred_fig.update_layout(xaxis_title='Date',
+                   yaxis_title='Daily Mortality (7-day Rolling Avg)',
                    updatemenus=updatemenus)
 
 
@@ -443,8 +641,7 @@ def update_weather_chart(province_name, region, start_date, end_date, forecasted
     forecasted = datetime.timedelta(days=forecasted_dates)
 
     weather_fig = px.line(df_mort, x = temp_dates, y = temp_vals)
-    weather_fig.update_layout(title='Daily Reported Temperature in ' + region + ', ' + province_name,
-                   xaxis_title='Date',
+    weather_fig.update_layout(xaxis_title='Date',
                    yaxis_title='Mean Temperature')
     weather_fig.add_trace(go.Scatter(
             x=new_dates,
@@ -469,11 +666,8 @@ def update_cases_charts(province_name, region, start_date, end_date):
     updatemenus = [
         dict(
             type="buttons",
-            # font=Font(3),
             xanchor="right",
             yanchor="bottom",
-            # x=0.1,
-            # y=0,
             direction="left",
             buttons=list([
                 dict(
@@ -492,9 +686,8 @@ def update_cases_charts(province_name, region, start_date, end_date):
 
     # ============== CASES GRAPH ==============
     cases_fig = px.line(df_mort, x = date_cases(province_name, region, start_date, end_date), y = ravg_cases(province_name, region, start_date, end_date))
-    cases_fig.update_layout(title='Daily Reported Cases in ' + region + ', ' + province_name,
-                   xaxis_title='Date',
-                   yaxis_title='Daily Cases (7-day Rolling Average)',
+    cases_fig.update_layout(xaxis_title='Date',
+                   yaxis_title='Daily Cases (7-day Rolling Avg)',
                    updatemenus=updatemenus)
 
     # ============== MAP ==============
@@ -543,17 +736,21 @@ def update_mob_charts(province_name, region, start_date, end_date, forecasted_da
     mob_values = []
     for i in range(len(dates)):
         mob_values.append(xMob)
-
+    
      # ============== MOBILITY GRAPH ==============
     mobility_fig = px.line(df_mort, x = date_mob(province_name, region, start_date, end_date), y = mobility(province_name, region, start_date, end_date))
-    mobility_fig.update_layout(title='Social Mobility in ' + region + ', ' + province_name,
-                   xaxis_title='Date',
+    mobility_fig.update_layout(xaxis_title='Date',
                    yaxis_title='Social Mobility')
     mobility_fig.add_trace(go.Scatter(
             x=dates,
             y=mob_values,
             name='Simulated Mobility',
         ))
+    
+    # interpollation
+    # start_date = mobility_info.date.max().date()
+    # end_date = dates[-1]
+    # print(end_date)
 
     return mobility_fig
 
@@ -908,6 +1105,16 @@ def date_mob(province_name, region_name, start_date, end_date):
     sub_region = weat_info_province.sub_region_2[weat_info_province.health_region == region_name].item()
     
     return filtered_df.date[mobility_info.sub_region_2 == sub_region]
+
+def interpolate_mob_dates(province_name, region_name, start_date, end_date, days_to_forecast):
+
+    base = datetime.datetime.strptime(end_date, '%Y-%m-%d')
+    add_dates = [base + datetime.timedelta(days=x) for x in range(days_to_forecast * 30)]
+
+    for i in range(len(add_dates)):
+        add_dates[i] = datetime.datetime.strptime(str(add_dates[i]), '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d')
+    
+    return add_dates
 
 # -------------- WEATHER HELPER FUNCTIONS --------------
 
