@@ -3,6 +3,7 @@ import math
 import dash
 import dash_table
 import random
+import requests
 import dash_core_components as dcc
 import dash_bootstrap_components as dbc
 import dash_html_components as html
@@ -283,24 +284,17 @@ app.layout = html.Div(
                                 ]),
                             ], color="dark", outline=True),
                     ), className="mb-4"),
-                ],
-                    width=3,
-                    className="column",
-                ),
+                ],width=3,className="column"),
                 dbc.Col(
                     html.Div([
                         dbc.Row([
                             dbc.Col(
                                 dbc.Card(
                                     [
-                                        dbc.CardHeader("Total Population"),
+                                        dbc.CardHeader("Estimated Total Population"),
                                         dbc.CardBody(
                                             [
                                                 html.H5(id="total-pop-card",className="card-title"),
-                                                # html.P(
-                                                #     "This is some card content that we'll reuse",
-                                                #     className="card-text",
-                                                # ),
                                             ]
                                         ),
                                     ],
@@ -311,10 +305,10 @@ app.layout = html.Div(
                             dbc.Col(
                                 dbc.Card(
                                     [
-                                        dbc.CardHeader("Land Area"),
+                                        dbc.CardHeader("Population Sparsity"),
                                         dbc.CardBody(
                                             [
-                                                html.H5(id="land-area-card",className="card-title"),
+                                                html.H5(id="sparsity-card",className="card-title"),
                                             ]
                                         ),
                                     ],
@@ -339,7 +333,7 @@ app.layout = html.Div(
                             dbc.Col(
                                 dbc.Card(
                                     [
-                                        dbc.CardHeader("PWPD"),
+                                        dbc.CardHeader("Population Weighted Population Density"),
                                         dbc.CardBody(
                                             [
                                                 html.H5(id="pwpd-card", className="card-title"),
@@ -411,73 +405,19 @@ app.layout = html.Div(
                                     ], color="dark", inverse=True),
                             ),
                     ], className="mb-4"),
-                        # dbc.Row(dbc.Col(
-                        #     dbc.Card(
-                        #         [
-                        #             dbc.CardHeader(id="temp-header"),
-                        #             dbc.CardBody(
-                        #                 dcc.Graph(
-                        #                     id="weather-chart", config={"displayModeBar": False}, # style={'display': 'inline-block'},
-                        #                 ),
-                        #             ),
-                        #         ], color="dark", inverse=True),
-                        # ), className="mb-4"),
-                        # dbc.Row(dbc.Col(
-                        #     html.Div(
-                        #         children=[
-                        #             # dcc.Markdown(
-                        #             #     dedent(base_intro), id="graph-title-intro"
-                        #             # ),
-                        #             html.Div(
-                        #                 children=[
-                        #                     html.Div(
-                        #                         children=dcc.Graph(
-                        #                             id="simulation-chart", config={"displayModeBar": False},
-                        #                         ),
-                        #                         className="card",
-                        #                     ),
-                        #                     html.Div(
-                        #                         children= [
-                        #                             # dcc.Graph(
-                        #                             #     id="cases-chart", config={"displayModeBar": False}, # style={'display': 'inline-block'},
-                        #                             # ),
-                        #                         ],
-                        #                         # className="card",
-                        #                     ),
-                        #                     # html.Div(
-                        #                     #     children=dcc.Graph(
-                        #                     #         id="cases-chart", config={"displayModeBar": False},
-                        #                     #     ),
-                        #                     #     className="card",
-                        #                     # ),
-                        #                     html.Div(
-                        #                         children= [
-                        #                             dcc.Graph(
-                        #                                 id="mobility-chart", config={"displayModeBar": False}, # style={'display': 'inline-block'},
-                        #                             ),
-                        #                             dcc.Graph(
-                        #                                 id="weather-chart", config={"displayModeBar": False}, # style={'display': 'inline-block'},
-                        #                             ),
-                        #                         ],
-                        #                         # className="card",
-                        #                     ),
-                        #                     # html.Div(
-                        #                     #     children=[
-                        #                     #         dcc.Graph(
-                        #                     #             id="map1", config={"displayModeBar": False},
-                        #                     #         ),
-                        #                     #         dcc.Graph(
-                        #                     #             id="map2", config={"displayModeBar": False},
-                        #                     #         ),
-                        #                     #     ],
-                        #                     #     className="card",
-                        #                     # ),
-                        #                 ],
-                        #             ),
-                        #         ],
-                        #     ),
-                        # )),
-                    ]),
+                    dbc.Row([
+                            dbc.Col(
+                                dbc.Card(
+                                    [
+                                        dbc.CardHeader(id="vac-header"),
+                                        dbc.CardBody(
+                                            dcc.Graph(
+                                                id="vac-chart", config={"displayModeBar": False}, # style={'display': 'inline-block'},
+                                            ),
+                                        ),
+                                    ], color="dark", inverse=True),
+                            ),
+                    ], className="mb-4")]),
                     className="column",
                 ),
             ], className="mb-4"
@@ -488,7 +428,7 @@ app.layout = html.Div(
 @app.callback(
     [
         dash.dependencies.Output('total-pop-card', 'children'),
-        dash.dependencies.Output('land-area-card', 'children'),
+        dash.dependencies.Output('sparsity-card', 'children'),
         dash.dependencies.Output('frac-pop-card', 'children'),
         dash.dependencies.Output('pwpd-card', 'children'),
         dash.dependencies.Output('avg-house-card', 'children'),
@@ -496,13 +436,15 @@ app.layout = html.Div(
         Output("cases-header", "children"),
         Output("mob-header", "children"),
         Output("temp-header", "children"),
+        Output("vac-header", "children"),
     ],
     [dash.dependencies.Input('region-dropdown', 'value'), dash.dependencies.Input('subregion-dropdown', 'value'),]
 )
 def update_region_names(province_name, region_name):
     # Card Values
-    total_pop = round(get_total_pop(province_name, region_name), 2)
-    land_area = round(get_land_area(province_name, region_name), 2)
+    total_pop = round(get_total_pop(province_name, region_name), 0)
+    # land_area = round(get_land_area(province_name, region_name), 2)
+    # todo: sparsity (3 digits)
     pop_80 = round(get_frac_pop_over_80(province_name, region_name), 2)
     pwpd = round(get_pwpd(province_name, region_name), 2)
     avg_house = round(get_avg_house(province_name, region_name), 2)
@@ -511,7 +453,8 @@ def update_region_names(province_name, region_name):
     cases_label = 'Daily Reported Cases in ' + region_name + ', ' + province_name
     mob_label = 'Social Mobility in ' + region_name + ', ' + province_name
     temp_label = 'Daily Reported Temperature in ' + region_name + ', ' + province_name
-    return total_pop, land_area, pop_80, pwpd, avg_house, deaths_label, cases_label, mob_label, temp_label
+    vac_label = 'Fraction of the Population Vaccinated ' + region_name + ', ' + province_name
+    return total_pop, "todo", pop_80, pwpd, avg_house, deaths_label, cases_label, mob_label, temp_label, vac_label
 
 
 @app.callback(
@@ -677,38 +620,26 @@ def update_cases_charts(province_name, region, start_date, end_date):
     ]
 
     # ============== CASES GRAPH ==============
+    # pred_fig = go.Figure()
+    # pred_fig.add_trace(go.Scatter(
+    #     x=date(province_name, region, start_date, end_date),
+    #     y=r_avg(province_name, region, start_date, end_date),
+    #     name='Previous Deaths',
+    # ))
+    # for i in range(10):
+    #     pred_fig.add_trace(go.Scatter(
+    #         x=predicted_dates(province_name, region, start_date, end_date, days_to_forecast),
+    #         y=predicted_deaths(province_name, region, start_date, end_date, days_to_forecast, xMob, facemask, vac),
+    #         name='Predicted Deaths',
+    #     ))
+
+
     cases_fig = px.line(df_mort, x = date_cases(province_name, region, start_date, end_date), y = ravg_cases(province_name, region, start_date, end_date))
     cases_fig.update_layout(xaxis_title='Date',
                    yaxis_title='Daily Cases (7-day Rolling Avg)',
                    updatemenus=updatemenus)
 
-    # ============== MAP ==============
-
-    # map_fig = go.Figure(go.Scattermapbox(
-    # fill = "toself",
-    # lon = [-74, -70, -70, -74], lat = [47, 47, 45, 45],
-    # marker = { 'size': 10, 'color': "orange" }))
-
-    # map_fig.update_layout(
-    #     mapbox = {
-    #         'style': "stamen-terrain",
-    #         'center': {'lon': -73, 'lat': 46 },
-    #         'zoom': 5},
-    #     showlegend = False)
-
-    # df_test = pd.read_csv("https://raw.githubusercontent.com/plotly/datasets/master/fips-unemp-16.csv",
-    #                dtype={"fips": str})
-
-    # fig = px.choropleth(df_test, locations='fips', color='unemp',
-    #                        color_continuous_scale="Viridis",
-    #                        range_color=(0, 12),
-    #                        scope="usa",
-    #                        labels={'unemp':'unemployment rate'}
-    #                       )
-    # fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
-
-
-    return cases_fig #, map_fig, fig
+    return cases_fig
 
 @app.callback(
     Output("mobility-chart", "figure"),
@@ -745,6 +676,24 @@ def update_mob_charts(province_name, region, start_date, end_date, forecasted_da
     # print(end_date)
 
     return mobility_fig
+
+@app.callback(
+    Output("vac-chart", "figure"),
+    [
+        Input("region-dropdown", "value"),
+        Input("subregion-dropdown", "value"),
+    ],
+)
+def update_vaccination_charts(province_name, region):
+    province_name = update_province_name(province_name)
+
+    # ============== VACCINATION GRAPH ==============
+    df_vac = df_vaccinations(province_name, region)
+    vaccination_fig = px.line(df_vac, x = df_vac.date, y = df_vac.total_vaccinations)
+    vaccination_fig.update_layout(xaxis_title='Date',
+                   yaxis_title='Total Vaccinations/Population of Region')
+
+    return vaccination_fig
 
 @app.callback(
     dash.dependencies.Output('placeholder', 'figure'),
@@ -800,6 +749,9 @@ def get_total_pop(province_name, region_name):
     total_pop = get_region_info(province_name, region_name).total_pop.item()
     return total_pop
 
+def get_prov_pop(province_name, region_name):
+    return get_region_info(province_name, region_name).prov_pop.item()
+
 def get_ann_death(province_name, region_name):
     annDeath = get_region_info(province_name, region_name).anndeath.item()
     return annDeath
@@ -848,7 +800,7 @@ def predicted_deaths(province_name, region_name, start_date, end_date, days_to_f
     lS0 = -2.70768
     trend1=-0.0311442
     xTrends1 = facemask_val # todo: Google Trends for face mask
-    dtrends= 0.00722183
+    # dtrends= 0.00722183 # -> error in this variable, don't need to include
     xTemp = get_past_temp(province_name, region_name, end_date)
     Tmin2 = 24.6497
     dT2 = 0.00562779
@@ -1183,6 +1135,128 @@ def avg_temp_data(begin_year, end_year, data):
         date_range = next_day.strftime('%m-%d')
         df_weat_date = df_weat.groupby('Date')['Mean Temperature'].mean()
     return df_weat_date
+
+
+# -------------- VACCINATION HELPER FUNCTIONS --------------
+
+def get_uid(province_name, region_name):
+    uid = get_region_info(province_name, region_name).hr_uid.item()
+    return uid
+
+def get_vaccination_dates(province_name, region_name):
+    vac_date = []
+    for d in vaccination_data(province_name, region_name):
+        time = d['date']
+        vac_date.append(time)
+        
+    return vac_date
+    
+def get_vaccination_vals(province_name, region_name):
+    total_vaccinations = []
+    for d in vaccination_data(province_name, region_name):
+        vaccine = d['total_vaccinations']
+        total_vaccinations.append(vaccine)
+
+    return total_vaccinations
+
+def vac_df_data(province_name, region_name):
+    vac_data = {'date':  get_vaccination_dates(province_name, region_name),
+        'total_vaccinations': get_vaccination_vals(province_name, region_name)}
+    return vac_data
+
+def vaccination_data(province_name, region_name):
+
+    vac_base_url = "https://api.covid19tracker.ca/reports/regions/"
+    vac_base_url_prov = "https://api.covid19tracker.ca/reports/province/"
+
+    if province_name == 'Alberta':
+        api = vac_base_url_prov + str(provinceid(province_name, region_name))   
+        response = requests.get(api)
+        api_data = response.json()["data"]
+    
+    elif province_name == 'New Brunswick':
+        api = vac_base_url_prov + str(provinceid(province_name, region_name))   
+        response = requests.get(api)
+        api_data = response.json()["data"]
+    
+    elif province_name == 'NL':
+        api = vac_base_url_prov + str(provinceid(province_name, region_name))   
+        response = requests.get(api)
+        api_data = response.json()["data"]
+        
+    elif province_name == 'Nova Scotia':
+        api = vac_base_url_prov + str(provinceid(province_name, region_name))   
+        response = requests.get(api)
+        api_data = response.json()["data"]    
+    
+    else:
+        api = vac_base_url + str(get_uid(province_name, region_name))   
+        response = requests.get(api)
+        api_data = response.json()["data"]
+    
+    return api_data
+
+def df_vaccinations(province_name, region_name):
+    
+    if province_name == 'Alberta':
+        df_vaccinations = pd.DataFrame(vac_df_data(province_name, region_name), columns = ['date','total_vaccinations'])
+        df_vaccinations = df_vaccinations.dropna()
+        df_vaccinations['total_vaccinations'] = df_vaccinations.total_vaccinations.div(get_prov_pop(province_name, region_name))
+    
+    elif province_name == 'New Brunswick':
+        df_vaccinations = pd.DataFrame(vac_df_data(province_name, region_name), columns = ['date','total_vaccinations'])
+        df_vaccinations = df_vaccinations.dropna()
+        df_vaccinations['total_vaccinations'] = df_vaccinations.total_vaccinations.div(get_prov_pop(province_name, region_name))
+        
+    elif province_name == 'NL':
+        df_vaccinations = pd.DataFrame(vac_df_data(province_name, region_name), columns = ['date','total_vaccinations'])
+        df_vaccinations = df_vaccinations.dropna()
+        df_vaccinations['total_vaccinations'] = df_vaccinations.total_vaccinations.div(get_prov_pop(province_name, region_name))
+        
+    elif province_name == 'Nova Scotia':
+        df_vaccinations = pd.DataFrame(vac_df_data(province_name, region_name), columns = ['date','total_vaccinations'])
+        df_vaccinations = df_vaccinations.dropna()
+        df_vaccinations['total_vaccinations'] = df_vaccinations.total_vaccinations.div(get_prov_pop(province_name, region_name))
+    
+    else:
+        df_vaccinations = pd.DataFrame(vac_df_data(province_name, region_name), columns = ['date','total_vaccinations'])
+        df_vaccinations = df_vaccinations.dropna()
+        df_vaccinations['total_vaccinations'] = df_vaccinations.total_vaccinations.div(get_total_pop(province_name, region_name))
+    
+    return df_vaccinations
+
+def get_frac_vaccinations_1_month_prior(province_name, region_name):
+    
+    current_date = datetime.datetime.now() #datetime.datetime.now()
+    first_day = df_vaccinations(province_name, region_name).date.min()
+    
+    delta_1_month = datetime.timedelta(days=30)
+    end_date_1_month_ago = current_date - delta_1_month
+    end_date_1_month_ago = end_date_1_month_ago.strftime('%Y-%m-%d')
+    
+    df = df_vaccinations(province_name, region_name)
+    
+    df_1_month = df[df.date.between(
+    first_day, end_date_1_month_ago
+    )]
+
+    return df_1_month.mean().item()
+
+def get_frac_vaccinations_2_weeks_prior(province_name, region_name, days_prior):
+    
+    current_date = datetime.datetime.now() #datetime.datetime.now()
+    delta = datetime.timedelta(days=days_prior)
+    first_day = current_date - delta
+    first_day = first_day.strftime('%d-%m-%Y')
+    end_date_2_weeks_ago = current_date
+
+    df = df_vaccinations(province_name, region_name)
+    
+    df_2_weeks = df[df.date.between(
+        first_day, end_date_2_weeks_ago
+    )]
+    
+    return df_2_weeks
 
 if __name__ == "__main__":
     app.run_server(debug=True)
