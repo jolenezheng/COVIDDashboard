@@ -2,6 +2,7 @@ body {
   font-family: "Lato", sans-serif;
   margin: 0;
   background-color: #F7F7F7;
+  display: block;
 }
 
 .header {
@@ -10,14 +11,8 @@ body {
   padding: 16px 0 0 0;
 }
 
-.header-emoji {
-  font-size: 48px;
-  margin: 0 auto;
-  text-align: center;
-}
-
 .header-title {
-  color: #FFFFFF;
+  color: #000000;
   font-size: 48px;
   font-weight: bold;
   text-align: center;
@@ -31,30 +26,12 @@ body {
   max-width: 384px;
 }
 
-.wrapper {
-  margin-right: auto;
-  margin-left: auto;
-  max-width: 1024px;
-  padding-right: 10px;
-  padding-left: 10px;
-  margin-top: 32px;
+.dropdown .VirtualizedSelectFocusedOption {
+  background-color: rgb(168, 170, 177);
+  color: black;
 }
 
-.card {
-  margin-bottom: 24px;
-  box-shadow: 0 4px 6px 0 rgba(0, 0, 0, 0.18);
-}
 
-.menu {
-  height: 112px;
-  width: 912px;
-  display: flex;
-  justify-content: space-evenly;
-  padding-top: 24px;
-  margin: -80px auto 0 auto;
-  background-color: #FFFFFF;
-  box-shadow: 0 4px 6px 0 rgba(0, 0, 0, 0.18);
-}
 
 .Select-control {
   width: 256px;
@@ -69,8 +46,29 @@ body {
   line-height: 32px;
 }
 
-.menu-title {
-  margin-bottom: 6px;
-  font-weight: bold;
-  color: #079A82;
+.dropdown-title {
+  margin-top: 20px;
+  margin-bottom: 10px;
+  color: #4a65ad;
+  font-weight: 300;
 }
+
+
+.column {
+  padding: 20px 50px 20px 50px;
+
+  /* padding-left: 50px;
+  padding-left: 50px;
+  padding-left: 50px;
+  padding-right: 50px; */
+}
+
+
+.options-header {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  font-size: 20px;
+  width: 100%;
+  /* background-color: #4a65ad; */
+}
+
