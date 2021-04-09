@@ -5,6 +5,7 @@ import dash_table
 import random
 import requests
 import dash_core_components as dcc
+import dash_bootstrap_components as dbc
 import dash_html_components as html
 import pandas as pd
 import numpy as np
@@ -20,12 +21,21 @@ from dateutil.relativedelta import relativedelta
 # fix dates
 # quebec names
 
+external_stylesheets = [
+    {
+        "href": "https://fonts.googleapis.com/css2?"
+        "family=Lato:wght@400;700&display=swap",
+        "rel": "stylesheet",
+    },
+]
+# app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP, external_stylesheets])
 
-df_mort = pd.read_csv('https://raw.githubusercontent.com/ccodwg/Covid19Canada/master/timeseries_hr/mortality_timeseries_hr.csv', parse_dates=[0], dayfirst=True)
-df_mort["date_death_report"] = pd.to_datetime(df_mort["date_death_report"], format="%d-%m-%Y", dayfirst =True)
+df_mort = pd.read_csv('https://raw.githubusercontent.com/ccodwg/Covid19Canada/master/timeseries_hr/mortality_timeseries_hr.csv', parse_dates=[0]) #, dayfirst=True)
+df_mort["date_death_report"] = pd.to_datetime(df_mort["date_death_report"], format="%d-%m-%Y") #, dayfirst =True)
 
 df_cases = pd.read_csv('https://raw.githubusercontent.com/ccodwg/Covid19Canada/master/timeseries_hr/cases_timeseries_hr.csv')
-df_cases["date_report"] = pd.to_datetime(df_cases["date_report"], format="%d-%m-%Y", dayfirst =True)
+df_cases["date_report"] = pd.to_datetime(df_cases["date_report"], format="%d-%m-%Y") #, dayfirst =True)
 
 weather_base_url = 'https://dd.weather.gc.ca/climate/observations/daily/csv/'
 static_data = pd.read_csv(r'data/health_regions_static_data.csv', encoding='Latin-1')
@@ -33,10 +43,10 @@ static_data = pd.read_csv(r'data/health_regions_static_data.csv', encoding='Lati
 mobility_info = pd.read_csv(r'data/2020_CA_Region_Mobility_Report.csv')
 mobility_info["sub_region_2"] = mobility_info["sub_region_2"]
 
-vac_base_url = "https://api.covid19tracker.ca/reports/regions/"
-vac_base_url_prov = "https://api.covid19tracker.ca/reports/province/"
+df_trends = pd.read_csv(r'data/google-trends_face-mask_trends_unnormalized_2020-01-01_2021-04-01_canadian-provinces.csv')
 
-current_date = datetime.datetime.strptime("03-31-2021", "%m-%d-%Y") #datetime.datetime.now()
+# current_date = datetime.datetime.strptime("03-31-2021", "%m-%d-%Y") #datetime.datetime.now()
+current_date = datetime.datetime.now()
 gloabl_date = current_date.strftime('%Y-%m')
 
 prov_id = "ON"
@@ -45,25 +55,12 @@ target_url = ""
 weat_data = None
 weat_city = None
 date_city = None
-# province_name = "Ontario"
-# region = "Waterloo"
-# start_date = "15-03-2020"
-# end_date = datetime.datetime.strftime(datetime.datetime.now(), "%d-%m-%Y")
-
 last_mort = 0
 total_deaths = 0
-
 
 # df_mob = pd.read_csv('https://www.gstatic.com/covid19/mobility/Global_Mobility_Report.csv')
 
 
-external_stylesheets = [
-    {
-        "href": "https://fonts.googleapis.com/css2?"
-        "family=Lato:wght@400;700&display=swap",
-        "rel": "stylesheet",
-    },
-]
 fnameDict = {    
     "Alberta": ["Calgary","Central","Edmonton","North","South"], 
     "British Columbia":["Fraser","Interior","Island","Northern","Vancouver Coastal"],
@@ -71,8 +68,8 @@ fnameDict = {
     "New Brunswick": ["Zone 1 (Moncton area)","Zone 2 (Saint John area)","Zone 3 (Fredericton area)",
                       "Zone 4 (Edmundston area)","Zone 5 (Campbellton area)","Zone 6 (Bathurst area)","Zone 7 (Miramichi area)"],
     "Newfoundland and Labrador": ["Central","Eastern","Labrador-Grenfell","Western"],
-    "Nova Scotia":["Zone 1 - Western","Zone 2 - Northern","Zone 3 - Eastern","Zone 4 - Central"],
-    "Nunavut": ["Nunavut"], "Northwest Territories": ["NWT"], "Ontario": ["Algoma","Brant","Chatham-Kent","Durham","Eastern",
+    "Nunavut": ["Nunavut"], "Northwest Territories": ["NWT"], "Nova Scotia": ["Zone 1 - Western","Zone 2 - Northern",
+                "Zone 3 - Eastern","Zone 4 - Central"], "Ontario": ["Algoma","Brant","Chatham-Kent","Durham","Eastern",
                 "Grey Bruce","Haldimand-Norfolk","Haliburton Kawartha Pineridge","Halton","Hamilton","Hastings Prince Edward",
                 "Huron Perth","Kingston Frontenac Lennox & Addington","Lambton","Leeds Grenville and Lanark","Middlesex-London",
                 "Niagara","North Bay Parry Sound","Northwestern","Ottawa","Peel","Peterborough","Porcupine",
@@ -101,241 +98,392 @@ base_intro = """Lorem ipsum dolor sit amet, consectetur adipiscing elit, \
                             anim id est laborum.
 """
 
-app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 server = app.server
 app.title = "COVID Dashboard"
 
 
+search_bar = dbc.Row(
+    [
+        dbc.Col(dbc.Input(type="search", placeholder="Search")),
+        dbc.Col(
+            dbc.Button("Search", color="primary", className="ml-2"),
+            width="auto",
+        ),
+    ],
+    no_gutters=True,
+    className="ml-auto flex-nowrap mt-3 mt-md-0",
+    align="center",
+)
+
 app.layout = html.Div(
     children=[
         html.Div(
-            id="banner",
-            className="banner",
-            children="COVID Dashboard",
+            dbc.Navbar(
+                [
+                    html.A(
+                        # Use row and col to control vertical alignment of logo / brand
+                        dbc.Row(
+                            [
+                                dbc.Col(dbc.NavbarBrand("COVID-19 Canadian Dashboard", className="ml-2")),
+                            ],
+                            align="center",
+                            no_gutters=True,
+                        ),
+                        href="https://plot.ly",
+                    ),
+                    dbc.NavbarToggler(id="navbar-toggler"),
+                    dbc.Collapse(search_bar, id="navbar-collapse", navbar=True),
+                ],
+                color="dark",
+                dark=True,
+                sticky="top",
+            ),
         ),
-        html.Div(
-            children=[
-                html.Div(
-                    children=[
-                        # html.Div(children="Daily Mortality", className="options-header"),
-                        html.Div(
-                            children=[
-                                html.Div(children="Region", className="dropdown-title"),
-                                dcc.Dropdown(
-                                    id='region-dropdown',
-                                    className='dropdown',
-                                    options=[{'label':name, 'value':name} for name in names],
-                                    value = "Ontario" #list(fnameDict.keys())[0]
-                                ),
-                            ]
-                        ),
-                        html.Div(
-                            children=[
-                                html.Div(children="Sub-Region", className="dropdown-title"),
-                                dcc.Dropdown(
-                                    id='subregion-dropdown',
-                                    className='dropdown',
-                                    value = 'Waterloo'
-                                ),
-                            ]
-                        ),
-                        html.Div(
-                            children=[
-                                html.Div(
-                                    children="Date Range",
-                                    className="dropdown-title"
-                                    ),
-                                dcc.DatePickerRange(
-                                    id="date-range",
-                                    min_date_allowed=df_mort.date_death_report.min().date(),
-                                    max_date_allowed=df_mort.date_death_report.max().date(),
-                                    start_date="2020-03-13", #df_mort.date_death_report.min().date(),
-                                    end_date="2021-03-31" #df_mort.date_death_report.max().date(),
-                                ),
-                            ]
-                        ),
-                        html.Div(
-                            children=[
-                                html.Div(
-                                    children="Face Mask Use",
-                                    className="dropdown-title"
-                                    ),
-                                dcc.Slider(
-                                    id='facemask-slider',
-                                    min=0,
-                                    max=100,
-                                    step=1,
-                                    value=0,
-                                    marks={
-                                        0: '0%',
-                                        100: '100%'
-                                    },
-                                    # handleLabel={"showCurrentValue": True,"label": "VALUE"},
-                                ),
-                                # html.Div(className='slider-output-container', id='slider-drag-output'),
-                            ]
-                        ),
-                        html.Div(
-                            children=[
-                                html.Div(
-                                    children="New Social Mobility vs Baseline",
-                                    className="dropdown-title"
-                                    ),
-                                dcc.Slider(
-                                    id='mobility-slider',
-                                    min=0,
-                                    max=100,
-                                    step=1,
-                                    value=100,
-                                    marks={
-                                        0: '-100% (total lockdown)',
-                                        100: '0% (normal activity)'
-                                    },
-                                ),
-                            ]
-                        ),
-                        html.Div(
-                            children=[
-                                html.Div(
-                                    children="Vaccination",
-                                    className="dropdown-title"
-                                    ),
-                                dcc.Slider(
-                                    id='vaccine-slider',
-                                    min=0,
-                                    max=100,
-                                    step=1,
-                                    value=0,
-                                    marks={
-                                        0: '0%',
-                                        100: '100%'
-                                    },
-                                ),
-                            ]
-                        ),
-                        html.Div(
-                            children=[
-                                html.Div(
-                                    children="Number of Days to Forecast",
-                                    className="dropdown-title"
-                                    ),
-                                dcc.Slider(
-                                    id='forecast-slider',
-                                    min=0,
-                                    max=12,
-                                    step=1,
-                                    value=3, # todo: change back to 1
-                                    marks={
-                                        0: '0 mo',
-                                        # 1: '1 mo',
-                                        2: '2 mo',
-                                        # 3: '3 mo',
-                                        4: '4 mo',
-                                        # 5: '5 mo',
-                                        6: '6 mo',
-                                        # 7: '7 mo',
-                                        8: '8 mo',
-                                        # 9: '9 mo',
-                                        10: '10 mo',
-                                        # 11: '11 mo',
-                                        12: '1 yr'
-                                    },
-                                ),
-                            ]
-                        ),
-                        # html.Div(
-                        #     children= [
-                        #         dcc.Graph(
-                        #             id="data-chart", config={"displayModeBar": False},
-                        #         ),
-                        #     ],
-                        #     className="card",
-                        # ),
-                    ],
-                    className="options-card",
-                ),
-            ],
-            className="left-column columns",
-        ),
-        html.Div(
-            children=[
-                dcc.Markdown(
-                    dedent(base_intro), id="graph-title-intro"
-                ),
-                # html.Button(
-                #     "Learn More", id="learn-more-btn", n_clicks=0
-                # ),
-                html.Div(
-                    children=[
-                        html.Div(
-                            children=dcc.Graph(
-                                id="simulation-chart", config={"displayModeBar": False},
+        dbc.Row(
+            [
+                dbc.Col([ 
+                    dbc.Row(dbc.Col(
+                        dbc.Card(
+                            [
+                                dbc.CardHeader("Static Input"),
+                                dbc.CardBody([
+                                    dbc.Row(dbc.Col(
+                                        html.Div(
+                                            children=[
+                                                html.Div(children="Region", className="dropdown-title"),
+                                                dcc.Dropdown(
+                                                    id='region-dropdown',
+                                                    className='dropdown',
+                                                    options=[{'label':name, 'value':name} for name in names],
+                                                    value = "Ontario" #list(fnameDict.keys())[0]
+                                                ),
+                                            ]
+                                        ),
+                                    )),
+                                    dbc.Row(dbc.Col(
+                                        html.Div(
+                                            children=[
+                                                html.Div(children="Sub-Region", className="dropdown-title"),
+                                                dcc.Dropdown(
+                                                    id='subregion-dropdown',
+                                                    className='dropdown',
+                                                    value = 'Waterloo'
+                                                ),
+                                            ]
+                                        ),
+                                    )),
+                                    dbc.Row(dbc.Col(
+                                        html.Div(
+                                            children=[
+                                                html.Div(
+                                                    children="Date Range",
+                                                    className="dropdown-title",
+                                                    id = "placeholder"
+                                                    ),
+                                                dcc.DatePickerRange(
+                                                    id="date-range",
+                                                    min_date_allowed=df_mort.date_death_report.min().date(),
+                                                    max_date_allowed=df_mort.date_death_report.max().date(),
+                                                    start_date=df_mort.date_death_report.min().date(), # "2020-03-13"
+                                                    end_date=df_mort.date_death_report.max().date(), #"2021-03-31"
+                                                ),
+                                            ]
+                                        ),
+                                    )),
+                                ]),
+                            ], color="dark", outline=True),
+                    ), className="mb-4"),
+                    dbc.Row(dbc.Col(
+                        dbc.Card(
+                            [
+                                dbc.CardHeader("Prediction Input"),
+                                dbc.CardBody([
+                                    dbc.Row(dbc.Col(
+                                        html.Div(
+                                            children=[
+                                                html.Div(
+                                                    children="Face Mask Use",
+                                                    className="dropdown-title"
+                                                    ),
+                                                dcc.Slider(
+                                                    id='facemask-slider',
+                                                    min=0,
+                                                    max=100,
+                                                    step=1,
+                                                    value=0,
+                                                    marks={
+                                                        0: '0%',
+                                                        100: '100%'
+                                                    },
+                                                    # handleLabel={"showCurrentValue": True,"label": "VALUE"},
+                                                ),
+                                                # html.Div(className='slider-output-container', id='slider-drag-output'),
+                                            ]
+                                        ),
+                                    )),
+                                    dbc.Row(dbc.Col(
+                                        html.Div(
+                                            children=[
+                                                html.Div(
+                                                    children="New Social Mobility vs Baseline",
+                                                    className="dropdown-title"
+                                                    ),
+                                                dcc.Slider(
+                                                    id='mobility-slider',
+                                                    min=0,
+                                                    max=100,
+                                                    step=1,
+                                                    value=100,
+                                                    marks={
+                                                        0: '-100% (total lockdown)',
+                                                        100: '0% (normal activity)'
+                                                    },
+                                                ),
+                                            ]
+                                        ),
+                                    )),
+                                    dbc.Row(dbc.Col(
+                                        html.Div(
+                                            children=[
+                                                html.Div(
+                                                    children="Vaccination",
+                                                    className="dropdown-title"
+                                                    ),
+                                                dcc.Slider(
+                                                    id='vaccine-slider',
+                                                    min=0,
+                                                    max=100,
+                                                    step=1,
+                                                    value=0,
+                                                    marks={
+                                                        0: '0%',
+                                                        100: '100%'
+                                                    },
+                                                ),
+                                            ]
+                                        ),
+                                    )),
+                                    dbc.Row(dbc.Col(
+                                        html.Div(
+                                            children=[
+                                                html.Div(
+                                                    children="Number of Days to Forecast",
+                                                    className="dropdown-title"
+                                                    ),
+                                                dcc.Slider(
+                                                    id='forecast-slider',
+                                                    min=0,
+                                                    max=12,
+                                                    step=1,
+                                                    value=3, # todo: change back to 1
+                                                    marks={ 0: '0 mo', 2: '2 mo', 4: '4 mo',
+                                                        6: '6 mo', 8: '8 mo', 10: '10 mo', 12: '1 yr'
+                                                    },
+                                                ),
+                                            ]
+                                        ),
+                                    )),
+                                ]),
+                            ], color="dark", outline=True),
+                    ), className="mb-4"),
+                ],width=3,className="column"),
+                dbc.Col(
+                    html.Div([
+                        dbc.Row([
+                            dbc.Col(
+                                dbc.Card(
+                                    [
+                                        dbc.CardHeader("Estimated Total Population"),
+                                        dbc.CardBody(
+                                            [
+                                                html.H5(id="total-pop-card",className="card-title"),
+                                            ]
+                                        ),
+                                    ],
+                                    color="danger",
+                                    inverse=True
+                                )
                             ),
-                            className="card",
-                        ),
-                        html.Div(
-                            children= [
-                                # dcc.Graph(
-                                #     id="covid-chart", config={"displayModeBar": False}, style={'display': 'inline-block'},
-                                # ),
-                                dcc.Graph(
-                                    id="cases-chart", config={"displayModeBar": False}, # style={'display': 'inline-block'},
-                                ),
-                            ],
-                            # className="card",
-                        ),
-                        # html.Div(
-                        #     children=dcc.Graph(
-                        #         id="cases-chart", config={"displayModeBar": False},
-                        #     ),
-                        #     className="card",
-                        # ),
-                        html.Div(
-                            children= [
-                                dcc.Graph(
-                                    id="mobility-chart", config={"displayModeBar": False}, # style={'display': 'inline-block'},
-                                ),
-                                dcc.Graph(
-                                    id="weather-chart", config={"displayModeBar": False}, # style={'display': 'inline-block'},
-                                ),
-                                dcc.Graph(
-                                    id="vaccination-chart", config={"displayModeBar": False}, # style={'display': 'inline-block'},
-                                ),
-                            ],
-                            # className="card",
-                        ),
-                        # html.Div(
-                        #     children=[
-                        #         dcc.Graph(
-                        #             id="map1", config={"displayModeBar": False},
-                        #         ),
-                        #         dcc.Graph(
-                        #             id="map2", config={"displayModeBar": False},
-                        #         ),
-                        #     ],
-                        #     className="card",
-                        # ),
-                    ],
+                            dbc.Col(
+                                dbc.Card(
+                                    [
+                                        dbc.CardHeader("Population Sparsity"),
+                                        dbc.CardBody(
+                                            [
+                                                html.H5(id="sparsity-card",className="card-title"),
+                                            ]
+                                        ),
+                                    ],
+                                    color="warning",
+                                    inverse=True
+                                )
+                            ),
+                            dbc.Col(
+                                dbc.Card(
+                                    [
+                                        dbc.CardHeader("Fraction of Population > 80"),
+                                        dbc.CardBody(
+                                            [
+                                                html.H5(id="frac-pop-card", className="card-title"),
+                                            ]
+                                        ),
+                                    ],
+                                    color="success",
+                                    inverse=True
+                                )
+                            ),
+                            dbc.Col(
+                                dbc.Card(
+                                    [
+                                        dbc.CardHeader("Population Weighted Population Density"),
+                                        dbc.CardBody(
+                                            [
+                                                html.H5(id="pwpd-card", className="card-title"),
+                                            ]
+                                        ),
+                                    ],
+                                    color="primary",
+                                    inverse=True
+                                )
+                            ),
+                            dbc.Col(
+                                dbc.Card(
+                                    [
+                                        dbc.CardHeader("Average Number / House"),
+                                        dbc.CardBody(
+                                            [
+                                                html.H5(id="avg-house-card", className="card-title"),
+                                            ]
+                                        ),
+                                    ],
+                                    color="dark",
+                                    inverse=True
+                                )
+                            ),
+                        ], className="mb-4"),
+                        dbc.Row(dbc.Col(
+                            dbc.Card(
+                                [
+                                    dbc.CardHeader(id="simulation-header"),
+                                    dbc.CardBody(
+                                        dcc.Graph(
+                                            id="simulation-chart", config={"displayModeBar": False}, # style={'display': 'inline-block'},
+                                        ),
+                                    ),
+                                ], color="dark", inverse=True),
+                        ), className="mb-4"),
+                        dbc.Row(dbc.Col(
+                            dbc.Card(
+                                [
+                                    dbc.CardHeader(id="cases-header"),
+                                    dbc.CardBody(
+                                        dcc.Graph(
+                                            id="cases-chart", config={"displayModeBar": False}, # style={'display': 'inline-block'},
+                                        ),
+                                    ),
+                                ], color="dark", inverse=True),
+                        ), className="mb-4"),
+                        dbc.Row([
+                            dbc.Col(
+                                dbc.Card(
+                                    [
+                                        dbc.CardHeader(id="mob-header"),
+                                        dbc.CardBody(
+                                            dcc.Graph(
+                                                id="mobility-chart", config={"displayModeBar": False}, # style={'display': 'inline-block'},
+                                            ),
+                                        ),
+                                    ], color="dark", inverse=True),
+                            ), 
+                            dbc.Col(
+                                dbc.Card(
+                                    [
+                                        dbc.CardHeader(id="temp-header"),
+                                        dbc.CardBody(
+                                            dcc.Graph(
+                                                id="weather-chart", config={"displayModeBar": False}, # style={'display': 'inline-block'},
+                                            ),
+                                        ),
+                                    ], color="dark", inverse=True),
+                            ),
+                        ], className="mb-4"),
+                        dbc.Row(dbc.Col(
+                            dbc.Card(
+                                [
+                                    dbc.CardHeader(id="vac-header"),
+                                    dbc.CardBody(
+                                        dcc.Graph(
+                                            id="vac-chart", config={"displayModeBar": False}, # style={'display': 'inline-block'},
+                                        ),
+                                    ),
+                                ], color="dark", inverse=True),
+                        ), className="mb-4"),
+                    dbc.Row([
+                            dbc.Col(
+                                dbc.Card(
+                                    [
+                                        dbc.CardHeader(id="trends-header"),
+                                        dbc.CardBody(
+                                            dcc.Graph(
+                                                id="trends-chart", config={"displayModeBar": False}, # style={'display': 'inline-block'},
+                                            ),
+                                        ),
+                                    ], color="dark", inverse=True),
+                            ),
+                    ], className="mb-4")]),
+                    className="column",
                 ),
-            ],
-            className="right-column columns",
+            ], className="mb-4"
         ),
     ]
 )
 
 @app.callback(
+    [
+        dash.dependencies.Output('total-pop-card', 'children'),
+        dash.dependencies.Output('sparsity-card', 'children'),
+        dash.dependencies.Output('frac-pop-card', 'children'),
+        dash.dependencies.Output('pwpd-card', 'children'),
+        dash.dependencies.Output('avg-house-card', 'children'),
+        Output("simulation-header", "children"),
+        Output("cases-header", "children"),
+        Output("mob-header", "children"),
+        Output("temp-header", "children"),
+        Output("vac-header", "children"),
+        Output("trends-header", "children"),
+    ],
+    [dash.dependencies.Input('region-dropdown', 'value'), dash.dependencies.Input('subregion-dropdown', 'value'),]
+)
+def update_region_names(province_name, region_name):
+    # Card Values
+    total_pop = round(get_total_pop(province_name, region_name), 0)
+    # land_area = round(get_land_area(province_name, region_name), 2)
+    # todo: sparsity (3 digits)
+    pop_80 = round(get_frac_pop_over_80(province_name, region_name), 2)
+    pwpd = round(get_pwpd(province_name, region_name), 2)
+    avg_house = round(get_avg_house(province_name, region_name), 2)
+    # Graph Titles
+    deaths_label = 'Daily Predicted Deaths in ' + region_name + ', ' + province_name
+    cases_label = 'Daily Reported Cases in ' + region_name + ', ' + province_name
+    mob_label = 'Social Mobility in ' + region_name + ', ' + province_name
+    temp_label = 'Daily Reported Temperature in ' + region_name + ', ' + province_name
+    vac_label = 'Fraction of the Population Vaccinated ' + region_name + ', ' + province_name
+    trends_label = 'Google Searches for Face Masks in '+ province_name
+    return total_pop, "todo", pop_80, pwpd, avg_house, deaths_label, cases_label, mob_label, temp_label, vac_label, trends_label
+
+
+@app.callback(
     dash.dependencies.Output('subregion-dropdown', 'options'),
     [dash.dependencies.Input('region-dropdown', 'value')]
 )
-
 def update_date_dropdown(name):
     return [{'label': i, 'value': i} for i in fnameDict[name]]
 
-def display_info_box(btn_click):
-    if (btn_click % 2) == 1:
-        return dedent(extend_intro), "Close"
-    else:
-        return dedent(base_intro), "Learn More"
+# def display_info_box(btn_click):
+#     if (btn_click % 2) == 1:
+#         return dedent(extend_intro), "Close"
+#     else:
+#         return dedent(base_intro), "Learn More"
 
 
  # ============== SLIDER CALLBACK ==============
@@ -358,7 +506,6 @@ def update_province_name(province_name):
     
     return province_name
     
-
 @app.callback(
     Output("simulation-chart", "figure"),
     [
@@ -376,14 +523,9 @@ def update_forecast_chart(province_name, region, start_date, end_date, days_to_f
     province_name = update_province_name(province_name)
 
     # ============== SIMULATION GRAPH ==============
-    print("vac val before division: " + str(vac))
-    
     xMob = -100 + xMob
     facemask = facemask * 70 / 100
     vac = vac / 100.0
-
-    print("fm val: " + str(facemask))
-    print("vac val: " + str(vac))
 
     pred_fig = go.Figure()
     pred_fig.add_trace(go.Scatter(
@@ -397,9 +539,12 @@ def update_forecast_chart(province_name, region, start_date, end_date, days_to_f
             y=predicted_deaths(province_name, region, start_date, end_date, days_to_forecast, xMob, facemask, vac),
             name='Predicted Deaths',
         ))
+
     updatemenus = [
         dict(
             type="buttons",
+            xanchor="right",
+            yanchor="bottom",
             direction="left",
             buttons=list([
                 dict(
@@ -415,11 +560,8 @@ def update_forecast_chart(province_name, region, start_date, end_date, days_to_f
             ])
         ),
     ]
-
-
-    pred_fig.update_layout(title='Daily Predicted Deaths in ' + region + ', ' + province_name,
-                   xaxis_title='Date',
-                   yaxis_title='Daily Mortality (7-day Rolling Average)',
+    pred_fig.update_layout(xaxis_title='Date',
+                   yaxis_title='Daily Mortality (7-day Rolling Avg)',
                    updatemenus=updatemenus)
 
 
@@ -449,8 +591,7 @@ def update_weather_chart(province_name, region, start_date, end_date, forecasted
     forecasted = datetime.timedelta(days=forecasted_dates)
 
     weather_fig = px.line(df_mort, x = temp_dates, y = temp_vals)
-    weather_fig.update_layout(title='Daily Reported Temperature in ' + region + ', ' + province_name,
-                   xaxis_title='Date',
+    weather_fig.update_layout(xaxis_title='Date',
                    yaxis_title='Mean Temperature')
     weather_fig.add_trace(go.Scatter(
             x=new_dates,
@@ -472,39 +613,48 @@ def update_weather_chart(province_name, region, start_date, end_date, forecasted
 def update_cases_charts(province_name, region, start_date, end_date):
     province_name = update_province_name(province_name)
 
+    updatemenus = [
+        dict(
+            type="buttons",
+            xanchor="right",
+            yanchor="bottom",
+            direction="left",
+            buttons=list([
+                dict(
+                    args=[{'yaxis.type': 'linear'}],
+                    label="Linear Scale",
+                    method="relayout"
+                ),
+                dict(
+                    args=[{'yaxis.type': 'log'}],
+                    label="Log Scale",
+                    method="relayout"
+                )
+            ])
+        ),
+    ]
+
     # ============== CASES GRAPH ==============
+    # pred_fig = go.Figure()
+    # pred_fig.add_trace(go.Scatter(
+    #     x=date(province_name, region, start_date, end_date),
+    #     y=r_avg(province_name, region, start_date, end_date),
+    #     name='Previous Deaths',
+    # ))
+    # for i in range(10):
+    #     pred_fig.add_trace(go.Scatter(
+    #         x=predicted_dates(province_name, region, start_date, end_date, days_to_forecast),
+    #         y=predicted_deaths(province_name, region, start_date, end_date, days_to_forecast, xMob, facemask, vac),
+    #         name='Predicted Deaths',
+    #     ))
+
+
     cases_fig = px.line(df_mort, x = date_cases(province_name, region, start_date, end_date), y = ravg_cases(province_name, region, start_date, end_date))
-    cases_fig.update_layout(title='Daily Reported Cases in ' + region + ', ' + province_name,
-                   xaxis_title='Date',
-                   yaxis_title='Daily Cases (7-day Rolling Average)')
+    cases_fig.update_layout(xaxis_title='Date',
+                   yaxis_title='Daily Cases (7-day Rolling Avg)',
+                   updatemenus=updatemenus)
 
-    # ============== MAP ==============
-
-    # map_fig = go.Figure(go.Scattermapbox(
-    # fill = "toself",
-    # lon = [-74, -70, -70, -74], lat = [47, 47, 45, 45],
-    # marker = { 'size': 10, 'color': "orange" }))
-
-    # map_fig.update_layout(
-    #     mapbox = {
-    #         'style': "stamen-terrain",
-    #         'center': {'lon': -73, 'lat': 46 },
-    #         'zoom': 5},
-    #     showlegend = False)
-
-    # df_test = pd.read_csv("https://raw.githubusercontent.com/plotly/datasets/master/fips-unemp-16.csv",
-    #                dtype={"fips": str})
-
-    # fig = px.choropleth(df_test, locations='fips', color='unemp',
-    #                        color_continuous_scale="Viridis",
-    #                        range_color=(0, 12),
-    #                        scope="usa",
-    #                        labels={'unemp':'unemployment rate'}
-    #                       )
-    # fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
-
-
-    return cases_fig #, map_fig, fig
+    return cases_fig
 
 @app.callback(
     Output("mobility-chart", "figure"),
@@ -524,39 +674,80 @@ def update_mob_charts(province_name, region, start_date, end_date, forecasted_da
     mob_values = []
     for i in range(len(dates)):
         mob_values.append(xMob)
-
+    
      # ============== MOBILITY GRAPH ==============
     mobility_fig = px.line(df_mort, x = date_mob(province_name, region, start_date, end_date), y = mobility(province_name, region, start_date, end_date))
-    mobility_fig.update_layout(title='Social Mobility in ' + region + ', ' + province_name,
-                   xaxis_title='Date',
+    mobility_fig.update_layout(xaxis_title='Date',
                    yaxis_title='Social Mobility')
     mobility_fig.add_trace(go.Scatter(
             x=dates,
             y=mob_values,
             name='Simulated Mobility',
         ))
+    
+    # interpollation
+    # start_date = mobility_info.date.max().date()
+    # end_date = dates[-1]
+    # print(end_date)
 
     return mobility_fig
 
 @app.callback(
-    Output("vaccination-chart", "figure"),
+    Output("vac-chart", "figure"),
     [
         Input("region-dropdown", "value"),
         Input("subregion-dropdown", "value"),
     ],
 )
-
 def update_vaccination_charts(province_name, region):
     province_name = update_province_name(province_name)
 
     # ============== VACCINATION GRAPH ==============
-    vaccination_fig = px.line(df_vaccinations(province_name, region), x = df_vaccinations(province_name, region).date, y = df_vaccinations(province_name, region).total_vaccinations)
-    vaccination_fig.update_layout(title='Fraction of the Population Vaccinated in ' + region + ', ' + province_name,
-                   xaxis_title='Date',
+    df_vac = df_vaccinations(province_name, region)
+    vaccination_fig = px.line(df_vac, x = df_vac.date, y = df_vac.total_vaccinations)
+    vaccination_fig.update_layout(xaxis_title='Date',
                    yaxis_title='Total Vaccinations/Population of Region')
 
     return vaccination_fig
-    
+
+@app.callback(
+    Output("trends-chart", "figure"),
+    [
+        Input("region-dropdown", "value"),
+        Input("subregion-dropdown", "value"),
+    ],
+)
+def update_trends_charts(province_name, region):
+    province_name = update_province_name(province_name)
+
+    # ============== GOOGLE TRENDS GRAPH ==============
+    df_trends = df_trends_data(province_name, region)
+    trends_fig = px.line(df_trends, x = df_trends['date'], y = df_trends[str(get_geocode(province_name, region))])
+    trends_fig.update_layout(xaxis_title='Date',
+                   yaxis_title='Number of Google Searches for Face Masks')
+
+    return trends_fig
+
+
+@app.callback(
+    dash.dependencies.Output('placeholder', 'figure'),
+    [
+        Input("date-range", "start_date"),
+        Input("date-range", "end_date"),
+    ],
+)
+def update_current_date(start_date, end_date):
+    print("updating current date...")
+    global current_date
+    print(current_date)
+    # datetime.datetime.strptime(start_date, '%Y-%m-%d').strftime('%d-%m-%Y'),
+
+    current_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+    print(current_date)
+    print("done updating current date...")
+    return None
+
+
 # @app.callback(
 #     Output("data-chart", "figure"),
 #     [
@@ -592,9 +783,11 @@ def get_total_pop(province_name, region_name):
     total_pop = get_region_info(province_name, region_name).total_pop.item()
     return total_pop
 
+def get_prov_pop(province_name, region_name):
+    return get_region_info(province_name, region_name).prov_pop.item()
+
 def get_ann_death(province_name, region_name):
     annDeath = get_region_info(province_name, region_name).anndeath.item()
-    print("ANNUAL DEATH FOR: " + region_name + " = " + str(annDeath))
     return annDeath
 
 def get_frac_pop_over_80(province_name, region_name):
@@ -604,14 +797,6 @@ def get_frac_pop_over_80(province_name, region_name):
 def get_pwpd(province_name, region_name):
     pwpd = get_region_info(province_name, region_name).pwpd.item()
     return pwpd
-
-def get_uid(province_name, region_name):
-    uid = get_region_info(province_name, region_name).hr_uid.item()
-    return uid
-
-def get_prov_pop(province_name, region_name):
-    prov_pop = get_region_info(province_name, region_name).prov_pop.item()
-    return prov_pop
 
 def get_past_temp(province_name, region_name, end_date):
     # temperature? -> temperature from when? -> avg temp from 42-14 days ago (1.5months - 2 weeks ago), take mean from past 5 years if too far in the future
@@ -638,9 +823,6 @@ def predicted_deaths(province_name, region_name, start_date, end_date, days_to_f
     yVals = []
     global total_deaths
 
-    # print("fm val: " + str(facemask_val))
-    # print("vac val: " + str(vac_val))
-
     set_total_deaths(province_name, region_name, start_date, end_date)
     # uncertainty lambda: Sqrt[0.092/(14+Death in Past two weeks)]
     # add random gaussian number and show 10
@@ -652,7 +834,7 @@ def predicted_deaths(province_name, region_name, start_date, end_date, days_to_f
     lS0 = -2.70768
     trend1=-0.0311442
     xTrends1 = facemask_val # todo: Google Trends for face mask
-    dtrends= 0.00722183
+    # dtrends= 0.00722183 # -> error in this variable, don't need to include
     xTemp = get_past_temp(province_name, region_name, end_date)
     Tmin2 = 24.6497
     dT2 = 0.00562779
@@ -695,7 +877,6 @@ def predicted_deaths(province_name, region_name, start_date, end_date, days_to_f
                 for j in range(len(prior_2_months)):
                     deaths_2_months += prior_2_months[j]
                 xHerd2 = deaths_2_months / annDeath
-            print("\n")
             if (i < 14):
                 prior = 14 - i
                 deaths_2_weeks = get_total_deaths_2_weeks_prior(province_name, region_name, prior)
@@ -708,18 +889,12 @@ def predicted_deaths(province_name, region_name, start_date, end_date, days_to_f
                     deaths_2_weeks += prior_2_weeks[j]
             
             sigma = math.sqrt(0.092/(14+deaths_2_weeks))
-
-            print("deaths 2 weeks: " + str(deaths_2_weeks))
-            print("sigma: " + str(sigma))
-
             lambda_ = math.exp(.5*(lS0 + math.log(10)*xLogPWPD + math.log(0.25) +
                     2/(4 - xBeta)*math.log((2 - xBeta/2)/(2*10**xLogPWPD*.25**2)) - 
                     H0*xHerd - H2*(xHerd - xHerd2)*6 - v1*Vax1 + mob1*xMob + 
                     trend1*xTrends1 + dT2*(xTemp - Tmin2)**2.0 + dT3*(xTemp - Tmin2)**3.0 -
                     math.log(tau))) - 1/tau + house2*(xHouse - 2.75) + Anl*(xAnnual - 3.65) - v2*Vax2
-            print("lambda before: " + str(lambda_))
             lambda_ += random.gauss(0, sigma) # Sqrt[0.092/(14 + Death in Past two weeks)
-            print("lambda after: " + str(lambda_))
             deaths_tomorrow = math.exp(lambda_) * deaths_today
             # deaths_tomorrow += random.uniform(-0.01,0.1)
             yVals.append(deaths_tomorrow)
@@ -745,9 +920,9 @@ def predicted_deaths(province_name, region_name, start_date, end_date, days_to_f
 
 # -------------- MORTALITY HELPER FUNCTIONS --------------
 
-def date(province_name, region_name, start_date, end_date):
-    start_date_str = datetime.datetime.strptime(start_date, '%Y-%m-%d').strftime('%d-%m-%Y')
-    end_date_str = datetime.datetime.strptime(end_date, '%Y-%m-%d').strftime('%d-%m-%Y')
+def date(province_name, region_name, start_date, end_date): # todo: dates are in d-m-y
+    start_date_str = datetime.datetime.strptime(start_date, '%Y-%m-%d').strftime('%m-%d-%Y')
+    end_date_str = datetime.datetime.strptime(end_date, '%Y-%m-%d').strftime('%m-%d-%Y')
 
     filtered_df2 = df_mort[df_mort.date_death_report.between(
         start_date_str, end_date_str
@@ -762,9 +937,9 @@ def date(province_name, region_name, start_date, end_date):
     
     return dates
 
-def r_avg(province_name, region_name, start_date, end_date):
-    start_date_str = datetime.datetime.strptime(start_date, '%Y-%m-%d').strftime('%d-%m-%Y')
-    end_date_str = datetime.datetime.strptime(end_date, '%Y-%m-%d').strftime('%d-%m-%Y')
+def r_avg(province_name, region_name, start_date, end_date): # todo: dates are in d-m-y
+    start_date_str = datetime.datetime.strptime(start_date, '%Y-%m-%d').strftime('%m-%d-%Y')
+    end_date_str = datetime.datetime.strptime(end_date, '%Y-%m-%d').strftime('%m-%d-%Y')
 
     filtered_df2 = df_mort[df_mort.date_death_report.between(
         start_date_str, end_date_str
@@ -789,8 +964,8 @@ def r_avg(province_name, region_name, start_date, end_date):
     
     return vals1
 
-def get_total_deaths_this_year(province_name, region_name, end_date):
-    first_day = "13-03-2020" # df_mort.date_death_report.min().date().strftime('%d-%m-%Y')
+def get_total_deaths_this_year(province_name, region_name, end_date): # todo: change first day this year to first day if in 2020
+    first_day = df_mort.date_death_report.min().date().strftime('%d-%m-%Y') #"13-03-2020" #
     first_day_this_year = "01-01-" + current_date.strftime("%Y") #datetime.datetime.strptime(start_date, '%Y-%m-%d').strftime('%d-%m-%Y')
     today = current_date.strftime('%d-%m-%Y')
 
@@ -808,7 +983,7 @@ def get_total_deaths_this_year(province_name, region_name, end_date):
     return total_deaths_this_year
 
 def get_total_deaths_2_months_prior(province_name, region_name, end_date):
-    first_day = "13-03-2020" # df_mort.date_death_report.min().date().strftime('%d-%m-%Y')
+    first_day = df_mort.date_death_report.min().date().strftime('%d-%m-%Y')
 
     delta_2_months = datetime.timedelta(days=60)
     end_date_2_months_ago = current_date - delta_2_months
@@ -844,7 +1019,6 @@ def get_total_deaths_2_weeks_prior(province_name, region_name, days_prior):
     for d in deaths_2_weeks:
         total_deaths_2_weeks += d
 
-    # print("2 weeks function: " + str(total_deaths_2_weeks))
     return total_deaths_2_weeks
 
 def set_total_deaths(province_name, region_name, start_date, end_date):
@@ -864,22 +1038,21 @@ def set_total_deaths(province_name, region_name, start_date, end_date):
     for d in deaths:
         total_deaths += d
 
-    # print('TOTAL DEATHS: ' + str(total_deaths))
 
 # -------------- CASES HELPER FUNCTIONS --------------
 
-def date_cases(province_name, region_name, start_date, end_date):
+def date_cases(province_name, region_name, start_date, end_date):# todo: d-m-y
     filtered_df = df_cases[df_cases.date_report.between(
-        datetime.datetime.strptime(start_date, '%Y-%m-%d').strftime('%d-%m-%Y'),
-        datetime.datetime.strptime(end_date, '%Y-%m-%d').strftime('%d-%m-%Y')
+        datetime.datetime.strptime(start_date, '%Y-%m-%d').strftime('%m-%d-%Y'),
+        datetime.datetime.strptime(end_date, '%Y-%m-%d').strftime('%m-%d-%Y')
     )]
     dfcases_province = filtered_df[filtered_df.province == province_name]
     return dfcases_province.date_report[dfcases_province.health_region == region_name]
 
-def ravg_cases(province_name, region_name, start_date, end_date):
+def ravg_cases(province_name, region_name, start_date, end_date): # todo: d-m-y
     filtered_df = df_cases[df_cases.date_report.between(
-        datetime.datetime.strptime(start_date, '%Y-%m-%d').strftime('%d-%m-%Y'),
-        datetime.datetime.strptime(end_date, '%Y-%m-%d').strftime('%d-%m-%Y')
+        datetime.datetime.strptime(start_date, '%Y-%m-%d').strftime('%m-%d-%Y'),
+        datetime.datetime.strptime(end_date, '%Y-%m-%d').strftime('%m-%d-%Y')
     )]
     dfcases_province = filtered_df[filtered_df.province == province_name]
     return dfcases_province.cases[dfcases_province.health_region == region_name].rolling(window=7).mean()
@@ -911,12 +1084,21 @@ def date_mob(province_name, region_name, start_date, end_date):
     
     return filtered_df.date[mobility_info.sub_region_2 == sub_region]
 
+def interpolate_mob_dates(province_name, region_name, start_date, end_date, days_to_forecast):
+
+    base = datetime.datetime.strptime(end_date, '%Y-%m-%d')
+    add_dates = [base + datetime.timedelta(days=x) for x in range(days_to_forecast * 30)]
+
+    for i in range(len(add_dates)):
+        add_dates[i] = datetime.datetime.strptime(str(add_dates[i]), '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d')
+    
+    return add_dates
+
 # -------------- WEATHER HELPER FUNCTIONS --------------
 
 def get_temp_dates(temp_files):
     dates = []
     for file in temp_files:
-        # print (file)
         weat_data =  pd.read_csv(file, encoding='Latin-1')
         temp_dates = weat_data['Date/Time'].values
         dates.extend(temp_dates)
@@ -988,9 +1170,38 @@ def avg_temp_data(begin_year, end_year, data):
         df_weat_date = df_weat.groupby('Date')['Mean Temperature'].mean()
     return df_weat_date
 
+
 # -------------- VACCINATION HELPER FUNCTIONS --------------
 
+def get_uid(province_name, region_name):
+    uid = get_region_info(province_name, region_name).hr_uid.item()
+    return uid
+
+def get_vaccination_dates(province_name, region_name):
+    vac_date = []
+    for d in vaccination_data(province_name, region_name):
+        time = d['date']
+        vac_date.append(time)
+        
+    return vac_date
+    
+def get_vaccination_vals(province_name, region_name):
+    total_vaccinations = []
+    for d in vaccination_data(province_name, region_name):
+        vaccine = d['total_vaccinations']
+        total_vaccinations.append(vaccine)
+
+    return total_vaccinations
+
+def vac_df_data(province_name, region_name):
+    vac_data = {'date':  get_vaccination_dates(province_name, region_name),
+        'total_vaccinations': get_vaccination_vals(province_name, region_name)}
+    return vac_data
+
 def vaccination_data(province_name, region_name):
+
+    vac_base_url = "https://api.covid19tracker.ca/reports/regions/"
+    vac_base_url_prov = "https://api.covid19tracker.ca/reports/province/"
 
     if province_name == 'Alberta':
         api = vac_base_url_prov + str(provinceid(province_name, region_name))   
@@ -1018,29 +1229,6 @@ def vaccination_data(province_name, region_name):
         api_data = response.json()["data"]
     
     return api_data
-
-def get_vaccination_dates(province_name, region_name):
-
-    vac_date = []
-    for d in vaccination_data(province_name, region_name):
-        time = d['date']
-        vac_date.append(time)
-        
-    return vac_date
-    
-def get_vaccination_vals(province_name, region_name):
-
-    total_vaccinations = []
-    for d in vaccination_data(province_name, region_name):
-        vaccine = d['total_vaccinations']
-        total_vaccinations.append(vaccine)
-
-    return total_vaccinations
-
-def vac_df_data(province_name, region_name):
-    vac_data = {'date':  get_vaccination_dates(province_name, region_name),
-        'total_vaccinations': get_vaccination_vals(province_name, region_name)}
-    return vac_data
 
 def df_vaccinations(province_name, region_name):
     
@@ -1088,22 +1276,40 @@ def get_frac_vaccinations_1_month_prior(province_name, region_name):
 
     return df_1_month.mean().item()
 
-#def get_frac_vaccinations_2_weeks_prior(province_name, region_name, days_prior):
+def get_frac_vaccinations_2_weeks_prior(province_name, region_name, days_prior):
     
-    #current_date = datetime.datetime.now() #datetime.datetime.now()
-    #delta = datetime.timedelta(days=days_prior)
-    #first_day = current_date - delta
-    #first_day = first_day.strftime('%d-%m-%Y')
-    #end_date_2_weeks_ago = current_date
+    current_date = datetime.datetime.now() #datetime.datetime.now()
+    delta = datetime.timedelta(days=days_prior)
+    first_day = current_date - delta
+    first_day = first_day.strftime('%d-%m-%Y')
+    end_date_2_weeks_ago = current_date
 
-    #df = df_vaccinations(province_name, region_name)
+    df = df_vaccinations(province_name, region_name)
     
-    #df_2_weeks = df[df.date.between(
-    #    first_day, end_date_2_weeks_ago
-    #)]
+    df_2_weeks = df[df.date.between(
+        first_day, end_date_2_weeks_ago
+    )]
     
-    #return df_2_weeks
+    return df_2_weeks
+
+
+# -------------- GOOGLE TRENDS HELPER FUNCTIONS --------------
+
+def get_geocode(province_name, region_name):
+    geo_code = get_region_info(province_name, region_name).geo_code.item()
+    return geo_code
+
+def get_trends_vals(province_name, region_name):
+    return df_trends[str(get_geocode(province_name, region_name))]
+
+def get_trends_dates(province_name, region_name):
+    return df_trends['date']
+
+def df_trends_data(province_name, region_name):
+    trends_data = {'date': get_trends_dates(province_name, region_name),
+        str(get_geocode(province_name, region_name)): get_trends_vals(province_name, region_name)}
+    df_trends = pd.DataFrame(trends_data, columns = ['date', str(get_geocode(province_name, region_name))])
+    return df_trends
 
 if __name__ == "__main__":
     app.run_server(debug=True)
-
