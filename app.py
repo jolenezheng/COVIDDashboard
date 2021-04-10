@@ -728,7 +728,6 @@ def update_trends_charts(province_name, region):
 
     return trends_fig
 
-
 @app.callback(
     dash.dependencies.Output('placeholder', 'figure'),
     [
