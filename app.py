@@ -43,6 +43,7 @@ static_data = pd.read_csv(r'data/health_regions_static_data.csv', encoding='Lati
 mobility_info = pd.read_csv(r'data/2020_CA_Region_Mobility_Report.csv')
 mobility_info["sub_region_2"] = mobility_info["sub_region_2"]
 
+df_trends = pd.read_csv(r'data/google_trends_face_mask_canada.csv')
 
 # current_date = datetime.datetime.strptime("03-31-2021", "%m-%d-%Y") #datetime.datetime.now()
 current_date = datetime.datetime.now()
@@ -61,24 +62,25 @@ total_deaths = 0
 
 
 fnameDict = {    
-    "Alberta": ["Calgary","Central","Edmonton","North","Not Reported","South"], 
-    "British Columbia":["Fraser","Interior","Island","Northern","Not Reported","Vancouver Coastal"],
-    "Manitoba": ["Interlake-Eastern","Northern","Not Reported","Prairie Mountain","Southern Health","Winnipeg"],
-    "New Brunswick": ["Not Reported","Zone 1 (Moncton area)","Zone 2 (Saint John area)","Zone 3 (Fredericton area)",
+    "Alberta": ["Calgary","Central","Edmonton","North","South"], 
+    "British Columbia":["Fraser","Interior","Island","Northern","Vancouver Coastal"],
+    "Manitoba": ["Interlake-Eastern","Northern","Prairie Mountain","Southern Health","Winnipeg"],
+    "New Brunswick": ["Zone 1 (Moncton area)","Zone 2 (Saint John area)","Zone 3 (Fredericton area)",
                       "Zone 4 (Edmundston area)","Zone 5 (Campbellton area)","Zone 6 (Bathurst area)","Zone 7 (Miramichi area)"],
-    "Newfoundland and Labrador": ["Central","Eastern","Labrador-Grenfell", "Not Reported","Western"],
-    "Nunavut": ["Nunavut"], "Northwest Territories": ["NWT"], "Ontario": ["Algoma","Brant","Chatham-Kent","Durham","Eastern",
+    "Newfoundland and Labrador": ["Central","Eastern","Labrador-Grenfell","Western"],
+    "Nunavut": ["Nunavut"], "Northwest Territories": ["NWT"], "Nova Scotia": ["Zone 1 - Western","Zone 2 - Northern",
+                "Zone 3 - Eastern","Zone 4 - Central"], "Ontario": ["Algoma","Brant","Chatham-Kent","Durham","Eastern",
                 "Grey Bruce","Haldimand-Norfolk","Haliburton Kawartha Pineridge","Halton","Hamilton","Hastings Prince Edward",
                 "Huron Perth","Kingston Frontenac Lennox & Addington","Lambton","Leeds Grenville and Lanark","Middlesex-London",
-                "Niagara","North Bay Parry Sound","Northwestern","Not Reported","Ottawa","Peel","Peterborough","Porcupine",
+                "Niagara","North Bay Parry Sound","Northwestern","Ottawa","Peel","Peterborough","Porcupine",
                 "Renfrew","Simcoe Muskoka","Southwestern","Sudbury","Thunder Bay","Timiskaming","Toronto","Waterloo",
                 "Wellington Dufferin Guelph","Windsor-Essex","York"], "Prince Edward Island": ["Prince Edward Island"],
     "Quebec": ["Abitibi-Témiscamingue","Bas-Saint-Laurent","Capitale-Nationale",
                   "Chaudière-Appalaches","Côte-Nord","Estrie","Gaspésie-Îles-de-la-Madeleine",
                   "Lanaudière","Laurentides","Laval","Mauricie","Montérégie",
-                  "Montréal","Nord-du-Québec","Not Reported","Nunavik",
+                  "Montréal","Nord-du-Québec","Nunavik",
                   "Outaouais","Saguenay","Terres-Cries-de-la-Baie-James"],
-    "Repatriated": ["Not Reported"], "Saskatchewan":["Central","Far North","North","Not Reported","Regina","Saskatoon","South"],
+    "Saskatchewan":["Central","Far North","North","Regina","Saskatoon","South"],
     "Yukon": ["Yukon"]
 }
 
@@ -404,8 +406,9 @@ app.layout = html.Div(
                                         ),
                                     ], color="dark", inverse=True),
                             ),
-                    ], className="mb-4"),
-                    dbc.Row([
+                        ], className="mb-4"),
+
+                        dbc.Row([
                             dbc.Col(
                                 dbc.Card(
                                     [
@@ -416,8 +419,19 @@ app.layout = html.Div(
                                             ),
                                         ),
                                     ], color="dark", inverse=True),
+                            ), 
+                            dbc.Col(
+                                dbc.Card(
+                                    [
+                                        dbc.CardHeader(id="trends-header"),
+                                        dbc.CardBody(
+                                            dcc.Graph(
+                                                id="trends-chart", config={"displayModeBar": False}, # style={'display': 'inline-block'},
+                                            ),
+                                        ),
+                                    ], color="dark", inverse=True),
                             ),
-                    ], className="mb-4")]),
+                        ], className="mb-4")]),
                     className="column",
                 ),
             ], className="mb-4"
@@ -437,13 +451,13 @@ app.layout = html.Div(
         Output("mob-header", "children"),
         Output("temp-header", "children"),
         Output("vac-header", "children"),
+        Output("trends-header", "children"),
     ],
     [dash.dependencies.Input('region-dropdown', 'value'), dash.dependencies.Input('subregion-dropdown', 'value'),]
 )
 def update_region_names(province_name, region_name):
     # Card Values
     total_pop = round(get_total_pop(province_name, region_name), 0)
-    # land_area = round(get_land_area(province_name, region_name), 2)
     # todo: sparsity (3 digits)
     pop_80 = round(get_frac_pop_over_80(province_name, region_name), 2)
     pwpd = round(get_pwpd(province_name, region_name), 2)
@@ -454,7 +468,8 @@ def update_region_names(province_name, region_name):
     mob_label = 'Social Mobility in ' + region_name + ', ' + province_name
     temp_label = 'Daily Reported Temperature in ' + region_name + ', ' + province_name
     vac_label = 'Fraction of the Population Vaccinated ' + region_name + ', ' + province_name
-    return total_pop, "todo", pop_80, pwpd, avg_house, deaths_label, cases_label, mob_label, temp_label, vac_label
+    trends_label = 'Google Searches for Face Masks in ' + region_name + ', ' + province_name
+    return total_pop, "todo", pop_80, pwpd, avg_house, deaths_label, cases_label, mob_label, temp_label, vac_label, trends_label
 
 
 @app.callback(
@@ -694,6 +709,25 @@ def update_vaccination_charts(province_name, region):
                    yaxis_title='Total Vaccinations/Population of Region')
 
     return vaccination_fig
+
+@app.callback(
+    Output("trends-chart", "figure"),
+    [
+        Input("region-dropdown", "value"),
+        Input("subregion-dropdown", "value"),
+    ],
+)
+def update_trends_charts(province_name, region):
+    province_name = update_province_name(province_name)
+
+    # ============== GOOGLE TRENDS GRAPH ==============
+    df_trends = df_trends_data(province_name, region)
+    trends_fig = px.line(df_trends, x = df_trends['date'], y = df_trends[str(get_geocode(province_name, region))])
+    trends_fig.update_layout(xaxis_title='Date',
+                   yaxis_title='Number of Google Searches for Face Masks')
+
+    return trends_fig
+
 
 @app.callback(
     dash.dependencies.Output('placeholder', 'figure'),
@@ -1258,6 +1292,24 @@ def get_frac_vaccinations_2_weeks_prior(province_name, region_name, days_prior):
     
     return df_2_weeks
 
+
+# -------------- GOOGLE TRENDS HELPER FUNCTIONS --------------
+
+def get_geocode(province_name, region_name):
+    geo_code = get_region_info(province_name, region_name).geo_code.item()
+    return geo_code
+
+def get_trends_vals(province_name, region_name):
+    return df_trends[str(get_geocode(province_name, region_name))]
+
+def get_trends_dates(province_name, region_name):
+    return df_trends['date']
+
+def df_trends_data(province_name, region_name):
+    trends_data = {'date': get_trends_dates(province_name, region_name),
+        str(get_geocode(province_name, region_name)): get_trends_vals(province_name, region_name)}
+    df_trends = pd.DataFrame(trends_data, columns = ['date', str(get_geocode(province_name, region_name))])
+    return df_trends
+
 if __name__ == "__main__":
     app.run_server(debug=True)
-
