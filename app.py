@@ -101,7 +101,6 @@ base_intro = """Lorem ipsum dolor sit amet, consectetur adipiscing elit, \
 server = app.server
 app.title = "COVID Dashboard"
 
-
 search_bar = dbc.Row(
     [
         dbc.Col(dbc.Input(type="search", placeholder="Search")),
@@ -225,7 +224,7 @@ app.layout = html.Div(
                                         html.Div(
                                             children=[
                                                 html.Div(
-                                                    children="New Social Mobility vs Baseline",
+                                                    children="Reduction in Social Mobility vs Baseline",
                                                     className="dropdown-title"
                                                     ),
                                                 dcc.Slider(
@@ -233,10 +232,10 @@ app.layout = html.Div(
                                                     min=0,
                                                     max=100,
                                                     step=1,
-                                                    value=100,
+                                                    value=20,
                                                     marks={
-                                                        0: '-100% (total lockdown)',
-                                                        100: '0% (normal activity)'
+                                                        0: '0% (normal activity)',
+                                                        100: '100% (total lockdown)'
                                                     },
                                                 ),
                                             ]
@@ -523,7 +522,7 @@ def update_forecast_chart(province_name, region, start_date, end_date, days_to_f
     province_name = update_province_name(province_name)
 
     # ============== SIMULATION GRAPH ==============
-    xMob = -100 + xMob
+    xMob = -xMob
     facemask = facemask * 70 / 100
     vac = vac / 100.0
 
@@ -669,7 +668,7 @@ def update_cases_charts(province_name, region, start_date, end_date):
 )
 def update_mob_charts(province_name, region, start_date, end_date, forecasted_dates, xMob):
     province_name = update_province_name(province_name)
-    xMob = -100 + xMob
+    xMob = -xMob
     dates = predicted_dates(province_name, region, start_date, end_date, forecasted_dates)
     mob_values = []
     for i in range(len(dates)):
