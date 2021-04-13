@@ -40,6 +40,7 @@ df_cases["date_report"] = pd.to_datetime(df_cases["date_report"], format="%d-%m-
 weather_base_url = 'https://dd.weather.gc.ca/climate/observations/daily/csv/'
 static_data = pd.read_csv(r'data/health_regions_static_data.csv', encoding='Latin-1')
 
+# mobility_info = pd.read_csv(r'data/mobility_test.csv')
 mobility_info = pd.read_csv(r'data/2020_CA_Region_Mobility_Report.csv')
 mobility_info["sub_region_2"] = mobility_info["sub_region_2"]
 
@@ -76,10 +77,10 @@ fnameDict = {
                 "Niagara","North Bay Parry Sound","Northwestern","Ottawa","Peel","Peterborough","Porcupine",
                 "Renfrew","Simcoe Muskoka","Southwestern","Sudbury","Thunder Bay","Timiskaming","Toronto","Waterloo",
                 "Wellington Dufferin Guelph","Windsor-Essex","York"], "Prince Edward Island": ["Prince Edward Island"],
-    "Quebec": ["Abitibi-Témiscamingue","Bas-Saint-Laurent","Capitale-Nationale",
-                  "Chaudière-Appalaches","Côte-Nord","Estrie","Gaspésie-Îles-de-la-Madeleine",
-                  "Lanaudière","Laurentides","Laval","Mauricie","Montérégie",
-                  "Montréal","Nord-du-Québec","Nunavik",
+    "Quebec": ["Abitibi-Temiscamingue","Bas-Saint-Laurent","Capitale-Nationale",
+                  "Chaudiere-Appalaches","Cote-Nord","Estrie","Gaspesie-Iles-de-la-Madeleine",
+                  "Lanaudiere","Laurentides","Laval","Mauricie","Monteregie",
+                  "Montreal","Nord-du-Quebec","Nunavik",
                   "Outaouais","Saguenay","Terres-Cries-de-la-Baie-James"],
     "Saskatchewan":["Central","Far North","North","Regina","Saskatoon","South"],
     "Yukon": ["Yukon"]
@@ -211,7 +212,7 @@ app.layout = html.Div(
                                                     min=0,
                                                     max=100,
                                                     step=1,
-                                                    value=45,
+                                                    value=0,
                                                     marks={
                                                         0: '0%',
                                                         100: '100%'
@@ -253,7 +254,7 @@ app.layout = html.Div(
                                                     min=0,
                                                     max=100,
                                                     step=1,
-                                                    value=8,
+                                                    value=0,
                                                     marks={
                                                         0: '0%',
                                                         100: '100%'
@@ -274,7 +275,7 @@ app.layout = html.Div(
                                                     min=0,
                                                     max=12,
                                                     step=1,
-                                                    value=3, # todo: change back to 1
+                                                    value=3,
                                                     marks={ 0: '0 mo', 2: '2 mo', 4: '4 mo',
                                                         6: '6 mo', 8: '8 mo', 10: '10 mo', 12: '1 yr'
                                                     },
@@ -365,10 +366,11 @@ app.layout = html.Div(
                                 [
                                     dbc.CardHeader(id="simulation-header"),
                                     dbc.CardBody(
-                                        dcc.Graph(
-                                            id="simulation-chart", config={"displayModeBar": False}, # style={'display': 'inline-block'},
-                                        ),
-                                    ),
+                                         dcc.Loading(
+                                            children=[html.Div(dcc.Graph(
+                                                id="simulation-chart", config={"displayModeBar": False}))],
+                                            type="default"
+                                    )),
                                 ], color="dark", inverse=True),
                         ), className="mb-4"),
                         dbc.Row(dbc.Col(
@@ -376,10 +378,16 @@ app.layout = html.Div(
                                 [
                                     dbc.CardHeader(id="cases-header"),
                                     dbc.CardBody(
-                                        dcc.Graph(
-                                            id="cases-chart", config={"displayModeBar": False}, # style={'display': 'inline-block'},
-                                        ),
-                                    ),
+                                         dcc.Loading(
+                                            children=[html.Div(dcc.Graph(
+                                                id="cases-chart", config={"displayModeBar": False}))],
+                                            type="default"
+                                    )),
+                                    # dbc.CardBody(
+                                    #     dcc.Graph(
+                                    #         id="cases-chart", config={"displayModeBar": False}, # style={'display': 'inline-block'},
+                                    #     ),
+                                    # ),
                                 ], color="dark", inverse=True),
                         ), className="mb-4"),
                         dbc.Row([
@@ -518,34 +526,23 @@ def update_province_name(province_name):
         Input('vaccine-slider', 'value'),
     ],
 )
-def update_forecast_chart(province_name, region, start_date, end_date, days_to_forecast, facemask, xMob, vac):
+def update_mortality_chart(province_name, region, start_date, end_date, days_to_forecast, facemask, xMob, vac):
     province_name = update_province_name(province_name)
     xMob = -xMob
     facemask = facemask * 70 / 100
     vac = vac / 100.0
     today = datetime.datetime.now()
-
     death_dates = date(province_name, region, start_date, today.strftime("%Y-%m-%d"))
     death_vals = r_avg(province_name, region, start_date, end_date)
 
-
-    # start_date_str = datetime.datetime.strptime(start_date, '%Y-%m-%d').strftime('%m-%d-%Y')
-
-
-    # if (datetime.datetime.strptime(end_date, "%Y-%m-%d") < today):
-    #     pred_fig.add_trace(go.Scatter(
-    #         x=date(province_name, region, end_date, today.strftime("%Y-%m-%d")),
-    #         y=r_avg(province_name, region, end_date, today.strftime("%Y-%m-%d")),
-    #         name='Historical Forecast',
-    #         line=dict(color='black', width=2),
-    #     ))
+    df_mobility = get_mob(province_name, region)
 
     pred_fig = go.Figure()
 
     for i in range(10):
         pred_fig.add_trace(go.Scatter(
             x=predicted_dates(province_name, region, start_date, end_date, days_to_forecast),
-            y=predict("deaths", province_name, region, start_date, end_date, days_to_forecast, xMob, facemask, vac),
+            y=predicted_deaths(province_name, region, start_date, end_date, days_to_forecast, df_mobility, xMob, facemask, vac),
             name='Predicted Deaths',
         ))
 
@@ -580,7 +577,6 @@ def update_forecast_chart(province_name, region, start_date, end_date, days_to_f
                    yaxis_title='Daily Mortality (7-day Rolling Avg)',
                    updatemenus=updatemenus)
 
-
     return pred_fig
 
 @app.callback(
@@ -602,22 +598,24 @@ def update_cases_charts(province_name, region, start_date, end_date, days_to_for
     facemask = facemask * 70 / 100
     vac = vac / 100.0
     today = datetime.datetime.now()
-
     cases_dates = date(province_name, region, start_date, today.strftime("%Y-%m-%d"))
     cases_vals = ravg_cases(province_name, region, start_date, today.strftime("%Y-%m-%d"))
+
+    df_mobility = get_mob(province_name, region)
+
 
     cases_fig = go.Figure()
     
     for i in range(10):
         cases_fig.add_trace(go.Scatter(
             x=predicted_dates(province_name, region, start_date, end_date, days_to_forecast),
-            y=predict_cases(province_name, region, start_date, end_date, days_to_forecast, xMob, facemask, vac),
+            y=predicted_cases(province_name, region, start_date, end_date, days_to_forecast, df_mobility, xMob, facemask, vac),
             name='Predicted Deaths',
         ))
 
     cases_fig.add_trace(go.Scatter(
-        x=cases_dates, # here
-        y=cases_vals, # here
+        x=cases_dates,
+        y=cases_vals,
         name='Previous Deaths',
         line=dict(color='black', width=2),
     ))
@@ -643,29 +641,11 @@ def update_cases_charts(province_name, region, start_date, end_date, days_to_for
         ),
     ]
 
-    # ============== CASES GRAPH ==============
-    # pred_fig = go.Figure()
-    # pred_fig.add_trace(go.Scatter(
-    #     x=date(province_name, region, start_date, end_date),
-    #     y=r_avg(province_name, region, start_date, end_date),
-    #     name='Previous Deaths',
-    # ))
-    # for i in range(10):
-    #     pred_fig.add_trace(go.Scatter(
-    #         x=predicted_dates(province_name, region, start_date, end_date, days_to_forecast),
-    #         y=predicted_deaths(province_name, region, start_date, end_date, days_to_forecast, xMob, facemask, vac),
-    #         name='Predicted Deaths',
-    #     ))
-
-
-    # what i had before:
-    # cases_fig = px.line(df_mort, x = date_cases(province_name, region, start_date, end_date), y = ravg_cases(province_name, region, start_date, end_date))
     cases_fig.update_layout(xaxis_title='Date',
                    yaxis_title='Daily Cases (7-day Rolling Avg)',
                    updatemenus=updatemenus)
 
     return cases_fig
-
 
 @app.callback(
     Output("weather-chart", "figure"),
@@ -767,7 +747,7 @@ def update_trends_charts(province_name, region):
 
     # ============== GOOGLE TRENDS GRAPH ==============
     df_trends = df_trends_data(province_name, region)
-    trends_fig = px.line(df_trends, x = get_trends_dates(province_name, region), y = get_trends_vals(province_name, region))
+    trends_fig = px.line(df_trends, x = df_trends['date'], y = df_trends[str(get_geocode(province_name, region))])
     trends_fig.update_layout(xaxis_title='Date',
                    yaxis_title='Number of Google Searches for Face Masks')
 
@@ -784,6 +764,8 @@ def update_current_date(start_date, end_date):
     print("updating current date...")
     global current_date
     print(current_date)
+    # datetime.datetime.strptime(start_date, '%Y-%m-%d').strftime('%d-%m-%Y'),
+
     current_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
     print(current_date)
     print("done updating current date...")
@@ -838,11 +820,9 @@ def predicted_dates(province_name, region_name, start_date, end_date, days_to_fo
     
     return add_dates
 
-def predict(predict_type, province_name, region_name, start_date, end_date, days_to_forecast, xMob, facemask_val, vac_val):
-    predicting_deaths = True if (predict_type == "deaths") else False
+def predicted_deaths(province_name, region_name, start_date, end_date, days_to_forecast, df_mobility, xMob_slider, facemask_val, vac_val):
     base = datetime.datetime.strptime(end_date, '%Y-%m-%d')
-    shift_2_weeks = 0 if predicting_deaths else 14
-    add_dates = [base + datetime.timedelta(days=x) for x in range(days_to_forecast * (30 + shift_2_weeks))]
+    add_dates = [base + datetime.timedelta(days=x) for x in range(days_to_forecast * 30)]
     yVals = []
     global total_deaths
 
@@ -852,7 +832,6 @@ def predict(predict_type, province_name, region_name, start_date, end_date, days
     tau = 25.1009
     lS0 = -2.70768
     trend1=-0.0311442
-    xTrends1 = facemask_val # todo: Google Trends for face mask
     xTemp = get_past_temp(province_name, region_name, end_date)
     Tmin2 = 24.6497
     dT2 = 0.00562779
@@ -866,27 +845,23 @@ def predict(predict_type, province_name, region_name, start_date, end_date, days
     # xMob = -30 # get_mob(province_name, region_name, start_date) # todo: Google Workplace Mobility -> get from slider
     mob1 = 0.0379239
     v2 = 0  
-    v1 = 0 # Fraction of vaccinated population (unto a month ago) -> time frame?
-    # xVax1 = vac_val # Fraction of vaccinated population (unto a month ago) -> time frame? -> slider value
-    v1= 11.9697
+    v1 = 0 # Fraction of vaccinated population (unto a month ago) -> time frame? -> slider value
+    v1 = 11.9697
     xBeta = math.log(get_total_pop(province_name, region_name) / (get_pwpd(province_name, region_name) * get_land_area(province_name, region_name))) / math.log(0.25**2/get_land_area(province_name, region_name)) #get_total_pop(province_name, region_name) / get_land_area(province_name, region_name) # Population Sparsity
-    # Daily Cases Tomorrow = Exp[lambda]*Daily cases today -> lambda
-
-    # Vaccination data:
     Vax1 = vac_val # slider value
     Vax2 = 0
     first = True
     deaths_tomorrow = 0
     deaths_today = last_mort
-    total_deaths_2_months_prior = get_total_deaths_2_months_prior(province_name, region_name, end_date)
-    # total_deaths_2_weeks_prior = get_total_deaths_2_weeks_prior(province_name, region_name, end_date)
-
-    # get_trends_day(province_name, region_name, 2)
+    total_deaths_2_months_prior = get_total_deaths_2_months_prior(province_name, region_name, end_date)\
 
     for i in range(len(add_dates)):
-        xAnnual = math.log(annDeath, 10) # Log10[Annual Death] -> calendar year
+        date_in_forecast = datetime.datetime.strptime(end_date, '%Y-%m-%d') + datetime.timedelta(days=i)
+        xAnnual = math.log(annDeath, 10)
         if (first == False):
             xHerd = total_deaths / annDeath  #Total Covid Death/Annual Death -> Annual death as in 2021
+            xTrends1 = get_trends_on_day(province_name, region_name, date_in_forecast, facemask_val) # todo: Google Trends for face mask
+            xMob = get_mob_on_day(df_mobility, date_in_forecast, xMob_slider)
             if (i <= 60):
                 xHerd2 = total_deaths_2_months_prior / annDeath # Total Covid Death (more than 2 months ago)/Annual Death -> what does more than 2 months ago mean? 2 months prior
             else:
@@ -915,35 +890,41 @@ def predict(predict_type, province_name, region_name, start_date, end_date, days
                     math.log(tau))) - 1/tau + house2*(xHouse - 2.75) + Anl*(xAnnual - 3.65) - v2*Vax2
             lambda_ += random.gauss(0, sigma) # Sqrt[0.092/(14 + Death in Past two weeks)
             deaths_tomorrow = math.exp(lambda_) * deaths_today
-            if (predicting_deaths or i >= 14):
-                yVals.append(deaths_tomorrow)
+            # deaths_tomorrow += random.uniform(-0.01,0.1)
+            yVals.append(deaths_tomorrow)
             deaths_today = deaths_tomorrow
             total_deaths += deaths_today
             annDeath += deaths_today
         else:
             first = False
-            if (predicting_deaths):
-                yVals.append(last_mort)
-            else:
-                yVals.append(last_cases)
+            yVals.append(last_mort)
             total_deaths += last_mort
+            # annDeath += last_mort
+
+        # y = math.exp(.5*(lS0 + math.log(10)*xLogPWPD + math.log(0.25) + #clarify log 0.25 and 10
+        #  2/(4 - xBeta)*math.log((2 - xBeta/2)/(2*10^xLogPWPD*.25^2)) - 
+        #  H0*xHerd - H2*(xHerd - xHerd2)*6 - v1*Vax1 + mob1*xMob + 
+        #  trend1*xTrends1 + dT2*(xTemp - Tmin2)^2 + dT3*(xTemp - Tmin2)^3 -
+        #   math.log(tau))) - 1/tau + house2*(xHouse - 2.75) + Anl*(xAnnual - 3.65) - v2*Vax2 # y = lambda
+        # cases_today = 
+        # yVals.append(y)
 
     return yVals
 
-def predict_cases(province_name, region_name, start_date, end_date, days_to_forecast, xMob, facemask_val, vac_val):
+def predicted_cases(province_name, region_name, start_date, end_date, days_to_forecast, df_mobility, xMob_slider, facemask_val, vac_val):
     base = datetime.datetime.strptime(end_date, '%Y-%m-%d')
-    shift_2_weeks = 14
-    add_dates = [base + datetime.timedelta(days=x) for x in range(days_to_forecast * (30 + shift_2_weeks))]
+    week_2 = 14
+    add_dates = [base + datetime.timedelta(days=x) for x in range(days_to_forecast * (30 + week_2))]
     yVals = []
     global total_deaths
 
     set_total_deaths(province_name, region_name, start_date, end_date)
 
+    # t = r_avg(province_name, region_name, start_date, end_date)
     annDeath = get_ann_death(province_name, region_name)
     tau = 25.1009
     lS0 = -2.70768
     trend1=-0.0311442
-    xTrends1 = facemask_val # todo: Google Trends for face mask
     xTemp = get_past_temp(province_name, region_name, end_date)
     Tmin2 = 24.6497
     dT2 = 0.00562779
@@ -961,23 +942,24 @@ def predict_cases(province_name, region_name, start_date, end_date, days_to_fore
     # xVax1 = vac_val # Fraction of vaccinated population (unto a month ago) -> time frame? -> slider value
     v1= 11.9697
     xBeta = math.log(get_total_pop(province_name, region_name) / (get_pwpd(province_name, region_name) * get_land_area(province_name, region_name))) / math.log(0.25**2/get_land_area(province_name, region_name)) #get_total_pop(province_name, region_name) / get_land_area(province_name, region_name) # Population Sparsity
-    # Daily Cases Tomorrow = Exp[lambda]*Daily cases today -> lambda
 
     # Vaccination data:
     Vax1 = vac_val # slider value
     Vax2 = 0
     first = True
     deaths_tomorrow = 0
-    deaths_today = last_mort
+    deaths_today = last_cases
     total_deaths_2_months_prior = get_total_deaths_2_months_prior(province_name, region_name, end_date)
     # total_deaths_2_weeks_prior = get_total_deaths_2_weeks_prior(province_name, region_name, end_date)
-
     for i in range(len(add_dates)):
+        date_in_forecast = datetime.datetime.strptime(end_date, '%Y-%m-%d') + datetime.timedelta(days=i)
         xAnnual = math.log(annDeath, 10) # Log10[Annual Death] -> calendar year
         if (first == False):
             xHerd = total_deaths / annDeath  #Total Covid Death/Annual Death -> Annual death as in 2021
+            xTrends1 = get_trends_on_day(province_name, region_name, date_in_forecast, facemask_val) # todo: Google Trends for face mask
+            xMob = get_mob_on_day(df_mobility, date_in_forecast, xMob_slider)
             if (i <= 60):
-                xHerd2 = total_deaths_2_months_prior / annDeath # Total Covid Death (more than 2 months ago)/Annual Death -> what does more than 2 months ago mean? 2 months prior
+                xHerd2 = total_deaths_2_months_prior / annDeath # Total Covid Death (2 months prior)/Annual Death
             else:
                 deaths_2_months = total_deaths_2_months_prior
                 prior = i - 60
@@ -1013,9 +995,10 @@ def predict_cases(province_name, region_name, start_date, end_date, days_to_fore
             first = False
             yVals.append(last_cases)
             total_deaths += last_cases
+            # annDeath += last_mort
+
 
     return yVals
-
 
 # -------------- MORTALITY HELPER FUNCTIONS --------------
 
@@ -1038,11 +1021,7 @@ def date(province_name, region_name, start_date, end_date): # todo: dates are in
 
 def r_avg(province_name, region_name, start_date, end_date): # todo: dates are in d-m-y
     start_date_str = datetime.datetime.strptime(start_date, '%Y-%m-%d').strftime('%m-%d-%Y')
-    # today.strftime("%Y-%m-%d")
-    # end_date_str = datetime.datetime.strptime(end_date, '%Y-%m-%d').strftime('%m-%d-%Y')
-    end_date_str = datetime.datetime.now().strftime("%m-%d-%Y")
-
-    delta = (datetime.datetime.now() - datetime.datetime.strptime(end_date, '%Y-%m-%d')).days
+    end_date_str = datetime.datetime.strptime(end_date, '%Y-%m-%d').strftime('%m-%d-%Y')
 
     filtered_df2 = df_mort[df_mort.date_death_report.between(
         start_date_str, end_date_str
@@ -1063,7 +1042,7 @@ def r_avg(province_name, region_name, start_date, end_date): # todo: dates are i
         vals1.append(key)
 
     global last_mort
-    last_mort = vals1[-delta]
+    last_mort = vals1[-1]
     
     return vals1
 
@@ -1159,35 +1138,29 @@ def ravg_cases(province_name, region_name, start_date, end_date): # todo: d-m-y
     )]
     dfcases_province = filtered_df[filtered_df.province == province_name]
     rolling_avgs = dfcases_province.cases[dfcases_province.health_region == region_name].rolling(window=7).mean()
+
     cases = []
     for key in rolling_avgs:
         cases.append(key)
-
     global last_cases
     last_cases = cases[-1]
-    return cases # dfcases_province.cases[dfcases_province.health_region == region_name].rolling(window=7).mean()
+
+    return cases
 
 # -------------- MOBILITY HELPER FUNCTIONS --------------
 
 def mobility(province_name, region_name, start_date, end_date):
-
     filtered_df = mobility_info[mobility_info.date.between(
         start_date, end_date
-        # datetime.datetime.strptime(start_date, '%Y-%m-%d').strftime('%d-%m-%Y'),
-        # datetime.datetime.strptime(end_date, '%Y-%m-%d').strftime('%d-%m-%Y')
     )]
-    
     weat_info_province = static_data[static_data.province_name == province_name]
     sub_region = weat_info_province.sub_region_2[weat_info_province.health_region == region_name].item()
 
     return filtered_df.workplaces_percent_change_from_baseline[mobility_info.sub_region_2 == sub_region].rolling(window=7).mean()
 
 def date_mob(province_name, region_name, start_date, end_date):
-
     filtered_df = mobility_info[mobility_info.date.between(
         start_date, end_date
-        # datetime.datetime.strptime(start_date, '%Y-%m-%d').strftime('%d-%m-%Y'),
-        # datetime.datetime.strptime(end_date, '%Y-%m-%d').strftime('%d-%m-%Y')
     )]
     
     weat_info_province = static_data[static_data.province_name == province_name]
@@ -1204,6 +1177,49 @@ def interpolate_mob_dates(province_name, region_name, start_date, end_date, days
         add_dates[i] = datetime.datetime.strptime(str(add_dates[i]), '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d')
     
     return add_dates
+
+def get_mob_on_day(df_mobility, day, xMob):
+    first_date_str = df_mobility['date'].iloc[0]
+    first_date = datetime.datetime.strptime(first_date_str, "%Y-%m-%d").date()
+    
+    days_since_first_day = day.date() - first_date
+    delta = days_since_first_day.days - 1 - 5 # todo: remove -5
+    # print(df_mobility)
+    # print("LENGTHHH: " + str(len(df_mobility)))
+    # print("delta: " + str(delta))
+    if (delta < len(df_mobility) and delta >= 0):
+        mob = df_mobility['workplaces_percent_change_from_baseline'].iloc[delta]
+    else:
+        mob = xMob
+    # print("RETURNING MOB: " + str(mob))
+    return mob
+
+def get_mob(province_name, region_name):
+    weat_info_province = static_data[static_data.province_name == province_name]
+    sub_region = weat_info_province.sub_region_2[weat_info_province.health_region == region_name].item()
+    mobs = mobility_info[mobility_info.sub_region_2 == sub_region]
+    filtered = mobs[['date', 'workplaces_percent_change_from_baseline']]
+    return filtered
+
+
+    # print("FIRST VALUE: " + mobs['date'].iloc[0])
+
+    # filtered = mobs[['date', 'workplaces_percent_change_from_baseline']]
+    # print("MOBS LENGTH: " + str(len(filtered)))
+    # print("FIRST DAY: " + str(filtered[0]))
+    # for row in filtered:
+    #     print("MOBBB: " + row)
+
+    # return filtered_df.workplaces_percent_change_from_baseline[mobility_info.sub_region_2 == sub_region].rolling(window=7).mean()
+
+    # days_since_first_day = day.date() - datetime.date(2020, 1, 1)
+    # delta = days_since_first_day.days - 43 - 11 # todo: remove - 11
+    # df_dates = df_trends[str(get_geocode(province_name, region_name))]
+    # if (delta < len(df_trends.index)):
+    #     trend_42_days_ago = df_dates[delta]
+    # else:
+    #     trend_42_days_ago = xMob
+    # return trend_42_days_ago
 
 # -------------- WEATHER HELPER FUNCTIONS --------------
 
@@ -1310,62 +1326,25 @@ def vac_df_data(province_name, region_name):
     return vac_data
 
 def vaccination_data(province_name, region_name):
-
     vac_base_url = "https://api.covid19tracker.ca/reports/regions/"
     vac_base_url_prov = "https://api.covid19tracker.ca/reports/province/"
 
-    if province_name == 'Alberta':
+    if (province_name == 'Alberta') or (province_name == 'New Brunswick') or (province_name == 'NL') or (province_name == 'Nova Scotia'):
         api = vac_base_url_prov + str(provinceid(province_name, region_name))   
-        response = requests.get(api)
-        api_data = response.json()["data"]
-    
-    elif province_name == 'New Brunswick':
-        api = vac_base_url_prov + str(provinceid(province_name, region_name))   
-        response = requests.get(api)
-        api_data = response.json()["data"]
-    
-    elif province_name == 'NL':
-        api = vac_base_url_prov + str(provinceid(province_name, region_name))   
-        response = requests.get(api)
-        api_data = response.json()["data"]
-        
-    elif province_name == 'Nova Scotia':
-        api = vac_base_url_prov + str(provinceid(province_name, region_name))   
-        response = requests.get(api)
-        api_data = response.json()["data"]    
-    
     else:
         api = vac_base_url + str(get_uid(province_name, region_name))   
-        response = requests.get(api)
-        api_data = response.json()["data"]
     
+    response = requests.get(api)
+    api_data = response.json()["data"] 
+
     return api_data
 
-def df_vaccinations(province_name, region_name):
-    
-    if province_name == 'Alberta':
-        df_vaccinations = pd.DataFrame(vac_df_data(province_name, region_name), columns = ['date','total_vaccinations'])
-        df_vaccinations = df_vaccinations.dropna()
+def df_vaccinations(province_name, region_name):    
+    df_vaccinations = pd.DataFrame(vac_df_data(province_name, region_name), columns = ['date','total_vaccinations'])
+    df_vaccinations = df_vaccinations.dropna()
+    if (province_name == 'Alberta') or (province_name == 'New Brunswick') or (province_name == 'NL') or (province_name == 'Nova Scotia'):
         df_vaccinations['total_vaccinations'] = df_vaccinations.total_vaccinations.div(get_prov_pop(province_name, region_name))
-    
-    elif province_name == 'New Brunswick':
-        df_vaccinations = pd.DataFrame(vac_df_data(province_name, region_name), columns = ['date','total_vaccinations'])
-        df_vaccinations = df_vaccinations.dropna()
-        df_vaccinations['total_vaccinations'] = df_vaccinations.total_vaccinations.div(get_prov_pop(province_name, region_name))
-        
-    elif province_name == 'NL':
-        df_vaccinations = pd.DataFrame(vac_df_data(province_name, region_name), columns = ['date','total_vaccinations'])
-        df_vaccinations = df_vaccinations.dropna()
-        df_vaccinations['total_vaccinations'] = df_vaccinations.total_vaccinations.div(get_prov_pop(province_name, region_name))
-        
-    elif province_name == 'Nova Scotia':
-        df_vaccinations = pd.DataFrame(vac_df_data(province_name, region_name), columns = ['date','total_vaccinations'])
-        df_vaccinations = df_vaccinations.dropna()
-        df_vaccinations['total_vaccinations'] = df_vaccinations.total_vaccinations.div(get_prov_pop(province_name, region_name))
-    
     else:
-        df_vaccinations = pd.DataFrame(vac_df_data(province_name, region_name), columns = ['date','total_vaccinations'])
-        df_vaccinations = df_vaccinations.dropna()
         df_vaccinations['total_vaccinations'] = df_vaccinations.total_vaccinations.div(get_total_pop(province_name, region_name))
     
     return df_vaccinations
@@ -1382,7 +1361,7 @@ def get_frac_vaccinations_1_month_prior(province_name, region_name):
     df = df_vaccinations(province_name, region_name)
     
     df_1_month = df[df.date.between(
-    first_day, end_date_1_month_ago
+        first_day, end_date_1_month_ago
     )]
 
     return df_1_month.mean().item()
@@ -1422,11 +1401,18 @@ def df_trends_data(province_name, region_name):
     df_trends = pd.DataFrame(trends_data, columns = ['date', str(get_geocode(province_name, region_name))])
     return df_trends
 
-# def get_trends_day(province_name, region_name, day):
-    # df_dates = df_trends[str(get_geocode(province_name, region_name))]["2020-01-02"]
-    # print("TREND ON DATE: " + df_trends[str(get_geocode(province_name, region_name))][0]) #['2020-01-02'])
+def get_trends_on_day(province_name, region_name, day, trends):
+    days_since_first_day = day.date() - datetime.date(2020, 1, 1)
+    delta = days_since_first_day.days - 43 - 11 # todo: remove - 11
+    df_dates = df_trends[str(get_geocode(province_name, region_name))]
+    if (delta < len(df_trends.index) and delta >= 0):
+        trend_42_days_ago = df_dates[delta]
+    else:
+        trend_42_days_ago = trends
+    return trend_42_days_ago
 
 
 
 if __name__ == "__main__":
     app.run_server(debug=True)
+
