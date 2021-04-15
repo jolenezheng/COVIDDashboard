@@ -4,6 +4,7 @@ import dash
 import dash_table
 import random
 import requests
+import time
 import dash_core_components as dcc
 import dash_bootstrap_components as dbc
 import dash_html_components as html
@@ -40,6 +41,7 @@ static_data = pd.read_csv(r'data/health_regions_static_data.csv', encoding='Lati
 # mobility_info = pd.read_csv(r'data/mobility_test.csv')
 mobility_info = pd.read_csv(r'data/2020_CA_Region_Mobility_Report.csv')
 mobility_info["sub_region_2"] = mobility_info["sub_region_2"]
+df_mobility = None
 
 df_trends = pd.read_csv(r'data/google_trends_face_mask_canada.csv')
 
@@ -157,7 +159,7 @@ app.layout = html.Div(
                                                 ),
                                             ]
                                         ),
-                                    )),
+                                    ), className='input-space'),
                                     dbc.Row(dbc.Col(
                                         html.Div(
                                             children=[
@@ -169,7 +171,7 @@ app.layout = html.Div(
                                                 ),
                                             ]
                                         ),
-                                    )),
+                                    ), className='input-space'),
                                     dbc.Row(dbc.Col(
                                         html.Div(
                                             children=[
@@ -188,7 +190,7 @@ app.layout = html.Div(
                                                 ),
                                             ]
                                         ),
-                                    )),
+                                    ), className='input-space'),
                                 ]),
                             ], color="dark", outline=True),
                     ), className="mb-4"),
@@ -217,7 +219,7 @@ app.layout = html.Div(
                                                 ),
                                             ]
                                         ),
-                                    )),
+                                    ), className='input-space'),
                                     dbc.Row(dbc.Col(
                                         html.Div(
                                             children=[
@@ -230,7 +232,7 @@ app.layout = html.Div(
                                                     min=0,
                                                     max=100,
                                                     step=1,
-                                                    value=20,
+                                                    value=0,
                                                     marks={
                                                         0: '0% (normal activity)',
                                                         100: '100% (total lockdown)'
@@ -238,7 +240,7 @@ app.layout = html.Div(
                                                 ),
                                             ]
                                         ),
-                                    )),
+                                    ), className='input-space'),
                                     dbc.Row(dbc.Col(
                                         html.Div(
                                             children=[
@@ -259,7 +261,7 @@ app.layout = html.Div(
                                                 ),
                                             ]
                                         ),
-                                    )),
+                                    ), className='input-space'),
                                     dbc.Row(dbc.Col(
                                         html.Div(
                                             children=[
@@ -277,7 +279,7 @@ app.layout = html.Div(
                                                 ),
                                             ]
                                         ),
-                                    )),
+                                    ), className='input-space'),
                                     dbc.Row(dbc.Col(
                                         html.Div(
                                             children=[
@@ -297,11 +299,11 @@ app.layout = html.Div(
                                                 ),
                                             ]
                                         ),
-                                    )),
+                                    ), className='input-space'),
                                 ]),
                             ], color="dark", outline=True),
                     ), className="mb-4"),
-                ],width=3,className="column"),
+                ], xl=3, lg=3, md=12, sm=12, xs=12, className="column"), # ,width=3,className="column"),
                 dbc.Col(
                     html.Div([
                         dbc.Row([
@@ -441,7 +443,6 @@ app.layout = html.Div(
                                     ], color="dark", inverse=True),
                             ), 
                         ], className="mb-4"),
-
                         dbc.Row([
                             dbc.Col(
                                 dbc.Card(
@@ -479,11 +480,31 @@ app.layout = html.Div(
                             ),
                         ], className="mb-4")]),
                     className="column",
+                    xl=9, lg=9, md=12, sm=12, xs=12,
                 ),
             ], className="mb-4"
         ),
     ]
 )
+
+@app.callback(
+    [
+        Output("facemask-slider", "value"),
+        Output("mobility-slider", "value"),
+        Output("vaccine-slider", "value"),
+        Output("forecast-slider", "value"),
+    ],
+    [dash.dependencies.Input('region-dropdown', 'value'), dash.dependencies.Input('subregion-dropdown', 'value'),]
+)
+def init_slider_vals(province_name, region_name):
+    global df_mobility
+    df_mobility = get_mob(province_name, region_name)
+    mob = get_last_mob()
+    trends = get_last_trends(province_name, region_name)
+    vac = get_last_vac(province_name, region_name) / round(get_total_pop(province_name, region_name), 0) * 100
+    print("INIT: " + str(vac))
+    return trends, mob, vac, 3
+
 
 @app.callback(
     [
@@ -575,14 +596,22 @@ def update_mortality_chart(province_name, region, start_date, end_date, day_to_s
     death_dates = date(province_name, region, start_date, today.strftime("%Y-%m-%d"))
     death_vals = r_avg(province_name, region, start_date, end_date)
 
+    global df_mobility
     df_mobility = get_mob(province_name, region)
+    # set_last_mob()
 
     pred_fig = go.Figure()
 
+
+    # time.sleep(1)
     for i in range(10):
+        print("===== CURVE: " + str(i) + " ========")
+        dates = predicted_dates(province_name, region, start_date, day_to_start_forecast, days_to_forecast)
+        deaths = predicted_deaths(province_name, region, start_date, day_to_start_forecast, days_to_forecast, df_mobility, xMob, facemask, vac)
+        # if (i > 1):
         pred_fig.add_trace(go.Scatter(
-            x=predicted_dates(province_name, region, start_date, day_to_start_forecast, days_to_forecast),
-            y=predicted_deaths(province_name, region, start_date, day_to_start_forecast, days_to_forecast, df_mobility, xMob, facemask, vac),
+            x=dates,
+            y=deaths,
             name='Predicted Deaths',
         ))
 
@@ -642,12 +671,13 @@ def update_cases_charts(province_name, region, start_date, end_date, day_to_star
     cases_dates = date(province_name, region, start_date, today.strftime("%Y-%m-%d"))
     cases_vals = ravg_cases(province_name, region, start_date, today.strftime("%Y-%m-%d"))
 
+    global df_mobility
     df_mobility = get_mob(province_name, region)
-
+    # set_last_mob()
 
     cases_fig = go.Figure()
     
-    for i in range(10):
+    for i in range(5):
         cases_fig.add_trace(go.Scatter(
             x=predicted_dates(province_name, region, start_date, day_to_start_forecast, days_to_forecast),
             y=predicted_cases(province_name, region, start_date, day_to_start_forecast, days_to_forecast, df_mobility, xMob, facemask, vac),
@@ -849,7 +879,7 @@ def get_past_temp(province_name, region_name, end_date):
     # if 12 days ago > end_date (no past data for this date), then get historical average
     #else:
 
-    return 12
+    return 0.0 # 12.0
 
 # -------------- PREDICTIVE MODEL HELPER FUNCTIONS --------------
 
@@ -876,29 +906,31 @@ def predicted_deaths(province_name, region_name, start_date, end_date, days_to_f
     lS0 = -2.70768
     trend1=-0.0311442
     xTemp = get_past_temp(province_name, region_name, end_date)
-    Tmin2 = 24.6497
+    tmin2 = 24.6497
     dT2 = 0.00562779
     dT3 = 0.000182757
-    H0 = 2.30833
-    H2 = 5.89094
-    Anl = -0.007345
+    h0 = 2.30833
+    h2 = 5.89094
+    anl = -0.007345
     xHouse = get_avg_house(province_name, region_name) # Average number of people/household
     house2 = 0.0198985
     # xMob = -30 # get_mob(province_name, region_name, start_date) # todo: Google Workplace Mobility -> get from slider
     mob1 = 0.0379239
-    v2 = 0  
-    v1 = 0 # Fraction of vaccinated population (unto a month ago) -> time frame? -> slider value
+    v2 = 0.0 
+    # v1 = 0 # Fraction of vaccinated population (unto a month ago) -> time frame? -> slider value
     v1 = 11.9697
     xLogPWPD = math.log(get_pwpd(province_name, region_name) * get_frac_pop_over_80(province_name, region_name), 10) # Log10[PWD*AgreFrac[>80]] -> base 10
     xBeta = math.log(get_total_pop(province_name, region_name) / (get_pwpd(province_name, region_name) * get_land_area(province_name, region_name))) / math.log(0.25**2/get_land_area(province_name, region_name)) #get_total_pop(province_name, region_name) / get_land_area(province_name, region_name) # Population Sparsity
-    Vax1 = vac_val # slider value
-    Vax2 = 0
+    vax1 = vac_val # slider value / real vac data
+    vax2 = 0.0
     first = True
-    deaths_tomorrow = 0
+    deaths_tomorrow = 0.0
     deaths_today = last_mort
     total_deaths_2_months_prior = get_total_deaths_2_months_prior(province_name, region_name, end_date)
 
     print("\n\n ============ NEW LINE ============ \n\n")
+    # random.seed(10)
+
 
     for i in range(len(add_dates)):
         date_in_forecast = datetime.datetime.strptime(end_date, '%Y-%m-%d') + datetime.timedelta(days=i)
@@ -906,7 +938,7 @@ def predicted_deaths(province_name, region_name, start_date, end_date, days_to_f
         if (first == False):
             xHerd = total_deaths / annDeath  #Total Covid Death/Annual Death -> Annual death as in 2021
             xTrends1 = get_trends_on_day(province_name, region_name, date_in_forecast, facemask_val) # todo: Google Trends for face mask
-            xMob = get_mob_on_day(df_mobility, date_in_forecast, xMob_slider)
+            xMob = get_mob_on_day(date_in_forecast, xMob_slider)
             if (i <= 60):
                 xHerd2 = total_deaths_2_months_prior / annDeath # Total Covid Death (more than 2 months ago)/Annual Death -> what does more than 2 months ago mean? 2 months prior
             else:
@@ -922,26 +954,38 @@ def predicted_deaths(province_name, region_name, start_date, end_date, days_to_f
                 for j in range(len(yVals)):
                     deaths_2_weeks += yVals[j]
             else:
-                deaths_2_weeks = 0
+                deaths_2_weeks = 0.0
                 prior_2_weeks = yVals[-14:]
                 for j in range(len(prior_2_weeks)):
                     deaths_2_weeks += prior_2_weeks[j]
 
-            print("Ddeath_2_weekS: " + str(deaths_2_weeks) + " for i = " + str(i))
+            # print("xHerd2: " + str(xHerd2) + " for i = " + str(i))
+            # print("xHerd: " + str(xHerd) + " for i = " + str(i))
+            # print("xTrends1: " + str(xTrends1) + " for i = " + str(i))
+            # print("xMob: " + str(xMob) + " for i = " + str(i))
             
             sigma = math.sqrt(0.092 / (14.0 + deaths_2_weeks))
             lambda_ = math.exp(0.5*(lS0 + math.log(10.0)*xLogPWPD + math.log(0.25) +
-                    2.0 / (4.0 - xBeta) * math.log((2.0 - xBeta / 2.0)/(2 * 10**xLogPWPD * 0.25**2.0)) - 
-                    H0 * xHerd - H2 * (xHerd - xHerd2) * 6.0 - v1*Vax1 + mob1*xMob + 
-                    trend1 * xTrends1 / 2.0 + dT2*(xTemp - Tmin2)**2.0 + dT3*(xTemp - Tmin2)**3.0 -
-                    math.log(tau))) - 1.0 / tau + house2 * (xHouse - 2.75) + Anl * (xAnnual - 3.65) - v2*Vax2
-            lambda_ += random.gauss(0.0, sigma) # Sqrt[0.092/(14 + Death in Past two weeks)
+                    2.0 / (4.0 - xBeta) * math.log((2.0 - xBeta / 2.0)/(2.0 * 10**xLogPWPD * 0.25**2.0)) - 
+                    h0 * xHerd - h2 * (xHerd - xHerd2) * 6.0 - v1*vax1 + mob1*xMob + 
+                    trend1 * xTrends1 / 2.0 + dT2*(xTemp - tmin2)**2.0 + dT3*(xTemp - tmin2)**3.0 -
+                    math.log(tau))) - 1.0 / tau + house2 * (xHouse - 2.75) + anl * (xAnnual - 3.65) - v2*vax2
+            delta = random.gauss(0.0, sigma)
+            # print("sigma: " + str(sigma) + " for i = " + str(i))
+            # print("lambda_ before: " + str(lambda_) + " for i = " + str(i))
+
+            lambda_ += delta # Sqrt[0.092/(14 + Death in Past two weeks)
             deaths_tomorrow = math.exp(lambda_) * deaths_today
-            # deaths_tomorrow += random.uniform(-0.01,0.1)
             yVals.append(deaths_tomorrow)
             deaths_today = deaths_tomorrow
             total_deaths += deaths_today
             annDeath += deaths_today
+
+            # print("lambda_ after: " + str(lambda_) + " for i = " + str(i))
+            # print("Death_2_weeks: " + str(deaths_2_weeks) + " for i = " + str(i))
+            # print("delta: " + str(delta) + " for i = " + str(i) + " \n")
+
+
         else:
             first = False
             yVals.append(last_mort)
@@ -1004,7 +1048,7 @@ def predicted_cases(province_name, region_name, start_date, end_date, days_to_fo
         if (first == False):
             xHerd = total_deaths / annDeath  #Total Covid Death/Annual Death -> Annual death as in 2021
             xTrends1 = 2 # get_trends_on_day(province_name, region_name, date_in_forecast, facemask_val) # todo: Google Trends for face mask
-            xMob = get_mob_on_day(df_mobility, date_in_forecast, xMob_slider)
+            xMob = get_mob_on_day(date_in_forecast, xMob_slider)
             if (i <= 60):
                 xHerd2 = total_deaths_2_months_prior / annDeath # Total Covid Death (2 months prior)/Annual Death
             else:
@@ -1129,10 +1173,11 @@ def get_total_deaths_this_year(province_name, region_name, end_date): # todo: ch
     return total_deaths_this_year
 
 def get_total_deaths_2_months_prior(province_name, region_name, end_date):
+    date_up_to = datetime.datetime.strptime(end_date, "%Y-%m-%d")
     first_day = df_mort.date_death_report.min().date().strftime('%d-%m-%Y')
 
     delta_2_months = datetime.timedelta(days=60)
-    end_date_2_months_ago = current_date - delta_2_months
+    end_date_2_months_ago = date_up_to - delta_2_months
     end_date_2_months_ago = end_date_2_months_ago.strftime('%d-%m-%Y')
 
     df_2_months = df_mort[df_mort.date_death_report.between(
@@ -1149,11 +1194,11 @@ def get_total_deaths_2_months_prior(province_name, region_name, end_date):
     return total_deaths_2_months
 
 def get_total_deaths_2_weeks_prior(province_name, region_name, days_prior, date_up_to_str):
-    # date_up_to = datetime.datetime.strptime(date_up_to_str, "%Y-%m-%d")
+    date_up_to = datetime.datetime.strptime(date_up_to_str, "%Y-%m-%d")
     delta = datetime.timedelta(days=days_prior)
-    first_day = current_date - delta # todo: date_up_to
+    first_day = date_up_to - delta # todo: date_up_to
     # first_day = first_day.strftime('%d-%m-%Y')
-    end_date_2_weeks_ago = current_date # todo: date_up_to
+    end_date_2_weeks_ago = date_up_to # todo: date_up_to
 
     df_2_weeks = df_mort[df_mort.date_death_report.between(
         first_day, end_date_2_weeks_ago
@@ -1261,7 +1306,7 @@ def interpolate_mob_dates(province_name, region_name, start_date, end_date, days
     
     return add_dates
 
-def get_mob_on_day(df_mobility, day, xMob):
+def get_mob_on_day(day, xMob):
     first_date_str = df_mobility['date'].iloc[0]
     first_date = datetime.datetime.strptime(first_date_str, "%Y-%m-%d").date()
     
@@ -1276,6 +1321,13 @@ def get_mob_on_day(df_mobility, day, xMob):
         mob = xMob
     # print("RETURNING MOB: " + str(mob) + " for day:" + str(day)) 
     return mob
+
+def get_last_mob():
+    total_mob_records = len(df_mobility) - 1
+    today_mob = df_mobility['workplaces_percent_change_from_baseline'].iloc[total_mob_records]
+    print("setting last mob to be...... " + str(-today_mob))
+    last_mob = -today_mob
+    return last_mob
 
 def get_mob(province_name, region_name):
     weat_info_province = static_data[static_data.province_name == province_name]
@@ -1383,6 +1435,17 @@ def get_vaccination_vals(province_name, region_name):
 
     return total_vaccinations
 
+def get_last_vac(province_name, region_name):
+    total_vaccinations = []
+    for d in vaccination_data(province_name, region_name):
+        vaccine = d['total_vaccinations']
+        total_vaccinations.append(vaccine)
+
+    last_vac = total_vaccinations[len(total_vaccinations) - 1]
+    print("last vac: " + str(last_vac))
+
+    return last_vac
+
 def vac_df_data(province_name, region_name):
     vac_data = {'date':  get_vaccination_dates(province_name, region_name),
         'total_vaccinations': get_vaccination_vals(province_name, region_name)}
@@ -1476,6 +1539,12 @@ def get_trends_on_day(province_name, region_name, day, trends):
     # print("RETURNING TRENDS: " + str(trend_42_days_ago) + " for day:" + str(day)) 
 
     return trend_42_days_ago
+
+def get_last_trends(province_name, region_name):
+    df_dates = df_trends[str(get_geocode(province_name, region_name))]
+    print("returning trends: " + str(df_dates[len(df_trends.index) - 1]))
+    return df_dates[len(df_trends.index) - 1]
+
 
 
 
