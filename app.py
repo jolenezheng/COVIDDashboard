@@ -169,7 +169,7 @@ app.layout = html.Div(
                                                 dcc.Dropdown(
                                                     id='subregion-dropdown',
                                                     className='dropdown',
-                                                    value = 'Waterloo'
+                                                    value = 'Toronto'
                                                 ),
                                             ]
                                         ),
@@ -836,7 +836,6 @@ def predicted_deaths(province_name, region_name, start_date, end_date, days_to_f
     Tmin2 = 24.6497
     dT2 = 0.00562779
     dT3 = 0.000182757
-    xLogPWPD = math.log(get_pwpd(province_name, region_name) * get_frac_pop_over_80(province_name, region_name), 10) # Log10[PWD*AgreFrac[>80]] -> base 10
     H0 = 2.30833
     H2 = 5.89094
     Anl = -0.007345
@@ -847,6 +846,7 @@ def predicted_deaths(province_name, region_name, start_date, end_date, days_to_f
     v2 = 0  
     v1 = 0 # Fraction of vaccinated population (unto a month ago) -> time frame? -> slider value
     v1 = 11.9697
+    xLogPWPD = math.log(get_pwpd(province_name, region_name) * get_frac_pop_over_80(province_name, region_name), 10) # Log10[PWD*AgreFrac[>80]] -> base 10
     xBeta = math.log(get_total_pop(province_name, region_name) / (get_pwpd(province_name, region_name) * get_land_area(province_name, region_name))) / math.log(0.25**2/get_land_area(province_name, region_name)) #get_total_pop(province_name, region_name) / get_land_area(province_name, region_name) # Population Sparsity
     Vax1 = vac_val # slider value
     Vax2 = 0
@@ -882,13 +882,13 @@ def predicted_deaths(province_name, region_name, start_date, end_date, days_to_f
                 for j in range(len(prior_2_weeks)):
                     deaths_2_weeks += prior_2_weeks[j]
             
-            sigma = math.sqrt(0.092/(14+deaths_2_weeks))
-            lambda_ = math.exp(.5*(lS0 + math.log(10)*xLogPWPD + math.log(0.25) +
-                    2/(4 - xBeta)*math.log((2 - xBeta/2)/(2*10**xLogPWPD*.25**2)) - 
-                    H0*xHerd - H2*(xHerd - xHerd2)*6 - v1*Vax1 + mob1*xMob + 
-                    trend1*xTrends1 + dT2*(xTemp - Tmin2)**2.0 + dT3*(xTemp - Tmin2)**3.0 -
-                    math.log(tau))) - 1/tau + house2*(xHouse - 2.75) + Anl*(xAnnual - 3.65) - v2*Vax2
-            lambda_ += random.gauss(0, sigma) # Sqrt[0.092/(14 + Death in Past two weeks)
+            sigma = math.sqrt(0.092 / (14.0 + deaths_2_weeks))
+            lambda_ = math.exp(0.5*(lS0 + math.log(10.0)*xLogPWPD + math.log(0.25) +
+                    2.0 / (4.0 - xBeta) * math.log((2.0 - xBeta / 2.0)/(2 * 10**xLogPWPD * 0.25**2.0)) - 
+                    H0 * xHerd - H2 * (xHerd - xHerd2) * 6.0 - v1*Vax1 + mob1*xMob + 
+                    trend1 * xTrends1 / 2.0 + dT2*(xTemp - Tmin2)**2.0 + dT3*(xTemp - Tmin2)**3.0 -
+                    math.log(tau))) - 1.0 / tau + house2 * (xHouse - 2.75) + Anl * (xAnnual - 3.65) - v2*Vax2
+            lambda_ += random.gauss(0.0, sigma) # Sqrt[0.092/(14 + Death in Past two weeks)
             deaths_tomorrow = math.exp(lambda_) * deaths_today
             # deaths_tomorrow += random.uniform(-0.01,0.1)
             yVals.append(deaths_tomorrow)
@@ -920,7 +920,6 @@ def predicted_cases(province_name, region_name, start_date, end_date, days_to_fo
 
     set_total_deaths(province_name, region_name, start_date, end_date)
 
-    # t = r_avg(province_name, region_name, start_date, end_date)
     annDeath = get_ann_death(province_name, region_name)
     tau = 25.1009
     lS0 = -2.70768
@@ -947,8 +946,8 @@ def predicted_cases(province_name, region_name, start_date, end_date, days_to_fo
     Vax1 = vac_val # slider value
     Vax2 = 0
     first = True
-    deaths_tomorrow = 0
-    deaths_today = last_cases
+    cases_tomorrow = 0
+    cases_today = last_cases
     total_deaths_2_months_prior = get_total_deaths_2_months_prior(province_name, region_name, end_date)
     # total_deaths_2_weeks_prior = get_total_deaths_2_weeks_prior(province_name, region_name, end_date)
     for i in range(len(add_dates)):
@@ -978,19 +977,19 @@ def predicted_cases(province_name, region_name, start_date, end_date, days_to_fo
                 for j in range(len(prior_2_weeks)):
                     deaths_2_weeks += prior_2_weeks[j]
             
-            sigma = math.sqrt(0.092/(14+deaths_2_weeks))
-            lambda_ = math.exp(.5*(lS0 + math.log(10)*xLogPWPD + math.log(0.25) +
-                    2/(4 - xBeta)*math.log((2 - xBeta/2)/(2*10**xLogPWPD*.25**2)) - 
-                    H0*xHerd - H2*(xHerd - xHerd2)*6 - v1*Vax1 + mob1*xMob + 
+            sigma = math.sqrt(0.092/(14.0 + deaths_2_weeks))
+            lambda_ = math.exp(0.5*(lS0 + math.log(10)*xLogPWPD + math.log(0.25) +
+                    2.0/(4.0 - xBeta)*math.log((2.0 - xBeta/2)/(2*10**xLogPWPD*0.25**2.0)) - 
+                    H0*xHerd - H2*(xHerd - xHerd2)*6.0 - v1*Vax1 + mob1*xMob + 
                     trend1*xTrends1 + dT2*(xTemp - Tmin2)**2.0 + dT3*(xTemp - Tmin2)**3.0 -
-                    math.log(tau))) - 1/tau + house2*(xHouse - 2.75) + Anl*(xAnnual - 3.65) - v2*Vax2
+                    math.log(tau))) - 1.0/tau + house2*(xHouse - 2.75) + Anl*(xAnnual - 3.65) - v2*Vax2
             lambda_ += random.gauss(0, sigma) # Sqrt[0.092/(14 + Death in Past two weeks)
-            deaths_tomorrow = math.exp(lambda_) * deaths_today
+            cases_tomorrow = math.exp(lambda_) * cases_today
             if (i >= 14):
-                yVals.append(deaths_tomorrow)
-            deaths_today = deaths_tomorrow
-            total_deaths += deaths_today
-            annDeath += deaths_today
+                yVals.append(cases_tomorrow)
+            cases_today = cases_tomorrow
+            total_deaths += cases_today
+            annDeath += cases_today
         else:
             first = False
             yVals.append(last_cases)
