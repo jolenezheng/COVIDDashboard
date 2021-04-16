@@ -1489,7 +1489,7 @@ def get_past_temp(province_name, region_name, day):
     
     days_since_first_day = day.date() - first_date
     temp = avg_temp_vals[days_since_first_day.days]
-    print("returning temp " + temp + " for day: " + str(day))
+    print("returning temp " + str(temp) + " for day: " + str(day))
     return temp
     # delta = days_since_first_day.days - 1 - 5 # todo: remove -5
     # # print(df_mobility)
