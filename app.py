@@ -1467,8 +1467,9 @@ def avg_temp_data(begin_year, end_year, data):
         date_range = next_day.strftime('%m-%d')
         df_weat_date = df_weat.groupby('Date')['Mean Temperature'].mean()
 
+    print("size of df_weat_date: " + str(len(df_weat_date)))
     for val in df_weat_date:
-        print("VAL_: " + val)
+        print("VAL_: " + str(val))
     return df_weat_date
 
 def get_past_temp(province_name, region_name, date):
