@@ -970,7 +970,7 @@ def predicted_deaths(province_name, region_name, start_date, end_date, days_to_f
             lambda_ = math.exp(0.5*(lS0 + math.log(10.0)*xLogPWPD + math.log(0.25) +
                     2.0 / (4.0 - xBeta) * math.log((2.0 - xBeta / 2.0)/(2.0 * 10**xLogPWPD * 0.25**2.0)) - 
                     h0 * xHerd - h2 * (xHerd - xHerd2) * 6.0 - v1*vax1 + mob1*xMob + 
-                    trend1 * xTrends1 / 2.0 + dT2*(xTemp - tmin2)**2.0 + dT3*(xTemp - tmin2)**3.0 -
+                    trend1 * xTrends1 + dT2*(xTemp - tmin2)**2.0 + dT3*(xTemp - tmin2)**3.0 -
                     math.log(tau))) - 1.0 / tau + house2 * (xHouse - 2.75) + anl * (xAnnual - 3.65) - v2*vax2
             delta = random.gauss(0.0, sigma)
             # print("sigma: " + str(sigma) + " for i = " + str(i))
