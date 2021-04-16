@@ -55,6 +55,8 @@ total_deaths = 0
 
 initial_load = True
 
+go_to_sleep = True
+
 # df_mob = pd.read_csv('https://www.gstatic.com/covid19/mobility/Global_Mobility_Report.csv')
 
 
@@ -271,7 +273,7 @@ app.layout = html.Div(
                                                     min_date_allowed=df_mort.date_death_report.min().date(),
                                                     max_date_allowed=df_mort.date_death_report.max().date(), # df_mort.date_death_report.max().date(),
                                                     initial_visible_month=df_mort.date_death_report.max().date(),
-                                                    date=df_mort.date_death_report.max().date(), # "2020-03-13"
+                                                    date= "2020-11-01", # df_mort.date_death_report.max().date(), # "2020-03-13"
                                                     # end_date=df_mort.date_death_report.max().date(), #"2021-03-31"
                                                 ),
                                             ]
@@ -295,6 +297,11 @@ app.layout = html.Div(
                                                     },
                                                 ),
                                             ]
+                                        ),
+                                    ), className='input-space'),
+                                    dbc.Row(dbc.Col(
+                                        html.Div(
+                                            html.Button('Rerun', id='rerun-btn', n_clicks=0),
                                         ),
                                     ), className='input-space'),
                                 ]),
@@ -514,7 +521,7 @@ def init_slider_vals(province_name, region_name, date_str):
         vac = get_last_vac(province_name, region_name) / round(get_total_pop(province_name, region_name), 0) * 100
     print("INIT MOB: " + str(mob))
     initial_load = False
-    return trends, mob, vac, 3
+    return trends, mob, 0, 3 # todo: change 0 -> vac
 
 
 @app.callback(
@@ -596,9 +603,10 @@ def update_province_name(province_name):
         Input('facemask-slider', 'value'),
         Input('mobility-slider', 'value'),
         Input('vaccine-slider', 'value'),
+        Input('rerun-btn', 'n_clicks')
     ],
 )
-def update_mortality_chart(province_name, region, start_date, end_date, day_to_start_forecast, days_to_forecast, facemask, xMob, vac):
+def update_mortality_chart(province_name, region, start_date, end_date, day_to_start_forecast, days_to_forecast, facemask, xMob, vac, n_clicks):
     province_name = update_province_name(province_name)
     xMob = -xMob
     facemask = facemask * 70 / 100
@@ -616,6 +624,8 @@ def update_mortality_chart(province_name, region, start_date, end_date, day_to_s
 
     # time.sleep(1)
     for i in range(10):
+        if (i < 3):
+            time.sleep(3)
         print("===== CURVE: " + str(i) + " ========")
         dates = predicted_dates(province_name, region, start_date, day_to_start_forecast, days_to_forecast)
         deaths = predicted_deaths(province_name, region, start_date, day_to_start_forecast, days_to_forecast, df_mobility, xMob, facemask, vac)
