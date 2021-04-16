@@ -1,74 +1,74 @@
-body {
+/* body {
   font-family: "Lato", sans-serif;
   margin: 0;
   background-color: #F7F7F7;
   display: block;
-}
+} */
 
-.header {
+/* .header {
   background-color: #222222;
   height: 288px;
   padding: 16px 0 0 0;
-}
+} */
 
-.header-title {
+/* .header-title {
   color: #000000;
   font-size: 48px;
   font-weight: bold;
   text-align: center;
   margin: 5 auto;
-}
+} */
 
-.header-description {
+/* .header-description {
   color: #CFCFCF;
   margin: 4px auto;
   text-align: center;
   max-width: 384px;
-}
+} */
 
 .dropdown .VirtualizedSelectFocusedOption {
   background-color: rgb(168, 170, 177);
   color: black;
 }
 
+.input-space {
+  margin-bottom: 5%;
+}
 
-
-.Select-control {
+/* .Select-control {
   width: 256px;
   height: 48px;
-}
+} */
 
-.Select--single > .Select-control .Select-value, .Select-placeholder {
+/* .Select--single > .Select-control .Select-value, .Select-placeholder {
   line-height: 48px;
-}
+} */
 
-.Select--multi .Select-value-label {
+/* .Select--multi .Select-value-label {
   line-height: 32px;
-}
+} */
 
 .dropdown-title {
-  margin-top: 20px;
-  margin-bottom: 10px;
+  /* margin-top: 20px;
+  margin-bottom: 10px; */
   color: #4a65ad;
   font-weight: 300;
 }
 
 
 .column {
-  padding: 20px 50px 20px 50px;
+  padding-top: 1%;
+  padding-bottom: 1%;
+  padding-left: 2%;
+  padding-right: 2%;
 
-  /* padding-left: 50px;
-  padding-left: 50px;
-  padding-left: 50px;
-  padding-right: 50px; */
+  /* padding: 20px 50px 20px 50px; */
 }
 
-
-.options-header {
+/* .options-header {
   padding-top: 10px;
   padding-bottom: 10px;
   font-size: 20px;
   width: 100%;
-  /* background-color: #4a65ad; */
-}
+} */
 
