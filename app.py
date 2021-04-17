@@ -1472,6 +1472,9 @@ def avg_temp_data(begin_year, end_year, data):
     for val in df_weat_date:
         avg_temp_vals.append(val)
         print("VAL_: " + str(val))
+
+    print("size of avg_temp_vals: " + str(len(avg_temp_vals)))
+    
     return df_weat_date
 
 def get_past_temp(province_name, region_name, day):
@@ -1481,7 +1484,11 @@ def get_past_temp(province_name, region_name, day):
     first_day_of_year = year + "-01-01"
     first_date = datetime.datetime.strptime(first_day_of_year, "%Y-%m-%d").date()
     days_since_first_day = day.date() - first_date
-    temp = avg_temp_vals[days_since_first_day.days]
+    delta = days_since_first_day.days
+    if (delta < len(avg_temp_vals) and delta >= 0):
+        temp = avg_temp_vals[delta]
+    else:
+        temp = 0.0
     print("returning temp " + str(temp) + " for day: " + str(day))
     return temp
 
