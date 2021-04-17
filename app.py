@@ -837,7 +837,7 @@ def update_mob_charts(province_name, region, start_date, end_date, forecasted_da
 )
 def update_vaccination_charts(province_name, region):
     province_name = update_province_name(province_name)
-
+    time.sleep(5)
     vac_dates = df_vac.date
     vac_vals = df_vac.total_vaccinations
 
@@ -1071,7 +1071,7 @@ def predicted_cases(province_name, region_name, start_date, end_date, days_to_fo
     tau = 25.1009
     lS0 = -2.70768
     trend1=-0.0311442
-    xTemp = get_past_temp(province_name, region_name, end_date)
+    xTemp = 0.0 # get_past_temp(province_name, region_name, end_date)
     Tmin2 = 24.6497
     dT2 = 0.00562779
     dT3 = 0.000182757
@@ -1387,32 +1387,56 @@ def get_temp_vals(temp_files):
         temps.extend(temp_dates)
     return temps
 
-def get_temp_files(province_name, region, start_date, end_date):
-    date_now_str = datetime.datetime.now().strftime('%Y-%m')
+# def get_temp_files(province_name, region, start_date, end_date):
+#     date_now_str = datetime.datetime.now().strftime('%Y-%m')
+
+#     start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d')
+#     end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d')
+#     num_months = (end_date.year - start_date.year) * 12 + end_date.month - start_date.month + 1
+#     temp_files = []
+
+#     prov_id = provinceid(province_name, region)
+#     climate_id = climateid(province_name, region)
+
+#     for i in range(num_months): # todo: what if file doesn't exist
+#         year = start_date.year
+#         month = start_date.month + i
+#         if (month > 12): # todo: change to shafika's
+#             year = year + 1
+#             month = month % 12
+        
+#         if (month < 10):
+#             month = "0" + str(month)
+#         else:
+#             month = str(month)
+
+#         date_now_str = str(year) + "-" + month 
+#         target_url = weather_base_url + prov_id + '/climate_daily_' + prov_id + '_' + climate_id + '_' + date_now_str + '_P1D.csv'
+#         temp_files.append(target_url)
+
+#     return temp_files
+
+def get_temp_files(province_name, region_name, start_date, end_date):
 
     start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d')
     end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d')
-    num_months = (end_date.year - start_date.year) * 12 + end_date.month - start_date.month + 1
+    # num_months = (end_date.year - start_date.year) * 12 + end_date.month - start_date.month + 1
     temp_files = []
 
-    prov_id = provinceid(province_name, region)
-    climate_id = climateid(province_name, region)
+    prov_id = provinceid(province_name, region_name)
+    climate_id = climateid(province_name, region_name)
 
-    for i in range(num_months): # todo: what if file doesn't exist
-        year = start_date.year
-        month = start_date.month + i
-        if (month > 12): # todo: change to shafika's
-            year = year + 1
-            month = month % 12
-        
-        if (month < 10):
-            month = "0" + str(month)
-        else:
-            month = str(month)
+    for year in range(start_date.year, end_date.year+1):
+        year = str(year)
+        for month in range(1,13):
+            if month in range(1,10):
+                month = '0' + str(month)
+            else:
+                month = str(month)
 
-        date_now_str = str(year) + "-" + month 
-        target_url = weather_base_url + prov_id + '/climate_daily_' + prov_id + '_' + climate_id + '_' + date_now_str + '_P1D.csv'
-        temp_files.append(target_url)
+            gloabl_date = str(year) + "-" + month
+            target_url = weather_base_url + prov_id + '/climate_daily_' + prov_id + '_' + climate_id + '_' + gloabl_date + '_P1D.csv'
+            temp_files.append(target_url)
 
     return temp_files
 
