@@ -46,7 +46,7 @@ df_mobility = None
 
 df_trends = pd.read_csv(r'data/google_trends_face_mask_canada.csv')
 
-df_vac = None
+df_vac = pd.DataFrame({'Init' : []})
 
 prov_id = "ON"
 climate_id = 0
@@ -1527,6 +1527,9 @@ def get_last_vac(province_name, region_name):
     return last_vac
 
 def get_vac_on_day(date_in_forecast, vac_val):
+    if (df_vac.empty == True):
+        print("df vac not done loading yet...")
+        time.sleep(5)
     vac_dates = df_vac.date
     vac_vals = df_vac.total_vaccinations # todo: total_vaccinations or total_vaccinated?
     first_day_vac_str = vac_dates.iloc[0]
