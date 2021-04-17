@@ -1233,9 +1233,8 @@ def get_total_deaths_2_months_prior(province_name, region_name, end_date):
 def get_total_deaths_2_weeks_prior(province_name, region_name, days_prior, date_up_to_str):
     date_up_to = datetime.datetime.strptime(date_up_to_str, "%Y-%m-%d")
     delta = datetime.timedelta(days=days_prior)
-    first_day = date_up_to - delta # todo: date_up_to
-    # first_day = first_day.strftime('%d-%m-%Y')
-    end_date_2_weeks_ago = date_up_to # todo: date_up_to
+    first_day = date_up_to - delta
+    end_date_2_weeks_ago = date_up_to
 
     df_2_weeks = df_mort[df_mort.date_death_report.between(
         first_day, end_date_2_weeks_ago
