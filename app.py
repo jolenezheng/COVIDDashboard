@@ -1478,7 +1478,7 @@ def avg_temp_data(begin_year, end_year, data):
     return df_weat_date
 
 def get_past_temp(province_name, region_name, day):
-    print("Size of avg_temp_vals: " + str(len(avg_temp_vals)))
+    # print("Size of avg_temp_vals: " + str(len(avg_temp_vals)))
     day_as_date = day.date()
     year = str(day_as_date.year)
     first_day_of_year = year + "-01-01"
@@ -1489,7 +1489,7 @@ def get_past_temp(province_name, region_name, day):
         temp = avg_temp_vals[delta]
     else:
         temp = 0.0
-    print("returning temp " + str(temp) + " for day: " + str(day))
+    # print("returning temp " + str(temp) + " for day: " + str(day))
     return temp
 
 
@@ -1530,7 +1530,8 @@ def get_vac_on_day(date_in_forecast, vac_val):
     if (df_vac.empty == True):
         print("df vac not done loading yet...")
         time.sleep(5)
-    vac_dates = df_vac.date
+    # print(df_vac)
+    vac_dates = df_vac['date'].str.strip()
     vac_vals = df_vac.total_vaccinations # todo: total_vaccinations or total_vaccinated?
     first_day_vac_str = vac_dates.iloc[0]
     first_day_vac_date = datetime.datetime.strptime(first_day_vac_str, '%Y-%m-%d')
