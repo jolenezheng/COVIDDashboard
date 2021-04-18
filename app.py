@@ -777,7 +777,7 @@ def update_cases_charts(province_name, region, start_date, end_date, day_to_star
         Input("subregion-dropdown", "value"),
         Input("date-range", "start_date"),
         Input("date-range", "end_date"),
-        Input('forecast-slider', 'value'),
+        Input('forecast-slider', 'value'), # todo: this isn't really needed to improve performance
     ],
 )
 def update_weather_chart(province_name, region, start_date, end_date, forecasted_dates):
@@ -1009,7 +1009,7 @@ def predicted_deaths(province_name, region_name, start_date, end_date, days_to_f
             xHerd = total_deaths / annDeath  #Total Covid Death/Annual Death -> Annual death as in 2021
             xTrends1 = get_trends_on_day(province_name, region_name, date_in_forecast, facemask_val) # todo: Google Trends for face mask
             xMob = get_mob_on_day(date_in_forecast, xMob_slider)
-            xTemp = 0.0 # get_past_temp(province_name, region_name, date_in_forecast)
+            xTemp = get_past_temp(province_name, region_name, date_in_forecast)
             vax1 = get_vac_on_day(date_in_forecast, vac_val, df_vac)
 
             if (i <= 60):
