@@ -1009,7 +1009,7 @@ def predicted_deaths(province_name, region_name, start_date, end_date, days_to_f
             xHerd = total_deaths / annDeath  #Total Covid Death/Annual Death -> Annual death as in 2021
             xTrends1 = get_trends_on_day(province_name, region_name, date_in_forecast, facemask_val) # todo: Google Trends for face mask
             xMob = get_mob_on_day(date_in_forecast, xMob_slider)
-            xTemp = get_past_temp(province_name, region_name, date_in_forecast)
+            xTemp = 0.0 # get_past_temp(province_name, region_name, date_in_forecast)
             vax1 = get_vac_on_day(date_in_forecast, vac_val, df_vac)
 
             if (i <= 60):
