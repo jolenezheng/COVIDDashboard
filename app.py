@@ -527,6 +527,9 @@ def init_slider_vals(province_name, region_name, date_str):
     date = datetime.datetime.strptime(date_str, '%Y-%m-%d')
     global initial_load
 
+    # vac_dates = get_vaccination_dates(province_name, region_name)
+    df_vac = vaccination_data(province_name, region_name)
+
     if (initial_load):
         mob = get_last_mob()
         trends = get_last_trends(province_name, region_name)
@@ -535,7 +538,7 @@ def init_slider_vals(province_name, region_name, date_str):
         mob = -get_mob_on_day(date, 0)
         # trends = get_last_trends(province_name, region_name)
         trends = get_trends_on_day(province_name, region_name, date, 0)
-        vac = get_vac_on_day(date, 0)
+        vac = get_vac_on_day(date, 0, df_vac)
     initial_load = False
     print("setting slider vac to be: " + str(vac) + " for day: " + str(date))
     return trends, mob, 0, 3 # todo: change 0 -> vac
@@ -645,14 +648,18 @@ def update_mortality_chart(province_name, region, start_date, end_date, day_to_s
     df_mobility = get_mob(province_name, region)
     pred_fig = go.Figure()
 
+    # vac_dates = get_vaccination_dates(province_name, region)
+    df_vac = vaccination_data(province_name, region)
 
-    time.sleep(5)
+
+
+    time.sleep(3)
     for i in range(10):
         if (i < 3):
-            time.sleep(2)
+            time.sleep(3)
         # print("===== CURVE: " + str(i) + " ========")
         dates = predicted_dates(province_name, region, start_date, day_to_start_forecast, days_to_forecast)
-        deaths = predicted_deaths(province_name, region, start_date, day_to_start_forecast, days_to_forecast, df_mobility, xMob, facemask, vac)[0]
+        deaths = predicted_deaths(province_name, region, start_date, day_to_start_forecast, days_to_forecast, df_mobility, xMob, facemask, vac, df_vac)[0]
         # if (i > 1):
         pred_fig.add_trace(go.Scatter(
             x=dates,
@@ -722,12 +729,12 @@ def update_cases_charts(province_name, region, start_date, end_date, day_to_star
 
     cases_fig = go.Figure()
     
-    for i in range(5):
-        cases_fig.add_trace(go.Scatter(
-            x=predicted_dates(province_name, region, start_date, day_to_start_forecast, days_to_forecast),
-            y=predicted_cases(province_name, region, start_date, day_to_start_forecast, days_to_forecast, df_mobility, xMob, facemask, vac),
-            name='Predicted Cases',
-        ))
+    # for i in range(5):
+    #     cases_fig.add_trace(go.Scatter(
+    #         x=predicted_dates(province_name, region, start_date, day_to_start_forecast, days_to_forecast),
+    #         y=predicted_cases(province_name, region, start_date, day_to_start_forecast, days_to_forecast, df_mobility, xMob, facemask, vac),
+    #         name='Predicted Cases',
+    #     ))
 
     cases_fig.add_trace(go.Scatter(
         x=cases_dates,
@@ -961,7 +968,7 @@ def predicted_dates(province_name, region_name, start_date, end_date, days_to_fo
     
     return add_dates
 
-def predicted_deaths(province_name, region_name, start_date, end_date, days_to_forecast, df_mobility, xMob_slider, facemask_val, vac_val):
+def predicted_deaths(province_name, region_name, start_date, end_date, days_to_forecast, df_mobility, xMob_slider, facemask_val, vac_val, df_vac):
     base = datetime.datetime.strptime(end_date, '%Y-%m-%d')
     add_dates = [base + datetime.timedelta(days=x) for x in range(days_to_forecast * 30)]
     yVals = []
@@ -1002,8 +1009,8 @@ def predicted_deaths(province_name, region_name, start_date, end_date, days_to_f
             xHerd = total_deaths / annDeath  #Total Covid Death/Annual Death -> Annual death as in 2021
             xTrends1 = get_trends_on_day(province_name, region_name, date_in_forecast, facemask_val) # todo: Google Trends for face mask
             xMob = get_mob_on_day(date_in_forecast, xMob_slider)
-            xTemp = get_past_temp(province_name, region_name, date_in_forecast)
-            vax1 = get_vac_on_day(date_in_forecast, vac_val)
+            xTemp = 0.0 # get_past_temp(province_name, region_name, date_in_forecast)
+            vax1 = get_vac_on_day(date_in_forecast, vac_val, df_vac)
 
             if (i <= 60):
                 xHerd2 = total_deaths_2_months_prior / annDeath # Total Covid Death (more than 2 months ago)/Annual Death -> what does more than 2 months ago mean? 2 months prior
@@ -1526,20 +1533,46 @@ def get_last_vac(province_name, region_name):
 
     return last_vac
 
-def get_vac_on_day(date_in_forecast, vac_val):
-    if (df_vac.empty == True):
-        print("df vac not done loading yet...")
-        time.sleep(5)
+def get_vac_on_day(date_in_forecast, vac_val, df_vac):
+    # if (df_vac.empty == True):
+    #     print("df vac not done loading yet...")
+    #     time.sleep(5)
     # print(df_vac)
-    vac_dates = df_vac['date'].str.strip()
-    vac_vals = df_vac.total_vaccinations # todo: total_vaccinations or total_vaccinated?
-    first_day_vac_str = vac_dates.iloc[0]
+    vac_vals = []
+    # for d in df_vac:
+    #     vaccine = d['total_vaccinations']
+    #     vac_vals.append(vaccine)
+    # vac_vals = df_vac.total_vaccinations # todo: total_vaccinations or total_vaccinated?
+    # first_day_vac_str = vac_dates[0]
+
+    found_first_day = False
+    for day in df_vac:
+        if (found_first_day == False and day["total_vaccinations"] != None):
+            first_day_vac_str = day["date"]
+            found_first_day = True
+        elif (day["total_vaccinations"] != None):
+
+            vaccine = day['total_vaccinations']
+            vac_vals.append(vaccine)
+            # print("adding: " + str(vaccine))
+            
+
     first_day_vac_date = datetime.datetime.strptime(first_day_vac_str, '%Y-%m-%d')
     days_since_first_day = date_in_forecast.date() - first_day_vac_date.date()
     delta = days_since_first_day.days
+    # print("date_in_forecast: " + str(date_in_forecast)  + " for first_day_vac_date " + str(first_day_vac_date))
 
+    # print("FRIST VAL IS: " + str(vac_vals[0]))
+    # print("SEC VAL IS: " + str(vac_vals[1]))
+    # print("SEC VAL IS: " + vac_vals)
     if (delta < len(vac_vals) and delta >= 0):
-        vac = vac_vals.iloc[delta]
+        
+        print("first_day_vac_date is...... " + str(first_day_vac_str))
+        print("delta: " + str(delta) + " klen: " + str(len(vac_vals)))
+
+        vac = vac_vals[delta]
+        print("returning vac: " + str(vac)  + " for day " + str(date_in_forecast))
+
     else:
         vac = vac_val
 
