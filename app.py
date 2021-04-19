@@ -18,6 +18,8 @@ import datetime as datetime
 from textwrap import dedent
 from dateutil.relativedelta import relativedelta
 
+from pages import *
+
 
 external_stylesheets = [
     {
@@ -103,44 +105,33 @@ base_intro = """Lorem ipsum dolor sit amet, consectetur adipiscing elit, \
 server = app.server
 app.title = "COVID Dashboard"
 
-search_bar = dbc.Row(
-    [
-        dbc.Col(dbc.Input(type="search", placeholder="Search")),
-        dbc.Col(
-            dbc.Button("Search", color="primary", className="ml-2"),
-            width="auto",
-        ),
+navbar = dbc.NavbarSimple(
+    children=[
+        dbc.NavItem(dbc.NavLink("Home", href="home")),
+        dbc.NavItem(dbc.NavLink("About Us", href="about")),
+        dbc.NavItem(dbc.NavLink("Canadian Dashboard", href="dashboard")),
+        dbc.NavItem(dbc.NavLink("USA Dashboard", href="https://www.wolframcloud.com/obj/mohammadb/COVID19Dashboard2")),
+        dbc.NavItem(dbc.NavLink("FAQ", href="faq")),
     ],
-    no_gutters=True,
-    className="ml-auto flex-nowrap mt-3 mt-md-0",
-    align="center",
+    brand="Waterloo COVID-19 Forecast and Mitigation Portal",
+    brand_href="#",
+    color="dark",
+    dark=True,
+    sticky="Top",
 )
 
-app.layout = html.Div(
+site_backbone = html.Div([
+    dcc.Location(id='url', refresh=False),
+    html.Div(navbar),
+    html.Div(id='page-content')
+])
+
+app.layout = site_backbone
+
+
+
+canadian_dashboard = html.Div(
     children=[
-        html.Div(
-            dbc.Navbar(
-                [
-                    html.A(
-                        # Use row and col to control vertical alignment of logo / brand
-                        dbc.Row(
-                            [
-                                dbc.Col(dbc.NavbarBrand("COVID-19 Canadian Dashboard", className="ml-2")),
-                                dbc.Col(html.Img(src='assets/canadian_flag.png', height="20px")),
-                            ],
-                            align="center",
-                            no_gutters=True,
-                        ),
-                        href="https://plot.ly",
-                    ),
-                    dbc.NavbarToggler(id="navbar-toggler"),
-                    dbc.Collapse(search_bar, id="navbar-collapse", navbar=True),
-                ],
-                color="dark",
-                dark=True,
-                sticky="top",
-            ),
-        ),
         dbc.Row(
             [
                 dbc.Col([ 
@@ -508,6 +499,26 @@ app.layout = html.Div(
     ]
 )
 
+
+@app.callback(
+    dash.dependencies.Output('page-content', 'children'),
+    [dash.dependencies.Input('url', 'pathname')]
+)
+def display_page(pathname):
+    print("URL IS: " + pathname)
+    if (pathname == "/"):
+        return landing_page
+    elif (pathname == "/dashboard"):
+        return canadian_dashboard
+    elif (pathname == "/about"):
+        return about_page
+    elif (pathname == "/faq"):
+        return faq_page
+    
+    return landing_page
+
+
+
 @app.callback(
     [
         Output("facemask-slider", "value"),
@@ -542,7 +553,6 @@ def init_slider_vals(province_name, region_name, date_str):
     initial_load = False
     print("setting slider vac to be: " + str(vac) + " for day: " + str(date))
     return trends, mob, 0, 3 # todo: change 0 -> vac
-
 
 @app.callback(
     [
@@ -650,8 +660,6 @@ def update_mortality_chart(province_name, region, start_date, end_date, day_to_s
 
     # vac_dates = get_vaccination_dates(province_name, region)
     df_vac = vaccination_data(province_name, region)
-
-
 
     time.sleep(3)
     for i in range(10):
@@ -895,6 +903,8 @@ def update_rtcurve_charts(province_name, region, start_date, end_date, day_to_st
     	
     global df_mobility	
     df_mobility = get_mob(province_name, region)    	
+    df_vac = vaccination_data(province_name, region)
+
     	
     rtcurve_fig = go.Figure()	
     	
@@ -902,7 +912,7 @@ def update_rtcurve_charts(province_name, region, start_date, end_date, day_to_st
     for i in range(10):    	
         rtcurve_fig.add_trace(go.Scatter(	
             x=predicted_dates(province_name, region, start_date, end_date, days_to_forecast),	
-            y=predicted_deaths(province_name, region, start_date, day_to_start_forecast, days_to_forecast, df_mobility, xMob, facemask, vac)[1],	
+            y=predicted_deaths(province_name, region, start_date, day_to_start_forecast, days_to_forecast, df_mobility, xMob, facemask, vac, df_vac)[1],	
         name = 'R(t)'	
     ))
     	
