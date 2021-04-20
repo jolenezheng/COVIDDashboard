@@ -529,20 +529,21 @@ canadian_dashboard = html.Div(
                                     ], color="dark", inverse=True),
                             ),
                         ], className="mb-4"),
-                        dbc.Row([	
-                            dbc.Col(	
-                                dbc.Card(	
-                                    [	
-                                        dbc.CardHeader(id="rtcurve-header"),
-                                        dbc.CardBody(
-                                            dcc.Loading(
-                                                children=[html.Div(dcc.Graph(
-                                                    id="rtcurve-chart", config={"displayModeBar": False}))],
-                                                type="default"
-                                        )),
-                                    ], color="dark", inverse=True),	
-                            ),	
-                    ], className="mb-4")]),
+                    #     dbc.Row([	
+                    #         dbc.Col(	
+                    #             dbc.Card(	
+                    #                 [	
+                    #                     dbc.CardHeader(id="rtcurve-header"),
+                    #                     dbc.CardBody(
+                    #                         dcc.Loading(
+                    #                             children=[html.Div(dcc.Graph(
+                    #                                 id="rtcurve-chart", config={"displayModeBar": False}))],
+                    #                             type="default"
+                    #                     )),
+                    #                 ], color="dark", inverse=True),	
+                    #         ),	
+                    # ], className="mb-4")
+                    ]),
                     className="column",
                     xl=9, lg=9, md=12, sm=12, xs=12,
                 ),
@@ -977,60 +978,60 @@ def update_trends_charts(province_name, region):
     return trends_fig
 
 
-@app.callback(	
-    Output("rtcurve-chart", "figure"),	
-    [	
-        Input("region-dropdown", "value"),	
-        Input("subregion-dropdown", "value"),	
-        Input("date-range", "start_date"),	
-        Input("date-range", "end_date"),	
-        Input("forecast-start-date", "date"),	
-        Input('forecast-slider', 'value'),	
-        Input('facemask-slider', 'value'),	
-        Input('mobility-slider', 'value'),	
-        Input('vaccine-slider', 'value'),   	
-    ],	
-)	
-def update_rtcurve_charts(province_name, region, start_date, end_date, day_to_start_forecast, days_to_forecast, facemask, xMob, vac):	
-    province_name = update_province_name(province_name)	
-    xMob = -xMob	
-    facemask = facemask * 70 / 100	
-    vac = vac / 100.0	
+# @app.callback(	
+#     Output("rtcurve-chart", "figure"),	
+#     [	
+#         Input("region-dropdown", "value"),	
+#         Input("subregion-dropdown", "value"),	
+#         Input("date-range", "start_date"),	
+#         Input("date-range", "end_date"),	
+#         Input("forecast-start-date", "date"),	
+#         Input('forecast-slider', 'value'),	
+#         Input('facemask-slider', 'value'),	
+#         Input('mobility-slider', 'value'),	
+#         Input('vaccine-slider', 'value'),   	
+#     ],	
+# )	
+# def update_rtcurve_charts(province_name, region, start_date, end_date, day_to_start_forecast, days_to_forecast, facemask, xMob, vac):	
+#     province_name = update_province_name(province_name)	
+#     xMob = -xMob	
+#     facemask = facemask * 70 / 100	
+#     vac = vac / 100.0	
     	
-    global df_mobility	
-    df_mobility = get_mob(province_name, region)    	
-    df_vac = vaccination_data(province_name, region)
+#     global df_mobility	
+#     df_mobility = get_mob(province_name, region)    	
+#     df_vac = vaccination_data(province_name, region)
 
     	
-    rtcurve_fig = go.Figure()	
+#     rtcurve_fig = go.Figure()	
     	
-    # ============== R(T) CURVE GRAPH ==============	
-    for i in range(10):    	
-        rtcurve_fig.add_trace(go.Scatter(	
-            x=predicted_dates(province_name, region, start_date, end_date, days_to_forecast),	
-            y=predicted_deaths(province_name, region, start_date, day_to_start_forecast, days_to_forecast, df_mobility, xMob, facemask, vac, df_vac)[1],	
-        name = 'R(t)'	
-    ))
+#     # ============== R(T) CURVE GRAPH ==============	
+#     # for i in range(10):    	
+#     #     rtcurve_fig.add_trace(go.Scatter(	
+#     #         x=predicted_dates(province_name, region, start_date, end_date, days_to_forecast),	
+#     #         y=predicted_deaths(province_name, region, start_date, day_to_start_forecast, days_to_forecast, df_mobility, xMob, facemask, vac, df_vac)[1],	
+#     #     name = 'R(t)'	
+#     # ))
     	
-    #start = datetime.datetime.strptime("2020-03-08", "%Y-%m-%d")	
-    #end = datetime.datetime.today()	
-    #end = end.strftime("%Y-%m-%d")	
-    #end = datetime.datetime.strptime(str(end), "%Y-%m-%d")	
-    #date_generated = [start + datetime.timedelta(days=x) for x in range(0, (end-start).days+1)]	
-    #for date in date_generated:	
-        #date_range = date.strftime("%Y-%m-%d")	
+#     #start = datetime.datetime.strptime("2020-03-08", "%Y-%m-%d")	
+#     #end = datetime.datetime.today()	
+#     #end = end.strftime("%Y-%m-%d")	
+#     #end = datetime.datetime.strptime(str(end), "%Y-%m-%d")	
+#     #date_generated = [start + datetime.timedelta(days=x) for x in range(0, (end-start).days+1)]	
+#     #for date in date_generated:	
+#         #date_range = date.strftime("%Y-%m-%d")	
     	
-    rtcurve_fig.add_trace(go.Scatter(	
-            x=date(province_name, region, start_date, end_date),	
-            y=past_rt_equation(province_name, region),	
-            name='Previous R(t)',	
-            line=dict(color='black', width=2),	
-    ))	
+#     rtcurve_fig.add_trace(go.Scatter(	
+#             x=date(province_name, region, start_date, end_date),	
+#             y=past_rt_equation(province_name, region),	
+#             name='Previous R(t)',	
+#             line=dict(color='black', width=2),	
+#     ))	
     	
-    rtcurve_fig.update_layout(xaxis_title='t',	
-                   yaxis_title='R(t)')	
+#     rtcurve_fig.update_layout(xaxis_title='t',	
+#                    yaxis_title='R(t)')	
     	
-    return rtcurve_fig
+#     return rtcurve_fig
 
 # -------------- STATIC DATA HELPER FUNCTIONS --------------
 

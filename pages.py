@@ -558,7 +558,7 @@ faq_page = html.Div([
               color="primary",
             ),
             dbc.Collapse(
-              dbc.Card(dbc.CardBody(faq1)),
+              dbc.Card(dbc.CardBody(faq4)),
               id="a4",
             ),
           ]))
