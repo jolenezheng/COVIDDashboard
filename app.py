@@ -491,7 +491,7 @@ def init_slider_vals(province_name, region_name, date_str):
         # trends = get_last_trends(province_name, region_name)
         trends = get_trends_on_day(province_name, region_name, date, 0)
         vac = get_last_vac(province_name, region_name) / round(get_total_pop(province_name, region_name), 0) * 100
-    print("INIT MOB: " + str(mob))
+    #print("INIT MOB: " + str(mob))
     initial_load = False
     return trends, mob, vac, 3
 
@@ -597,7 +597,7 @@ def update_mortality_chart(province_name, region, start_date, end_date, day_to_s
 
     # time.sleep(1)
     for i in range(10):
-        print("===== CURVE: " + str(i) + " ========")
+        #print("===== CURVE: " + str(i) + " ========")
         dates = predicted_dates(province_name, region, start_date, day_to_start_forecast, days_to_forecast)
         deaths = predicted_deaths(province_name, region, start_date, day_to_start_forecast, days_to_forecast, df_mobility, xMob, facemask, vac)[0]
         # if (i > 1):
@@ -731,9 +731,10 @@ def update_weather_chart(province_name, region, start_date, end_date, forecasted
     # temp_files = get_temp_files(province_name, region, start_date, end_date)
     data = {'Date':  get_temp_dates(temp_files),
         'Mean Temperature': get_temp_vals(temp_files)}
+    df_weather = pd.DataFrame(data, columns = ['Date', 'Mean Temperature'])
     forecasted = datetime.timedelta(days=forecasted_dates)
 
-    weather_fig = px.line(df_mort, x = temp_dates, y = temp_vals)
+    weather_fig = px.line(df_weather, x = df_weather['Date'], y = df_weather['Mean Temperature'].rolling(window=14).mean())
     weather_fig.update_layout(xaxis_title='Date',
                    yaxis_title='Mean Temperature')
     weather_fig.add_trace(go.Scatter(
@@ -859,14 +860,37 @@ def update_rtcurve_charts(province_name, region, start_date, end_date, day_to_st
         #date_range = date.strftime("%Y-%m-%d")
     
     rtcurve_fig.add_trace(go.Scatter(
-            x=date(province_name, region, start_date, end_date),
-            y=past_rt_equation(province_name, region),
-            name='Previous R(t)',
-            line=dict(color='black', width=2),
-    ))
+        x=date(province_name, region, start_date, end_date),
+        y=past_rt_equation(province_name, region),
+        name = 'Previous R(t)',
+        line=dict(color='black', width=2),
+    )) 
+
     
-    rtcurve_fig.update_layout(xaxis_title='t',
-                   yaxis_title='R(t)')
+    updatemenus = [
+       dict(
+            type="buttons",
+            xanchor="right",
+            yanchor="bottom",
+            direction="left",
+            buttons=list([
+                dict(
+                    args=[{'yaxis.type': 'linear'}],
+                    label="Linear Scale",
+                    method="relayout"
+                ),
+                dict(
+                    args=[{'yaxis.type': 'log'}],
+                    label="Log Scale",
+                    method="relayout"
+                )
+            ])
+        ),
+    ]
+    
+    rtcurve_fig.update_layout(xaxis_title='Date',
+                   yaxis_title='R(t) Curve based on Mortality',
+                   updatemenus=updatemenus)           
     
     return rtcurve_fig
 
@@ -923,9 +947,9 @@ def predicted_dates(province_name, region_name, start_date, end_date, days_to_fo
     return add_dates
 
 def predicted_deaths(province_name, region_name, start_date, end_date, days_to_forecast, df_mobility, xMob_slider, facemask_val, vac_val):
-    print("MOB SLIDER: " + str(xMob_slider))
-    print("facemask_val SLIDER: " + str(facemask_val))
-    print("vac_val SLIDER: " + str(vac_val))
+    #print("MOB SLIDER: " + str(xMob_slider))
+    #print("facemask_val SLIDER: " + str(facemask_val))
+    #print("vac_val SLIDER: " + str(vac_val))
     base = datetime.datetime.strptime(end_date, '%Y-%m-%d')
     add_dates = [base + datetime.timedelta(days=x) for x in range(days_to_forecast * 30)]
     yVals = []
@@ -1032,7 +1056,7 @@ def predicted_deaths(province_name, region_name, start_date, end_date, days_to_f
         # cases_today = 
         # yVals.append(y)
 
-    return yVals, lambda_values
+    return yVals, moving_avg(lambda_values,14)
 
 
 def predicted_cases(province_name, region_name, start_date, end_date, days_to_forecast, df_mobility, xMob_slider, facemask_val, vac_val):
@@ -1290,6 +1314,29 @@ def ravg_cases(province_name, region_name, start_date, end_date): # todo: d-m-y
 
     return cases
 
+def get_total_cases_2_weeks_prior(province_name, region_name, days_prior, date_up_to_str):
+    date_up_to = datetime.datetime.strptime(date_up_to_str, "%Y-%m-%d")
+    delta = datetime.timedelta(days=days_prior-1)
+    first_day = date_up_to - delta # todo: date_up_to
+    # first_day = first_day.strftime('%d-%m-%Y')
+    end_date_2_weeks_ago = date_up_to # todo: date_up_to
+
+    df_2_weeks = df_cases[df_cases.date_report.between(
+        first_day, end_date_2_weeks_ago
+    )]
+    df_province_2_weeks = df_2_weeks[df_2_weeks.province == province_name]
+    cases_2_weeks = df_province_2_weeks.cases[df_province_2_weeks.health_region == region_name]
+
+    total_cases_2_weeks = 0.0 # reset total deaths
+
+    for d in cases_2_weeks:
+        total_cases_2_weeks += d
+        # print("tot: " + str(total_deaths_2_weeks))
+
+    # print("RETURNING DEATHS FROM 2 WEEKS FUNC: " + str(total_deaths_2_weeks))
+
+    return total_cases_2_weeks
+
 # -------------- MOBILITY HELPER FUNCTIONS --------------
 
 def mobility(province_name, region_name, start_date, end_date):
@@ -1427,7 +1474,7 @@ def avg_temp_data(begin_year, end_year, data):
         next_day += one_day
         date_range = next_day.strftime('%m-%d')
         df_weat_date = df_weat.groupby('Date')['Mean Temperature'].mean()
-    return df_weat_date
+    return df_weat_date.rolling(window=14).mean()
 
 
 # -------------- VACCINATION HELPER FUNCTIONS --------------
@@ -1459,7 +1506,7 @@ def get_last_vac(province_name, region_name):
         total_vaccinations.append(vaccine)
 
     last_vac = total_vaccinations[len(total_vaccinations) - 1]
-    print("last vac: " + str(last_vac))
+    #print("last vac: " + str(last_vac))
 
     return last_vac
 
@@ -1570,35 +1617,17 @@ def get_last_trends(province_name, region_name):
 def rt_equation(lambda_):
     return math.exp((lambda_*5.3))
 
-def get_total_deaths_2_weeks_prior(province_name, region_name, days_prior, date_up_to_str):
-    date_up_to = datetime.datetime.strptime(date_up_to_str, "%Y-%m-%d")
-    delta = datetime.timedelta(days=days_prior)
-    first_day = date_up_to - delta # todo: date_up_to
-    # first_day = first_day.strftime('%d-%m-%Y')
-    end_date_2_weeks_ago = date_up_to # todo: date_up_to
-
-    df_2_weeks = df_mort[df_mort.date_death_report.between(
-        first_day, end_date_2_weeks_ago
-    )]
-    df_province_2_weeks = df_2_weeks[df_2_weeks.province == province_name]
-    deaths_2_weeks = df_province_2_weeks.deaths[df_province_2_weeks.health_region == region_name]
-
-    total_deaths_2_weeks = 0.0 # reset total deaths
-
-    for d in deaths_2_weeks:
-        total_deaths_2_weeks += d
-        # print("tot: " + str(total_deaths_2_weeks))
-
-    # print("RETURNING DEATHS FROM 2 WEEKS FUNC: " + str(total_deaths_2_weeks))
-
-    return total_deaths_2_weeks
-
 def past_rt_equation(province_name, region_name):
     
-    past_rt_values = []
+    D14_values = []
+    D14_t5_values = []
     
-    date_D14 = datetime.datetime.today()
-    date_D14_t5 = datetime.datetime.today() - datetime.timedelta(days=5)
+    #date_D14 = datetime.datetime.today()
+    #date_D14_t5 = datetime.datetime.today() - datetime.timedelta(days=4)
+    
+    # These should be using the current date but I only have mortality data up till the 14th, hence that being the final date
+    date_D14 = datetime.datetime.strptime("2021-04-14", "%Y-%m-%d")
+    date_D14_t5 = datetime.datetime.strptime("2021-04-14", "%Y-%m-%d") - datetime.timedelta(days=4)
     days_prior = 14
     
     start = datetime.datetime.strptime("2020-03-08", "%Y-%m-%d")
@@ -1610,21 +1639,42 @@ def past_rt_equation(province_name, region_name):
     for date in date_generated:
         date_range = date.strftime("%Y-%m-%d")
         D14 = get_total_deaths_2_weeks_prior(province_name, region_name, days_prior, date_range)
+        #D14 = get_total_cases_2_weeks_prior(province_name, region_name, days_prior, date_range)
+        D14_values.append(D14)
         
-    start = datetime.datetime.strptime("2020-03-08", "%Y-%m-%d")
+        #print('deaths from a time t:' + str(D14) + ' date:' + str(date_range))
+    
+    # Shifted the start date by 5 days
+    start = datetime.datetime.strptime("2020-03-04", "%Y-%m-%d")
     end = date_D14_t5
     end = end.strftime("%Y-%m-%d")
     end = datetime.datetime.strptime(str(end), "%Y-%m-%d")
     date_generated = [start + datetime.timedelta(days=x) for x in range(0, (end-start).days+1)]
-    
+
     for date in date_generated:
         date_range = date.strftime("%Y-%m-%d")
-        D14_t5 = get_total_deaths_2_weeks_prior(province_name, region_name, days_prior, date_range) 
+        D14_t5 = get_total_deaths_2_weeks_prior(province_name, region_name, days_prior, date_range)
+        #D14_t5 = get_total_cases_2_weeks_prior(province_name, region_name, days_prior, date_range)
+        D14_t5_values.append(D14_t5)
         
-        past_data = D14/D14_t5 if D14_t5 != 0 else 0
-        past_rt_values.append(past_data)
+        #print('deaths from a time t five days ago:' + str(D14_t5) + ' date:' + str(date_range))
+   
+    #print(D14_values)
+    #print(D14_t5_values)
+    
+    D14_values = [x+0.5 for x in D14_values]
+    D14_t5_values = [x+0.5 for x in D14_t5_values]    
+    
+    past_data = [x / y if y != 0 else 0.0 for x, y in zip(D14_values, D14_t5_values)]
+    
+    past_data = np.clip(past_data, -3, 10)
+    #print(past_data)
         
-    return past_rt_values
+    return past_data 
+
+def moving_avg(x, n):
+    cumsum = np.cumsum(np.insert(x, 0, 0)) 
+    return (cumsum[n:] - cumsum[:-n]) / float(n)
 
 if __name__ == "__main__":
     app.run_server(debug=True)
