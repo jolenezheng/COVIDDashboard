@@ -136,31 +136,6 @@ navbar2 = dbc.Navbar(
                             ),
                         ]
                     ),
-                    # html.A(
-                    #     # Use row and col to control vertical alignment of logo / brand
-                    #     dbc.Row(
-                    #         [
-                    #             dbc.Col(dbc.NavbarBrand("COVID-19 Canadian Dashboard", className="ml-2")),
-                    #             dbc.Col(html.Img(src='assets/canadian_flag.png', height="20px")),
-                    #         ],
-                    #         align="center",
-                    #         no_gutters=True,
-                    #     ),
-                    #     href="/",
-                    # ),
-                    # html.A(
-                    #     # Use row and col to control vertical alignment of logo / brand
-                    #     dbc.Row(
-                    #         [
-                    #             dbc.Col(dbc.NavbarBrand("COVID-19 Canadian Dashboard", className="ml-2")),
-                    #             dbc.Col(html.Img(src='assets/canadian_flag.png', height="20px")),
-                    #         ],
-                    #         align="right",
-                    #         no_gutters=True,
-                    #     ),
-                    #     href="https://plot.ly",
-                    # ),
-                    # dbc.NavbarToggler(id="navbar-toggler"),
                 ],
                 color="dark",
                 dark=True,
@@ -190,7 +165,7 @@ footer2 = html.Footer(html.Div("Dashboard made by Jolene and Shafika"), classNam
 site_backbone = html.Div([
     dcc.Location(id='url', refresh=False),
     html.Div(navbar),
-    html.Div(id='page-content', className="page"),
+    html.Div(id='page-content', className="page border"),
     footer2,
 ])
 
@@ -369,7 +344,7 @@ canadian_dashboard = html.Div(
                                 ]),
                             ], color="dark", outline=True),
                     ), className="mb-4"),
-                ], xl=3, lg=3, md=12, sm=12, xs=12, className="column"), # ,width=3,className="column"),
+                ], xl=3, lg=3, md=12, sm=12, xs=12), # ,width=3,className="column"),
                 dbc.Col(
                     html.Div([
                         dbc.Row([

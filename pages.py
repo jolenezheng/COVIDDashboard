@@ -3,6 +3,8 @@ import dash_bootstrap_components as dbc
 
 introduction_text = "This portal provides resources and tools that could help individuals and policy makers with a scientific, balanced, and evidence-based approach to manage and navigate the COVID-19 Pandemic. It provides historical information, important demographics, and resulting stochastic forecasting for local counties (US) or Health Units (Canada), for adjustable vaccination and face-mask usage and social mobility reduction strategies. The model is simultaneously calibrated against more than 2500 distinct epidemics (over 100,000 reproduction number measurements), over the course of the COVID-19 pandemic."
 
+faq1 = "We use the predicted exponential growth/decay rate of mortality from a simple compartmental (SEIR) model, but assume that the parameters of the model have deterministic universal dependencies on a series of ten static or dynamic conditions for every specific county/health region. The dependencies are then calibrated for the historical data on the epidemics and drivers. We only use COVID-19 confirmed mortality data, as the case numbers are dependent on testing policies and availability. Furthermore, we measure the error of the model based on the residuals of the best-fit model. The forecasts are stochastic simulations, based on the best-fit model and residuals, which can be tuned for different mitigation strategies. "
+
 landing_page = html.Div([
     dbc.Row(dbc.Col(html.Div("Waterloo COVID-19 Forecast and Mitigation Portal"))),
     dbc.Row(dbc.Col(html.Div(introduction_text))),
@@ -182,13 +184,13 @@ collapse = html.Div(
 faq_page = html.Div([
     dbc.Row(html.Div([
       dbc.Button(
-        "Open collapse",
+        "How does the model work?",
         id="q1",
         className="mb-3",
         color="primary",
       ),
       dbc.Collapse(
-        dbc.Card(dbc.CardBody("This content is hidden in the collapse")),
+        dbc.Card(dbc.CardBody(faq1)),
         id="a1",
       ),
     ])),
