@@ -166,7 +166,10 @@ footer = dbc.Navbar(
     sticky="bottom"
 )
 
-footer2 = html.Footer(html.Div("Dashboard made by Jolene and Shafika"), className="footer")
+footer2 = html.Footer(html.Div([
+    html.Img(src='assets/waterloo.png', height="50px"),
+    "Dashboard made by Jolene and Shafika",
+]), className="footer")
 
 site_backbone = html.Div([
     dcc.Location(id='url', refresh=False),
@@ -631,7 +634,7 @@ def init_slider_vals(province_name, region_name, date_str):
         trends = get_trends_on_day(province_name, region_name, date, 0)
         vac = get_vac_on_day(date, 0, -1, df_vac, 0)
     initial_load = False
-    print("setting slider vac to be: " + str(vac) + " for day: " + str(date))
+    # print("setting slider vac to be: " + str(vac) + " for day: " + str(date))
     return trends, mob, vac, 3 # todo: change 0 -> vac
 
 @app.callback(
@@ -1105,8 +1108,8 @@ def predicted_deaths(province_name, region_name, start_date, end_date, days_to_f
             xTemp = 0.0 # get_past_temp(province_name, region_name, date_in_forecast)
             vaxP1 = get_vac_on_day(date_in_forecast, vac_val, total_population, df_vac, 14)
             vaxP2 = get_vac_on_day(date_in_forecast, vac_val, total_population, df_vac, 28)
-            print("vax1: " + str(vaxP1))
-            print("vax2: " + str(vaxP2))
+            # print("vax1: " + str(vaxP1))
+            # print("vax2: " + str(vaxP2))
 
             if (i <= 60):
                 xHerd2 = total_deaths_2_months_prior / annDeath # Total Covid Death (more than 2 months ago)/Annual Death -> what does more than 2 months ago mean? 2 months prior
@@ -1135,7 +1138,7 @@ def predicted_deaths(province_name, region_name, start_date, end_date, days_to_f
             #         trend1 * xTrends1 * 1.25 + dT2*(xTemp - tmin2)**2.0 + dT3*(xTemp - tmin2)**3.0 -
             #         math.log(tau))) - 1.0 / tau + house2 * (xHouse - 2.75) + anl * (xAnnual - 3.65) - v2*vax2
 
-            print("\n logging: " + str(1 - 0.9 * vaxP2) + "\n")
+            # print("\n logging: " + str(1 - 0.9 * vaxP2) + "\n")
             exp_ = math.exp(
                         0.5 * (-7.50188 - 34.5879 * (xHerd - xHerd2) - 1.51981 * xHerd2 +
                         0.011227 * xMob1 + 0.0296737 * xMob2 +
@@ -1378,7 +1381,7 @@ def get_mob_on_day(day, xMob, days_prior):
         mob = df_mobility['workplaces_percent_change_from_baseline'].iloc[delta]
     else:
         mob = xMob
-    print("RETURNING MOB: " + str(mob) + " for day:" + str(day) + " with days prior= " + str(days_prior)) 
+    # print("RETURNING MOB: " + str(mob) + " for day:" + str(day) + " with days prior= " + str(days_prior)) 
     return mob
 
 def get_last_mob():
@@ -1558,7 +1561,7 @@ def get_vac_on_day(date_in_forecast, vac_val, total_population, df_vac, days_pri
     # if (df_vac.empty == True):
     #     print("df vac not done loading yet...")
     #     time.sleep(5)
-    print("slider vcal: " + str(vac_val))
+    # print("slider vcal: " + str(vac_val))
     vac_vals = []
     # for d in df_vac:
     #     vaccine = d['total_vaccinations']
