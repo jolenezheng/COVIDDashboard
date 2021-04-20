@@ -14,7 +14,7 @@
 .dropdown-title {
   /* margin-top: 20px;
   margin-bottom: 10px; */
-  color: #4a65ad;
+  color: #000000;
   font-weight: 300;
 }
 
@@ -25,3 +25,24 @@
   padding-right: 2%;
 }
 
+.rc-slider-track {
+  background-color: #292b2c;
+}
+
+.rc-slider-dot-active {  
+  border-color: #292b2c;
+  border: solid 2px #292b2c;
+}
+
+.rc-slider-handle {
+  background-color: #292b2c;
+  border-color: #292b2c;
+}
+
+.rc-slider-handle:hover {
+  border-color: #292b2c;
+}
+
+.rc-slider-handle-active:active {
+  border-color: red;
+}
