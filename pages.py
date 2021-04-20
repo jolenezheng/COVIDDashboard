@@ -37,52 +37,174 @@ old_navbar = html.Div(
             ),
         )
 
-about_page = html.Div([
-    dbc.Row(dbc.Col(html.Div("About Us"))),
-    dbc.Row(dbc.Col(html.Div("Our Team is scattered across North America, but is headquartered at the University of Waterloo. You can reach us at nafshordi@pitp.ca"))),
-    dbc.Row(
+card_content = [
+    dbc.CardHeader("Niayesh Afshordi"),
+    dbc.CardBody(
         [
-            dbc.Col([
-              dbc.Row(html.Div("Niayesh Afshordi")),
-              dbc.Row(html.Div("Associate Professor of Physics and Astronomy at the University of Waterloo and Associate Faculty in Cosmology at the Perimeter Institute for Theoretical Physics")),
-            ]),
-            dbc.Col([
-              dbc.Row(html.Div("Mohammad Bahrami")),
-              dbc.Row(html.Div("Wolfram Research")),
-            ]),
-            dbc.Col([
-              dbc.Row(html.Div("Elizabeth Gould")),
-              dbc.Row(html.Div("Postdoctoral Researcher at the Arthur B. McDonald Canadian Astroparticle Physics Research Institute")),
-            ]),
-            dbc.Col([
-              dbc.Row(html.Div("Benjamin Holder")),
-              dbc.Row(html.Div("Associate Professor of Physics at Grand Valley State University")),
-            ]),
+            html.P(
+                "Associate Professor of Physics and Astronomy at the University of Waterloo and Associate Faculty in Cosmology at the Perimeter Institute for Theoretical Physics",
+                className="card-text",
+            ),
         ]
     ),
-    dbc.Row(
-        [
-            dbc.Col([
-              dbc.Row(html.Div("Shafika Olalekan Koiki")),
-              dbc.Row(html.Div("Undergraduate Student in Physics and Astronomy at the University of Waterloo")),
-            ]),
-            dbc.Col([
-              dbc.Row(html.Div("Daniel Lichblau")),
-              dbc.Row(html.Div("Wolfram Research")),
-            ]),
-            dbc.Col([
-              dbc.Row(html.Div("Steve Weinstein")),
-              dbc.Row(html.Div("Associate Professor of Philosophy at the University of Waterloo")),
-            ]),
-            dbc.Col([
-              dbc.Row(html.Div("Jolene Zheng")),
-              dbc.Row(html.Div("Undergraduate Student in Computer Science at the University of Waterloo")),
-            ]),
-        ]
-    ),
-])
+]
+
+about_page = row = html.Div(
+    [
+        dbc.Row(
+            [
+                dbc.Col(html.Div("About Us")),
+            ],
+            align="start",
+        ),
+        dbc.Row(
+            [
+                dbc.Col(html.Div("Our Team is scattered across North America, but is headquartered at the University of Waterloo. You can reach us at nafshordi@pitp.ca")),
+            ],
+            align="center",
+        ),
+        dbc.Row(
+            [
+                dbc.Col(dbc.Card([ 
+                    dbc.CardHeader("Niayesh Afshordi"),
+                    dbc.CardBody(
+                        [
+                            html.P(
+                                "Associate Professor of Physics and Astronomy at the University of Waterloo and Associate Faculty in Cosmology at the Perimeter Institute for Theoretical Physics",
+                                className="card-text",
+                            ),
+                        ]
+                    ),
+                ], color="primary", inverse=True)),
+                dbc.Col(dbc.Card([ 
+                    dbc.CardHeader("Mohammad Bahrami"),
+                    dbc.CardBody(
+                        [
+                            html.P(
+                                "Wolfram Research",
+                                className="card-text",
+                            ),
+                        ]
+                    ),
+                ], color="primary", inverse=True)),
+                dbc.Col(dbc.Card([ 
+                    dbc.CardHeader("Elizabeth Gould"),
+                    dbc.CardBody(
+                        [
+                            html.P(
+                                "Postdoctoral Researcher at the Arthur B. McDonald Canadian Astroparticle Physics Research Institute",
+                                className="card-text",
+                            ),
+                        ]
+                    ),
+                ], color="primary", inverse=True)),
+                dbc.Col(dbc.Card([ 
+                    dbc.CardHeader("Benjamin Holder"),
+                    dbc.CardBody(
+                        [
+                            html.P(
+                                "Associate Professor of Physics at Grand Valley State University",
+                                className="card-text",
+                            ),
+                        ]
+                    ),
+                ], color="primary", inverse=True)),
+            ],
+            align="end",
+        ),
+        dbc.Row(
+            [
+                dbc.Col(dbc.Card([ 
+                    dbc.CardHeader("Shafika Olalekan Koiki"),
+                    dbc.CardBody(
+                        [
+                            html.P(
+                                "Undergraduate Student in Physics and Astronomy at the University of Waterloo",
+                                className="card-text",
+                            ),
+                        ]
+                    ),
+                ], color="primary", inverse=True)),
+                dbc.Col(dbc.Card([ 
+                    dbc.CardHeader("Daniel Lichblau"),
+                    dbc.CardBody(
+                        [
+                            html.P(
+                                "Wolfram Research",
+                                className="card-text",
+                            ),
+                        ]
+                    ),
+                ], color="primary", inverse=True)),
+                dbc.Col(dbc.Card([ 
+                    dbc.CardHeader("Steve Weinstein"),
+                    dbc.CardBody(
+                        [
+                            html.P(
+                                "Associate Professor of Philosophy at the University of Waterloo",
+                                className="card-text",
+                            ),
+                        ]
+                    ),
+                ], color="primary", inverse=True)),
+                dbc.Col(dbc.Card([ 
+                    dbc.CardHeader("Jolene Zheng"),
+                    dbc.CardBody(
+                        [
+                            html.P(
+                                "Undergraduate Student in Computer Science at the University of Waterloo",
+                                className="card-text",
+                            ),
+                        ]
+                    ),
+                ], color="primary", inverse=True)),
+            ],
+            align="end",
+        ),
+    ]
+)
+
+
+
+collapse = html.Div(
+    [
+        dbc.Button(
+            "Open collapse",
+            id="q1",
+            className="mb-3",
+            color="primary",
+        ),
+        dbc.Collapse(
+            dbc.Card(dbc.CardBody("This content is hidden in the collapse")),
+            id="a1",
+        ),
+    ]
+)
 
 faq_page = html.Div([
-    dbc.Row(dbc.Col(html.Div("FAQ"))),
-    dbc.Row(dbc.Col(html.Div("Text goes here!"))),
+    dbc.Row(html.Div([
+      dbc.Button(
+        "Open collapse",
+        id="q1",
+        className="mb-3",
+        color="primary",
+      ),
+      dbc.Collapse(
+        dbc.Card(dbc.CardBody("This content is hidden in the collapse")),
+        id="a1",
+      ),
+    ])),
+    dbc.Row(html.Div([
+      dbc.Button(
+        "Open collapse",
+        id="q2",
+        className="mb-3",
+        color="primary",
+      ),
+      dbc.Collapse(
+        dbc.Card(dbc.CardBody("This content is hidden in the collapse")),
+        id="a2",
+      ),
+    ])),
 ])
+
