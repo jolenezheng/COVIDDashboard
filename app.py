@@ -886,14 +886,25 @@ def update_weather_chart(province_name, region, start_date, end_date, forecasted
         'Mean Temperature': get_temp_vals(temp_files)}
     forecasted = datetime.timedelta(days=forecasted_dates)
 
-    weather_fig = px.line(df_mort, x = temp_dates, y = temp_vals)
-    weather_fig.update_layout(xaxis_title='Date',
-                   yaxis_title='Mean Temperature')
-    weather_fig.add_trace(go.Scatter(
-            x=new_dates,
-            y=avg_temp_data(date_now, date_now + forecasted, data),
-            name='Average Temp in Last 5 Years',
+    df_weather = pd.DataFrame(data, columns = ['Date', 'Mean Temperature'])	
+    forecasted = datetime.timedelta(days=forecasted_dates)	
+    weather_fig = px.line(df_weather, x = df_weather['Date'], y = df_weather['Mean Temperature'].rolling(window=14).mean())	
+    weather_fig.update_layout(xaxis_title='Date',	
+                   yaxis_title='Mean Temperature')	
+    weather_fig.add_trace(go.Scatter(	
+            x=new_dates,	
+            y=avg_temp_data(date_now, date_now + forecasted, data),	
+            name='Average Temp in Last 5 Years',	
         ))
+
+    # weather_fig = px.line(df_mort, x = temp_dates, y = temp_vals)
+    # weather_fig.update_layout(xaxis_title='Date',
+    #                yaxis_title='Mean Temperature')
+    # weather_fig.add_trace(go.Scatter(
+    #         x=new_dates,
+    #         y=avg_temp_data(date_now, date_now + forecasted, data),
+    #         name='Average Temp in Last 5 Years',
+    #     ))
     
     return weather_fig
 
@@ -1502,11 +1513,11 @@ def avg_temp_data(begin_year, end_year, data):
     print("size of df_weat_date: " + str(len(df_weat_date)))
     for val in df_weat_date:
         avg_temp_vals.append(val)
-        print("VAL_: " + str(val))
+        # print("VAL_: " + str(val))
 
     print("size of avg_temp_vals: " + str(len(avg_temp_vals)))
     
-    return df_weat_date
+    return df_weat_date.rolling(window=14).mean()
 
 def get_past_temp(province_name, region_name, day):
     # print("Size of avg_temp_vals: " + str(len(avg_temp_vals)))
@@ -1722,12 +1733,20 @@ def get_total_deaths_2_weeks_prior(province_name, region_name, days_prior, date_
 
     return total_deaths_2_weeks	
 
+def rt_equation(lambda_):	
+    return math.exp((lambda_*5.3))	
+
 def past_rt_equation(province_name, region_name):	
     	
-    past_rt_values = []	
+    D14_values = []	
+    D14_t5_values = []	
     	
-    date_D14 = datetime.datetime.today()	
-    date_D14_t5 = datetime.datetime.today() - datetime.timedelta(days=5)	
+    #date_D14 = datetime.datetime.today()	
+    #date_D14_t5 = datetime.datetime.today() - datetime.timedelta(days=4)	
+    	
+    # These should be using the current date but I only have mortality data up till the 14th, hence that being the final date	
+    date_D14 = datetime.datetime.strptime("2021-04-14", "%Y-%m-%d")	
+    date_D14_t5 = datetime.datetime.strptime("2021-04-14", "%Y-%m-%d") - datetime.timedelta(days=4)	
     days_prior = 14	
     	
     start = datetime.datetime.strptime("2020-03-08", "%Y-%m-%d")	
@@ -1738,21 +1757,41 @@ def past_rt_equation(province_name, region_name):
     for date in date_generated:	
         date_range = date.strftime("%Y-%m-%d")	
         D14 = get_total_deaths_2_weeks_prior(province_name, region_name, days_prior, date_range)	
+        #D14 = get_total_cases_2_weeks_prior(province_name, region_name, days_prior, date_range)	
+        D14_values.append(D14)	
         	
-    start = datetime.datetime.strptime("2020-03-08", "%Y-%m-%d")	
+        #print('deaths from a time t:' + str(D14) + ' date:' + str(date_range))	
+    	
+    # Shifted the start date by 5 days	
+    start = datetime.datetime.strptime("2020-03-04", "%Y-%m-%d")	
     end = date_D14_t5	
     end = end.strftime("%Y-%m-%d")	
     end = datetime.datetime.strptime(str(end), "%Y-%m-%d")	
     date_generated = [start + datetime.timedelta(days=x) for x in range(0, (end-start).days+1)]	
-    	
     for date in date_generated:	
         date_range = date.strftime("%Y-%m-%d")	
-        D14_t5 = get_total_deaths_2_weeks_prior(province_name, region_name, days_prior, date_range) 	
+        D14_t5 = get_total_deaths_2_weeks_prior(province_name, region_name, days_prior, date_range)	
+        #D14_t5 = get_total_cases_2_weeks_prior(province_name, region_name, days_prior, date_range)	
+        D14_t5_values.append(D14_t5)	
         	
-        past_data = D14/D14_t5 if D14_t5 != 0 else 0	
-        past_rt_values.append(past_data)	
+        #print('deaths from a time t five days ago:' + str(D14_t5) + ' date:' + str(date_range))	
+   	
+    #print(D14_values)	
+    #print(D14_t5_values)	
+    	
+    D14_values = [x+0.5 for x in D14_values]	
+    D14_t5_values = [x+0.5 for x in D14_t5_values]    	
+    	
+    past_data = [x / y if y != 0 else 0.0 for x, y in zip(D14_values, D14_t5_values)]	
+    	
+    past_data = np.clip(past_data, -3, 10)	
+    #print(past_data)	
         	
-    return past_rt_values
+    return past_data 	
+
+def moving_avg(x, n):	
+    cumsum = np.cumsum(np.insert(x, 0, 0)) 	
+    return (cumsum[n:] - cumsum[:-n]) / float(n)
 
 if __name__ == "__main__":
     app.run_server(debug=True)
