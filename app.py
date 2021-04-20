@@ -62,6 +62,12 @@ avg_temp_vals = []
 
 initial_load = True
 
+# prev1 = None
+# prev2 = None
+# prev3 = None
+# prev4 = None
+prev_states = [None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+
 
 fnameDict = {    
     "Alberta": ["Calgary","Central","Edmonton","North","South"], 
@@ -422,11 +428,11 @@ canadian_dashboard = html.Div(
                         dbc.Row(dbc.Col(
                             dbc.Card(
                                 [
-                                    dbc.CardHeader(id="simulation-header"),
+                                    dbc.CardHeader(id="cases-header"),
                                     dbc.CardBody(
                                          dcc.Loading(
                                             children=[html.Div(dcc.Graph(
-                                                id="simulation-chart", config={"displayModeBar": False}))],
+                                                id="cases-chart", config={"displayModeBar": False}))],
                                             type="default"
                                     )),
                                 ], color="dark", inverse=True),
@@ -434,11 +440,11 @@ canadian_dashboard = html.Div(
                         dbc.Row(dbc.Col(
                             dbc.Card(
                                 [
-                                    dbc.CardHeader(id="cases-header"),
+                                    dbc.CardHeader(id="simulation-header"),
                                     dbc.CardBody(
                                          dcc.Loading(
                                             children=[html.Div(dcc.Graph(
-                                                id="cases-chart", config={"displayModeBar": False}))],
+                                                id="simulation-chart", config={"displayModeBar": False}))],
                                             type="default"
                                     )),
                                     # dbc.CardBody(
@@ -548,31 +554,49 @@ canadian_dashboard = html.Div(
     [dash.dependencies.Input('url', 'pathname')]
 )
 def display_page(pathname):
-    print("URL IS: " + pathname)
+    # print("URL IS: " + pathname)
     if (pathname == "/"):
         return canadian_dashboard
     elif (pathname == "/about"):
         return about_page
     elif (pathname == "/faq"):
-        return faq_page
+        return faq_page2
     
     return canadian_dashboard
 
 # FAQ Page
 @app.callback(
-    [Output("a1", "is_open"), Output("a2", "is_open")],
-    [Input("q1", "n_clicks"), Input("q2", "n_clicks")],
-    [State("q1", "is_open"), State("q2", "is_open")],
+    [
+        Output("a1", "is_open"), Output("a2", "is_open"), Output("a3", "is_open"), Output("a4", "is_open"),
+        Output("a5", "is_open"), Output("a6", "is_open"), Output("a7", "is_open"), Output("a8", "is_open"),
+        Output("a9", "is_open"), Output("a10", "is_open"), Output("a11", "is_open"), Output("a12", "is_open"),
+        Output("a13", "is_open"), Output("a14", "is_open"), Output("a15", "is_open")
+    ],
+    [
+        Input("q1", "n_clicks"), Input("q2", "n_clicks"), Input("q3", "n_clicks"), Input("q4", "n_clicks"),
+        Input("q5", "n_clicks"), Input("q6", "n_clicks"), Input("q7", "n_clicks"), Input("q8", "n_clicks"),
+        Input("q9", "n_clicks"), Input("q10", "n_clicks"), Input("q11", "n_clicks"), Input("q12", "n_clicks"),
+        Input("q13", "n_clicks"), Input("q14", "n_clicks"), Input("q15", "n_clicks")
+    ],
+    [
+        State("a1", "is_open"), State("a2", "is_open"), State("a3", "is_open"), State("a4", "is_open"),
+        State("a5", "is_open"), State("a6", "is_open"), State("a7", "is_open"), State("a8", "is_open"),
+        State("a9", "is_open"), State("a10", "is_open"), State("a13", "is_open"), State("a12", "is_open"),
+        State("a13", "is_open"), State("a14", "is_open"), State("a15", "is_open")
+    ],
 )
-def toggle_collapse(q1, q2, is_open1, is_open2):
-     
-    if q1:
-        is_open1 =  not is_open1
+def toggle_collapse(q1, q2, q3, q4, q5, q6, q7, q8, q9, q10, q11, q12, q13, q14, q15, is_open1, is_open2, is_open3, is_open4, is_open5, is_open6, is_open7, is_open8, is_open9, is_open10, is_open11, is_open12, is_open13, is_open14, is_open15):
+    questions = [q1, q2, q3, q4, q5, q6, q7, q8, q9, q10, q11, q12, q13, q14, q15]
+    states = [is_open1, is_open2, is_open3, is_open4, is_open5, is_open6, is_open7, is_open8, is_open9, is_open10, is_open11, is_open12, is_open13, is_open14, is_open15]
+    global prev_states
 
-    if q2:
-        is_open2 =  not is_open2
-
-    return is_open1, is_open2
+    for i in range(15):
+        q = questions[i]
+        if q and q != prev_states[i]:
+            states[i] = not states[i]
+            prev_states[i] = questions[i]
+        
+    return states
 
 
 @app.callback(
@@ -608,7 +632,7 @@ def init_slider_vals(province_name, region_name, date_str):
         vac = get_vac_on_day(date, 0, df_vac)
     initial_load = False
     print("setting slider vac to be: " + str(vac) + " for day: " + str(date))
-    return trends, mob, 0, 3 # todo: change 0 -> vac
+    return trends, mob, vac, 3 # todo: change 0 -> vac
 
 @app.callback(
     [
@@ -718,18 +742,18 @@ def update_mortality_chart(province_name, region, start_date, end_date, day_to_s
 
     # fig.update_xaxes(type="log", range=[0,5])
 
-    # for i in range(10):
-    #     if (i < 2):
-    #         time.sleep(4)
-    #     # print("===== CURVE: " + str(i) + " ========")
-    #     dates = predicted_dates(province_name, region, start_date, day_to_start_forecast, days_to_forecast)
-    #     deaths = predicted_deaths(province_name, region, start_date, day_to_start_forecast, days_to_forecast, df_mobility, xMob, facemask, vac, df_vac)[0]
-    #     # if (i > 1):
-    #     pred_fig.add_trace(go.Scatter(
-    #         x=dates,
-    #         y=deaths,
-    #         name='Predicted Deaths',
-    #     ))
+    for i in range(10):
+        if (i < 2):
+            time.sleep(4)
+        # print("===== CURVE: " + str(i) + " ========")
+        dates = predicted_dates(province_name, region, start_date, day_to_start_forecast, days_to_forecast)
+        deaths = predicted_deaths(province_name, region, start_date, day_to_start_forecast, days_to_forecast, df_mobility, xMob, facemask, vac, df_vac)[0]
+        # if (i > 1):
+        pred_fig.add_trace(go.Scatter(
+            x=dates,
+            y=deaths,
+            name='Prediction ' + str(i+1),
+        ))
 
     pred_fig.add_trace(go.Scatter(
         x=death_dates, # here
