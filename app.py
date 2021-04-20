@@ -90,32 +90,82 @@ names = list(fnameDict.keys())
 nestedOptions = fnameDict[names[0]]
 tempSubregion = "Northern"
 
-base_intro = """Lorem ipsum dolor sit amet, consectetur adipiscing elit, \
-    sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. \
-        Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris \
-            nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor \
-                in reprehenderit in voluptate velit esse cillum dolore eu \
-                    fugiat nulla pariatur. Excepteur sint occaecat cupidatat \
-                        non proident, sunt in culpa qui officia deserunt mollit \
-                            anim id est laborum.
-"""
 
 server = app.server
 app.title = "COVID Dashboard"
 
 navbar = dbc.NavbarSimple(
     children=[
-        dbc.NavItem(dbc.NavLink("Canadian Dashboard", href="/")),
-        dbc.NavItem(dbc.NavLink("USA Dashboard", href="https://www.wolframcloud.com/obj/mohammadb/COVID19Dashboard2")),
+        # dbc.NavItem(dbc.NavLink("Canadian Dashboard", href="/")),
+        # dbc.NavItem(dbc.NavLink("USA Dashboard", href="https://www.wolframcloud.com/obj/mohammadb/COVID19Dashboard2")),
+        dbc.NavItem(dbc.NavLink(html.Img(src='assets/canadian_flag.png', height="20px"), href="/")),
+        dbc.NavItem(dbc.NavLink(html.Img(src='assets/usa.png', height="20px"), href="https://www.wolframcloud.com/obj/mohammadb/COVID19Dashboard2", target="_blank")),
         dbc.NavItem(dbc.NavLink("About Us", href="about")),
         dbc.NavItem(dbc.NavLink("FAQ", href="faq")),
     ],
     brand="My Local COVID: History, Forecast and Mitigation  Portal",
-    brand_href="#",
+    brand_href="/",
     color="dark",
     dark=True,
     fixed="top",
 )
+
+navbar2 = dbc.Navbar(
+                [
+                    dbc.Row(
+                        [
+                            dbc.Col(
+                                html.Div("COVID-19 Canadian Dashboard"),
+                                width={"size": 3, "order": 1},
+                            ),
+                            dbc.Col(
+                                html.Div("Canada"),
+                                width={"size": 3, "order": 12},
+                            ),
+                            dbc.Col(
+                                html.Div("USA"),
+                                width={"size": 3, "order": "last"},
+                            ),
+                            dbc.Col(
+                                html.Div("About Us"),
+                                width={"size": 3, "order": "last"},
+                            ),
+                            dbc.Col(
+                                html.Div("FAW"),
+                                width={"size": 3, "order": "last"},
+                            ),
+                        ]
+                    ),
+                    # html.A(
+                    #     # Use row and col to control vertical alignment of logo / brand
+                    #     dbc.Row(
+                    #         [
+                    #             dbc.Col(dbc.NavbarBrand("COVID-19 Canadian Dashboard", className="ml-2")),
+                    #             dbc.Col(html.Img(src='assets/canadian_flag.png', height="20px")),
+                    #         ],
+                    #         align="center",
+                    #         no_gutters=True,
+                    #     ),
+                    #     href="/",
+                    # ),
+                    # html.A(
+                    #     # Use row and col to control vertical alignment of logo / brand
+                    #     dbc.Row(
+                    #         [
+                    #             dbc.Col(dbc.NavbarBrand("COVID-19 Canadian Dashboard", className="ml-2")),
+                    #             dbc.Col(html.Img(src='assets/canadian_flag.png', height="20px")),
+                    #         ],
+                    #         align="right",
+                    #         no_gutters=True,
+                    #     ),
+                    #     href="https://plot.ly",
+                    # ),
+                    # dbc.NavbarToggler(id="navbar-toggler"),
+                ],
+                color="dark",
+                dark=True,
+                sticky="top",
+            )
 
 footer = dbc.Navbar(
     [
@@ -135,7 +185,7 @@ footer = dbc.Navbar(
     sticky="bottom"
 )
 
-footer2 = html.Footer(html.Div("footer!"), className="footer")
+footer2 = html.Footer(html.Div("Dashboard made by Jolene and Shafika"), className="footer")
 
 site_backbone = html.Div([
     dcc.Location(id='url', refresh=False),
@@ -145,7 +195,6 @@ site_backbone = html.Div([
 ])
 
 app.layout = site_backbone
-
 
 
 canadian_dashboard = html.Div(
@@ -166,7 +215,7 @@ canadian_dashboard = html.Div(
                                                     id='region-dropdown',
                                                     className='dropdown',
                                                     options=[{'label':name, 'value':name} for name in names],
-                                                    value = "Quebec" #list(fnameDict.keys())[0]
+                                                    value = "Ontario" #list(fnameDict.keys())[0]
                                                 ),
                                             ]
                                         ),
@@ -178,7 +227,7 @@ canadian_dashboard = html.Div(
                                                 dcc.Dropdown(
                                                     id='subregion-dropdown',
                                                     className='dropdown',
-                                                    value = 'Montreal'
+                                                    value = 'Toronto'
                                                 ),
                                             ]
                                         ),
@@ -313,7 +362,8 @@ canadian_dashboard = html.Div(
                                     ), className='input-space'),
                                     dbc.Row(dbc.Col(
                                         html.Div(
-                                            html.Button('Rerun', id='rerun-btn', n_clicks=0),
+                                            dbc.Button("Rerun", id='rerun-btn', n_clicks=0, color="dark", className="mr-1"),
+                                            # html.Button('Rerun', id='rerun-btn', n_clicks=0),
                                         ),
                                     ), className='input-space'),
                                 ]),
