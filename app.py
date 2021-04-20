@@ -10,7 +10,7 @@ import dash_bootstrap_components as dbc
 import dash_html_components as html
 import pandas as pd
 import numpy as np
-from dash.dependencies import Output, Input
+from dash.dependencies import Output, Input, State
 import plotly.express as px
 import plotly.graph_objects as go
 import datetime as datetime
@@ -62,8 +62,6 @@ avg_temp_vals = []
 
 initial_load = True
 
-# df_mob = pd.read_csv('https://www.gstatic.com/covid19/mobility/Global_Mobility_Report.csv')
-
 
 fnameDict = {    
     "Alberta": ["Calgary","Central","Edmonton","North","South"], 
@@ -107,23 +105,43 @@ app.title = "COVID Dashboard"
 
 navbar = dbc.NavbarSimple(
     children=[
-        dbc.NavItem(dbc.NavLink("Home", href="home")),
-        dbc.NavItem(dbc.NavLink("About Us", href="about")),
-        dbc.NavItem(dbc.NavLink("Canadian Dashboard", href="dashboard")),
+        dbc.NavItem(dbc.NavLink("Canadian Dashboard", href="/")),
         dbc.NavItem(dbc.NavLink("USA Dashboard", href="https://www.wolframcloud.com/obj/mohammadb/COVID19Dashboard2")),
+        dbc.NavItem(dbc.NavLink("About Us", href="about")),
         dbc.NavItem(dbc.NavLink("FAQ", href="faq")),
     ],
-    brand="Waterloo COVID-19 Forecast and Mitigation Portal",
+    brand="My Local COVID: History, Forecast and Mitigation  Portal",
     brand_href="#",
     color="dark",
     dark=True,
-    sticky="Top",
+    fixed="top",
 )
+
+footer = dbc.Navbar(
+    [
+        html.A(
+            # Use row and col to control vertical alignment of logo / brand
+            dbc.Row(
+                [
+                    dbc.Col(dbc.NavbarBrand("Footer", className="ml-2")),
+                ],
+                align="center",
+                no_gutters=True,
+            ),
+        ),
+    ],
+    color="dark",
+    dark=True,
+    sticky="bottom"
+)
+
+footer2 = html.Footer(html.Div("footer!"), className="footer")
 
 site_backbone = html.Div([
     dcc.Location(id='url', refresh=False),
     html.Div(navbar),
-    html.Div(id='page-content')
+    html.Div(id='page-content', className="page"),
+    footer2,
 ])
 
 app.layout = site_backbone
@@ -148,7 +166,7 @@ canadian_dashboard = html.Div(
                                                     id='region-dropdown',
                                                     className='dropdown',
                                                     options=[{'label':name, 'value':name} for name in names],
-                                                    value = "Ontario" #list(fnameDict.keys())[0]
+                                                    value = "Quebec" #list(fnameDict.keys())[0]
                                                 ),
                                             ]
                                         ),
@@ -160,7 +178,7 @@ canadian_dashboard = html.Div(
                                                 dcc.Dropdown(
                                                     id='subregion-dropdown',
                                                     className='dropdown',
-                                                    value = 'Toronto'
+                                                    value = 'Montreal'
                                                 ),
                                             ]
                                         ),
@@ -267,7 +285,7 @@ canadian_dashboard = html.Div(
                                                     min_date_allowed=df_mort.date_death_report.min().date(),
                                                     max_date_allowed=df_mort.date_death_report.max().date(), # df_mort.date_death_report.max().date(),
                                                     initial_visible_month=df_mort.date_death_report.max().date(),
-                                                    date= "2020-11-01", # df_mort.date_death_report.max().date(), # "2020-03-13"
+                                                    date=  df_mort.date_death_report.max().date(), # "2020-11-01"
                                                     # end_date=df_mort.date_death_report.max().date(), #"2021-03-31"
                                                 ),
                                             ]
@@ -496,7 +514,7 @@ canadian_dashboard = html.Div(
                 ),
             ], className="mb-4"
         ),
-    ]
+    ],
 )
 
 
@@ -507,16 +525,29 @@ canadian_dashboard = html.Div(
 def display_page(pathname):
     print("URL IS: " + pathname)
     if (pathname == "/"):
-        return landing_page
-    elif (pathname == "/dashboard"):
         return canadian_dashboard
     elif (pathname == "/about"):
         return about_page
     elif (pathname == "/faq"):
         return faq_page
     
-    return landing_page
+    return canadian_dashboard
 
+# FAQ Page
+@app.callback(
+    [Output("a1", "is_open"), Output("a2", "is_open")],
+    [Input("q1", "n_clicks"), Input("q2", "n_clicks")],
+    [State("q1", "is_open"), State("q2", "is_open")],
+)
+def toggle_collapse(q1, q2, is_open1, is_open2):
+     
+    if q1:
+        is_open1 =  not is_open1
+
+    if q2:
+        is_open2 =  not is_open2
+
+    return is_open1, is_open2
 
 
 @app.callback(
@@ -593,7 +624,7 @@ def update_region_names(province_name, region_name):
     vac_label = 'Fraction of the Population Vaccinated in ' + region_name + ', ' + province_name
     trends_label = 'Google Searches for Face Masks in ' + region_name + ', ' + province_name
     rtcurve_label = 'Future Effective Reproduction Number R(t) Curves in ' + region_name + ', ' + province_name
-    return total_pop, pop_80, pwpd, sparsity, avg_house, deaths_label, cases_label, mob_label, temp_label, vac_label, trends_label, rtcurve_label
+    return total_pop, sparsity, pop_80, pwpd, avg_house, deaths_label, cases_label, mob_label, temp_label, vac_label, trends_label, rtcurve_label
 
 
 @app.callback(
@@ -658,22 +689,22 @@ def update_mortality_chart(province_name, region, start_date, end_date, day_to_s
     df_mobility = get_mob(province_name, region)
     pred_fig = go.Figure()
 
-    # vac_dates = get_vaccination_dates(province_name, region)
     df_vac = vaccination_data(province_name, region)
 
-    time.sleep(3)
-    for i in range(10):
-        if (i < 3):
-            time.sleep(3)
-        # print("===== CURVE: " + str(i) + " ========")
-        dates = predicted_dates(province_name, region, start_date, day_to_start_forecast, days_to_forecast)
-        deaths = predicted_deaths(province_name, region, start_date, day_to_start_forecast, days_to_forecast, df_mobility, xMob, facemask, vac, df_vac)[0]
-        # if (i > 1):
-        pred_fig.add_trace(go.Scatter(
-            x=dates,
-            y=deaths,
-            name='Predicted Deaths',
-        ))
+    # fig.update_xaxes(type="log", range=[0,5])
+
+    # for i in range(10):
+    #     if (i < 2):
+    #         time.sleep(4)
+    #     # print("===== CURVE: " + str(i) + " ========")
+    #     dates = predicted_dates(province_name, region, start_date, day_to_start_forecast, days_to_forecast)
+    #     deaths = predicted_deaths(province_name, region, start_date, day_to_start_forecast, days_to_forecast, df_mobility, xMob, facemask, vac, df_vac)[0]
+    #     # if (i > 1):
+    #     pred_fig.add_trace(go.Scatter(
+    #         x=dates,
+    #         y=deaths,
+    #         name='Predicted Deaths',
+    #     ))
 
     pred_fig.add_trace(go.Scatter(
         x=death_dates, # here
@@ -1670,8 +1701,11 @@ def get_trends_on_day(province_name, region_name, day, trends):
     df_dates = df_trends[str(get_geocode(province_name, region_name))]
     if (delta < len(df_trends.index) and delta >= 0):
         trend_42_days_ago = df_dates[delta]
+        if (province_name == "Quebec"):
+            trend_42_days_ago = trend_42_days_ago * 2.5
     else:
         trend_42_days_ago = trends
+        
 
     return trend_42_days_ago
 
