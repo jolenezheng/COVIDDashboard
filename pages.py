@@ -1,9 +1,10 @@
 import dash_html_components as html
 import dash_bootstrap_components as dbc
+import dash_core_components as dcc
 
-introduction_text = "This portal provides resources and tools that could help individuals and policy makers with a scientific, balanced, and evidence-based approach to manage and navigate the COVID-19 Pandemic. It provides historical information, important demographics, and resulting stochastic forecasting for local counties (US) or Health Units (Canada), for adjustable vaccination and face-mask usage and social mobility reduction strategies. The model is simultaneously calibrated against more than 2500 distinct epidemics (over 100,000 reproduction number measurements), over the course of the COVID-19 pandemic."
+introduction_text = dcc.Markdown('''This portal provides resources and tools that could help individuals and policy makers with a scientific, balanced, and evidence-based approach to manage and navigate the COVID-19 Pandemic. It provides historical information, important demographics, and resulting stochastic forecasting for local counties (US) or Health Units (Canada), for adjustable **vaccination** and **face-mask usage** and **social mobility reduction** strategies. The model is simultaneously calibrated against more than 2500 distinct epidemics (over 100,000 reproduction number measurements), over the course of the COVID-19 pandemic.''')
 
-faq1 = "We use the predicted exponential growth/decay rate of mortality from a simple compartmental (SEIR) model, but assume that the parameters of the model have deterministic universal dependencies on a series of ten static or dynamic conditions for every specific county/health region. The dependencies are then calibrated for the historical data on the epidemics and drivers. We only use COVID-19 confirmed mortality data, as the case numbers are dependent on testing policies and availability. Furthermore, we measure the error of the model based on the residuals of the best-fit model. The forecasts are stochastic simulations, based on the best-fit model and residuals, which can be tuned for different mitigation strategies. "
+faq1 = "We use the predicted exponential growth/decay rate of mortality from a simple compartmental (SEIR) model, but assume that the parameters of the model have deterministic universal dependencies on a series of ten static or dynamic conditions for every specific county/health region. The dependencies are then calibrated for the historical data on the epidemics and drivers. We only use COVID-19 confirmed mortality data, as the case numbers are dependent on testing policies and availability. Furthermore, we measure the error of the model based on the residuals of the best-fit model. The forecasts are stochastic simulations, based on the best-fit model and residuals, which can be tuned for different mitigation strategies."
 faq2 = html.Div([
   "The model depends on a series of static and dynamic drivers.",
   "The static drivers are: ",
@@ -93,19 +94,21 @@ old_navbar = html.Div(
             ),
         )
 
-card_content = [
-    dbc.CardHeader("Niayesh Afshordi"),
-    dbc.CardBody(
-        [
-            html.P(
-                "Associate Professor of Physics and Astronomy at the University of Waterloo and Associate Faculty in Cosmology at the Perimeter Institute for Theoretical Physics",
-                className="card-text",
-            ),
-        ]
-    ),
-]
+introduction_page = html.Div([
+    dbc.Row([dbc.Col(html.H3("My Local COVID: History, Forecast and Mitigation Portal"))], className="mb-4"),
+    dbc.Row([dbc.Col(html.P(introduction_text))], className="mb-4"),
+    dbc.Row([dbc.Col(html.P("Important Disclaimer: Forecasts are subject to model, systematic, and statistical uncertainties. In particular, the assumed efficacy of vaccines in the population remains tentative."))], className="mb-4"),
+    dbc.Row([dbc.Col(html.P("Data Sources:"))]),
+    html.Ol([
+        html.Li(html.A("Mortality and Cases", href="https://github.com/ccodwg/Covid19Canada/tree/master/timeseries_hr", target="_blank")),
+        html.Li(html.A("Weather Data", href="https://dd.weather.gc.ca/climate/observations/daily/csv/", target="_blank")),
+        html.Li(html.A("Mobility Data", href="https://www.google.com/covid19/mobility/", target="_blank")),
+        html.Li(html.A("Trends Data", href="https://trends.google.com/trends/?geo=Canada", target="_blank")),
+        html.Li(html.A("Vaccination Data", href="https://api.covid19tracker.ca/docs/1.0/overview", target="_blank")),
+    ]),
+])
 
-about_page = row = html.Div(
+about_page = html.Div(
     [
         dbc.Row(
             [
@@ -558,7 +561,7 @@ faq_page = html.Div([
               color="primary",
             ),
             dbc.Collapse(
-              dbc.Card(dbc.CardBody(faq1)),
+              dbc.Card(dbc.CardBody(faq4)),
               id="a4",
             ),
           ]))
