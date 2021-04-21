@@ -966,6 +966,7 @@ def update_mob_charts(province_name, region, start_date, end_date, forecasted_da
 def update_vaccination_charts(province_name, region):
     province_name = update_province_name(province_name)
     df_vac = vaccination_data(province_name, region)
+    total_population = get_total_pop(province_name, region)
     # vac_dates = df_vac.date
     # vac_vals = df_vac.total_vaccinations
 
@@ -973,11 +974,12 @@ def update_vaccination_charts(province_name, region):
     vac_vals = []
 
     for day in df_vac:
-        vaccine = day['total_vaccinations']
-        vac_vals.append(vaccine)
-        date = day['date']
-        vac_dates.append(date)
-
+        if (day["total_vaccinations"] != None):
+            date = day['date']
+            vac_dates.append(date)
+            vaccine = day['total_vaccinations'] / total_population
+            vac_vals.append(vaccine)
+        
     vaccination_fig = px.line(vac_vals, x = vac_dates, y = vac_vals)
     vaccination_fig.update_layout(xaxis_title='Date',
                    yaxis_title='Total Vaccinations/Population of Region')
