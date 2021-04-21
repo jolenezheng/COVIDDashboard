@@ -105,6 +105,7 @@ introduction_page = html.Div([
         html.Li(html.A("Mobility Data", href="https://www.google.com/covid19/mobility/", target="_blank")),
         html.Li(html.A("Trends Data", href="https://trends.google.com/trends/?geo=Canada", target="_blank")),
         html.Li(html.A("Vaccination Data", href="https://api.covid19tracker.ca/docs/1.0/overview", target="_blank")),
+        html.Li(html.A("Static Driver Data", href="https://www.statcan.gc.ca/", target="_blank")),
     ]),
 ])
 

@@ -763,10 +763,10 @@ def update_mortality_chart(province_name, region, start_date, end_date, day_to_s
     # fig.update_xaxes(type="log", range=[0,5])
     time.sleep(2)
     for i in range(10):
-        if (i == 0):
+        if (i <= 2):
             time.sleep(4)
-        elif(i == 1):
-            time.sleep(3)
+        else:
+            time.sleep(1)
         # print("===== CURVE: " + str(i) + " ========")
         dates = predicted_dates(province_name, region, start_date, day_to_start_forecast, days_to_forecast)
         deaths = predicted_deaths(province_name, region, start_date, day_to_start_forecast, days_to_forecast, df_mobility, xMob, facemask, vac, df_vac)[0]
