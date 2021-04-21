@@ -333,7 +333,7 @@ canadian_dashboard = html.Div(
                                                     min_date_allowed=df_mort.date_death_report.min().date(),
                                                     max_date_allowed=df_mort.date_death_report.max().date(), # df_mort.date_death_report.max().date(),
                                                     initial_visible_month=df_mort.date_death_report.max().date(),
-                                                    date= "2020-11-01", # df_mort.date_death_report.max().date(), # "2020-11-01"
+                                                    date= df_mort.date_death_report.max().date(), # "2020-11-01"
                                                     # end_date=df_mort.date_death_report.max().date(), #"2021-03-31"
                                                 ),
                                             ]
@@ -688,11 +688,11 @@ def update_region_names(province_name, region_name):
     # Graph Titles
     deaths_label = 'Daily Predicted Deaths in ' + region_name + ', ' + province_name
     cases_label = 'Daily Reported Cases in ' + region_name + ', ' + province_name
-    mob_label = 'Social Mobility in ' + region_name + ', ' + province_name
+    mob_label = 'Workplace Social Mobility in ' + region_name + ', ' + province_name
     temp_label = 'Daily Reported Temperature in ' + region_name + ', ' + province_name
     vac_label = 'Fraction of the Population Vaccinated in ' + region_name + ', ' + province_name
     trends_label = 'Google Searches for Face Masks in ' + region_name + ', ' + province_name
-    rtcurve_label = 'Future Effective Reproduction Number R(t) Curves in ' + region_name + ', ' + province_name
+    # rtcurve_label = 'Future Effective Reproduction Number R(t) Curves in ' + region_name + ', ' + province_name
     return total_pop, sparsity, pop_80, pwpd, avg_house, deaths_label, cases_label, mob_label, temp_label, vac_label, trends_label # , rtcurve_label
 
 
