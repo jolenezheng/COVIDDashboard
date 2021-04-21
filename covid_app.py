@@ -911,7 +911,7 @@ def update_weather_chart(province_name, region, start_date, end_date, forecasted
     weather_fig.add_trace(go.Scatter(	
             x=new_dates,	
             y=avg_temp_data(date_now, date_now + forecasted, data),	
-            name='Average Temp in Last 5 Years',	
+            name='Historical Average',	
         ))
 
     # weather_fig = px.line(df_mort, x = temp_dates, y = temp_vals)
@@ -1620,10 +1620,12 @@ def get_vac_on_day(date_in_forecast, vac_val, total_population, df_vac, days_pri
 
     if (delta < len(vac_vals) and delta >= 0):
         vac = vac_vals[delta] / total_population
-    elif (date_in_forecast < first_day_vac_date):
+    elif (delta < 0):
         vac = 0.0
     else:
         vac = vac_val
+    
+    # print("returning vac on " + str(date_in_forecast) + " == " + str(vac) + " delta is: " + str(delta))
     
     return vac
 
