@@ -61,11 +61,6 @@ total_deaths = 0
 avg_temp_vals = []
 
 initial_load = True
-
-# prev1 = None
-# prev2 = None
-# prev3 = None
-# prev4 = None
 prev_states = [None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
 
 
@@ -970,9 +965,18 @@ def update_mob_charts(province_name, region, start_date, end_date, forecasted_da
 )
 def update_vaccination_charts(province_name, region):
     province_name = update_province_name(province_name)
-    time.sleep(5)
-    vac_dates = df_vac.date
-    vac_vals = df_vac.total_vaccinations
+    df_vac = vaccination_data(province_name, region)
+    # vac_dates = df_vac.date
+    # vac_vals = df_vac.total_vaccinations
+
+    vac_dates = []
+    vac_vals = []
+
+    for day in df_vac:
+        vaccine = day['total_vaccinations']
+        vac_vals.append(vaccine)
+        date = day['date']
+        vac_dates.append(date)
 
     vaccination_fig = px.line(vac_vals, x = vac_dates, y = vac_vals)
     vaccination_fig.update_layout(xaxis_title='Date',
@@ -1014,45 +1018,45 @@ def update_trends_charts(province_name, region):
 #     ],	
 # )	
 # def update_rtcurve_charts(province_name, region, start_date, end_date, day_to_start_forecast, days_to_forecast, facemask, xMob, vac):	
-    province_name = update_province_name(province_name)	
-    xMob = -xMob	
-    facemask = facemask * 70 / 100	
-    vac = vac / 100.0	
+    # province_name = update_province_name(province_name)	
+    # xMob = -xMob	
+    # facemask = facemask * 70 / 100	
+    # vac = vac / 100.0	
     	
-    global df_mobility	
-    df_mobility = get_mob(province_name, region)    	
-    df_vac = vaccination_data(province_name, region)
+    # global df_mobility	
+    # df_mobility = get_mob(province_name, region)    	
+    # df_vac = vaccination_data(province_name, region)
 
     	
-    rtcurve_fig = go.Figure()	
+    # rtcurve_fig = go.Figure()	
     	
-    # ============== R(T) CURVE GRAPH ==============	
-    for i in range(10):    	
-        rtcurve_fig.add_trace(go.Scatter(	
-            x=predicted_dates(province_name, region, start_date, end_date, days_to_forecast),	
-            y=predicted_deaths(province_name, region, start_date, day_to_start_forecast, days_to_forecast, df_mobility, xMob, facemask, vac, df_vac)[1],	
-        name = 'R(t)'	
-    ))
+    # # ============== R(T) CURVE GRAPH ==============	
+    # for i in range(10):    	
+    #     rtcurve_fig.add_trace(go.Scatter(	
+    #         x=predicted_dates(province_name, region, start_date, end_date, days_to_forecast),	
+    #         y=predicted_deaths(province_name, region, start_date, day_to_start_forecast, days_to_forecast, df_mobility, xMob, facemask, vac, df_vac)[1],	
+    #     name = 'R(t)'	
+    # ))
     	
-    start = datetime.datetime.strptime("2020-03-08", "%Y-%m-%d")	
-    end = datetime.datetime.today()	
-    end = end.strftime("%Y-%m-%d")	
-    end = datetime.datetime.strptime(str(end), "%Y-%m-%d")	
-    date_generated = [start + datetime.timedelta(days=x) for x in range(0, (end-start).days+1)]	
-    for date in date_generated:	
-        date_range = date.strftime("%Y-%m-%d")	
+    # start = datetime.datetime.strptime("2020-03-08", "%Y-%m-%d")	
+    # end = datetime.datetime.today()	
+    # end = end.strftime("%Y-%m-%d")	
+    # end = datetime.datetime.strptime(str(end), "%Y-%m-%d")	
+    # date_generated = [start + datetime.timedelta(days=x) for x in range(0, (end-start).days+1)]	
+    # for date in date_generated:	
+    #     date_range = date.strftime("%Y-%m-%d")	
     	
-    rtcurve_fig.add_trace(go.Scatter(	
-            x=date(province_name, region, start_date, end_date),	
-            y=past_rt_equation(province_name, region),	
-            name='Previous R(t)',	
-            line=dict(color='black', width=2),	
-    ))	
+    # rtcurve_fig.add_trace(go.Scatter(	
+    #         x=date(province_name, region, start_date, end_date),	
+    #         y=past_rt_equation(province_name, region),	
+    #         name='Previous R(t)',	
+    #         line=dict(color='black', width=2),	
+    # ))	
     	
-    rtcurve_fig.update_layout(xaxis_title='t',	
-                   yaxis_title='R(t)')	
+    # rtcurve_fig.update_layout(xaxis_title='t',	
+    #                yaxis_title='R(t)')	
     	
-    return rtcurve_fig
+    # return rtcurve_fig
 
 # -------------- STATIC DATA HELPER FUNCTIONS --------------
 
