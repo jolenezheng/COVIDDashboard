@@ -22,8 +22,8 @@ from dateutil.relativedelta import relativedelta
 
 from pages import *
 
-import ssl
-ssl._create_default_https_context = ssl._create_unverified_context
+# import ssl
+# ssl._create_default_https_context = ssl._create_unverified_context
 
 
 external_stylesheets = [
@@ -63,7 +63,7 @@ weat_city = None
 date_city = None
 total_deaths = 0
 
-avg_temp_vals = []
+# avg_temp_vals = []
 
 initial_load = True
 prev_states = [None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
@@ -771,6 +771,7 @@ def update_mortality_chart(province_name, region, start_date, end_date, day_to_s
     for i in range(10):
         if (i <= 2):
             time.sleep(4)
+
         # print("===== CURVE: " + str(i) + " ========")
         dates = predicted_dates(province_name, region, start_date, day_to_start_forecast, days_to_forecast)
         deaths = predicted_deaths(province_name, region, start_date, day_to_start_forecast, days_to_forecast, df_mobility, xMob, facemask, vac, df_vac)[0]
@@ -922,6 +923,7 @@ def update_weather_chart(province_name, region, start_date, end_date, forecasted
             name='Historical Average',	
         ))
 
+    delete_me = avg_temp_data_1_year(data)
     # weather_fig = px.line(df_mort, x = temp_dates, y = temp_vals)
     # weather_fig.update_layout(xaxis_title='Date',
     #                yaxis_title='Mean Temperature')
@@ -1558,12 +1560,11 @@ def provinceid(province_name, region_name):
     return weat_info_province.prov_id[weat_info_province.health_region == region_name].item()
 
 def avg_temp_data(begin_year, end_year, data):
-    global avg_temp_vals
     df_weat = pd.DataFrame(data, columns = ['Date','Mean Temperature'])
     one_day = datetime.timedelta(days=1)
 
     next_day = begin_year
-    for day in range(0, 366):  # Includes leap year
+    for day in range(366):  # Includes leap year
         if next_day > end_year:
             break
         # Adds a day to the current date
@@ -1571,17 +1572,30 @@ def avg_temp_data(begin_year, end_year, data):
         date_range = next_day.strftime('%m-%d')
         df_weat_date = df_weat.groupby('Date')['Mean Temperature'].mean()
 
+    # print(" df_weat_date: " + str(df_weat_date))
     # print("size of df_weat_date: " + str(len(df_weat_date)))
-    for val in df_weat_date:
-        avg_temp_vals.append(val)
+    # for val in df_weat_date:
+    #     global avg_temp_vals
+    #     avg_temp_vals.append(val)
         # print("VAL_: " + str(val))
 
-    # print("size of avg_temp_vals: " + str(len(avg_temp_vals)))
+    # print("!!!size of avg_temp_vals: " + str(len(avg_temp_vals)))
     
     return df_weat_date.rolling(window=14).mean()
 
-def get_past_temp(province_name, region_name, day):
-    return 0.0
+def avg_temp_data_1_year(data):
+    df_weat = pd.DataFrame(data, columns = ['Date','Mean Temperature'])
+
+    # for day in range(366):  # Includes leap year
+    df_weat_date = df_weat.groupby('Date')['Mean Temperature'].mean()
+
+    print("!! df_weat_date: " + str(df_weat_date))
+    print("!!size of df_weat_date: " + str(len(df_weat_date)))
+
+    
+    return df_weat_date.rolling(window=14).mean()
+
+def get_past_temp(province_name, region_name, date_in_forecast):
     # print("Size of avg_temp_vals: " + str(len(avg_temp_vals)))
     # day_as_date = day.date()
     # year = str(day_as_date.year)
@@ -1595,6 +1609,8 @@ def get_past_temp(province_name, region_name, day):
     #     temp = 0.0
     # # print("returning temp " + str(temp) + " for day: " + str(day))
     # return temp
+    return 0.0
+
 
 
 # -------------- VACCINATION HELPER FUNCTIONS --------------
