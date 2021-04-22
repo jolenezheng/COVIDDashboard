@@ -669,7 +669,7 @@ def init_slider_vals(province_name, region_name, date_str):
         Output("temp-header", "children"),
         Output("vac-header", "children"),
         Output("trends-header", "children"),
-        # Output("rtcurve-header", "children"),
+        Output("rtcurve-header", "children"),
     ],
     [dash.dependencies.Input('region-dropdown', 'value'), dash.dependencies.Input('subregion-dropdown', 'value'),]
 )
@@ -694,8 +694,8 @@ def update_region_names(province_name, region_name):
     temp_label = 'Daily Reported Temperature in ' + region_name + ', ' + province_name
     vac_label = 'Fraction of the Population Vaccinated in ' + region_name + ', ' + province_name
     trends_label = 'Google Searches for Face Masks in ' + region_name + ', ' + province_name
-    # rtcurve_label = 'Future Effective Reproduction Number R(t) Curves in ' + region_name + ', ' + province_name
-    return total_pop, sparsity, pop_80, pwpd, avg_house, deaths_label, cases_label, mob_label, temp_label, vac_label, trends_label # , rtcurve_label
+    rtcurve_label = 'Future Effective Reproduction Number R(t) Curves in ' + region_name + ', ' + province_name
+    return total_pop, sparsity, pop_80, pwpd, avg_house, deaths_label, cases_label, mob_label, temp_label, vac_label, trends_label, rtcurve_label
 
 
 @app.callback(
@@ -972,7 +972,9 @@ def update_mob_charts(province_name, region, start_date, end_date, forecasted_da
 def update_vaccination_charts(province_name, region):
     province_name = update_province_name(province_name)
     df_vac = vaccination_data(province_name, region)
-    total_population = get_total_pop(province_name, region)
+    regional_population = get_total_pop(province_name, region)
+    provincial_population = get_prov_pop(province_name, region)
+
     # vac_dates = df_vac.date
     # vac_vals = df_vac.total_vaccinations
 
@@ -983,9 +985,14 @@ def update_vaccination_charts(province_name, region):
         if (day["total_vaccinations"] != None):
             date = day['date']
             vac_dates.append(date)
-            vaccine = day['total_vaccinations'] / total_population
-            vac_vals.append(vaccine)
-        
+            
+            if (province_name == 'Alberta') or (province_name == 'New Brunswick') or (province_name == 'NL') or (province_name == 'Nova Scotia'):
+                vaccine = day['total_vaccinations'] / provincial_population
+                vac_vals.append(vaccine)
+            else:
+                vaccine = day['total_vaccinations'] / regional_population
+                vac_vals.append(vaccine)
+                
     vaccination_fig = px.line(vac_vals, x = vac_dates, y = vac_vals)
     vaccination_fig.update_layout(xaxis_title='Date',
                    yaxis_title='Total Vaccinations/Population of Region')
@@ -1671,8 +1678,8 @@ def vaccination_data(province_name, region_name):
             source = response.read()
             api_data = json.loads(source)['data']        
     
-    #response = requests.get(api)
-    #api_data = response.json()["data"] 
+    # response = requests.get(api)
+    # api_data = response.json()["data"] 
 
     return api_data
 
@@ -1683,7 +1690,7 @@ def df_vaccinations(province_name, region_name):
         df_vaccinations['total_vaccinations'] = df_vaccinations.total_vaccinations.div(get_prov_pop(province_name, region_name))
     else:
         df_vaccinations['total_vaccinations'] = df_vaccinations.total_vaccinations.div(get_total_pop(province_name, region_name))
-    
+    # print(df_vaccinations)
     return df_vaccinations
 
 def get_frac_vaccinations_1_month_prior(province_name, region_name):
