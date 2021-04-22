@@ -22,8 +22,8 @@ from dateutil.relativedelta import relativedelta
 
 from pages import *
 
-# import ssl
-# ssl._create_default_https_context = ssl._create_unverified_context
+import ssl
+ssl._create_default_https_context = ssl._create_unverified_context
 
 
 external_stylesheets = [
@@ -67,6 +67,8 @@ total_deaths = 0
 
 initial_load = True
 prev_states = [None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+
+curve_num = 0
 
 
 fnameDict = {    
@@ -336,9 +338,9 @@ canadian_dashboard = html.Div(
                                                 dcc.DatePickerSingle(
                                                     id="forecast-start-date",
                                                     min_date_allowed=df_mort.date_death_report.min().date(),
-                                                    max_date_allowed= "2021-03-01", # df_mort.date_death_report.max().date(), # df_mort.date_death_report.max().date(),
+                                                    max_date_allowed= df_mort.date_death_report.max().date(), # df_mort.date_death_report.max().date(),
                                                     initial_visible_month=df_mort.date_death_report.max().date(),
-                                                    date= "2020-11-01", # df_mort.date_death_report.max().date(), # "2020-11-01"
+                                                    date= "2021-04-01", # df_mort.date_death_report.max().date(), # "2020-11-01"
                                                     # end_date=df_mort.date_death_report.max().date(), #"2021-03-31"
                                                 ),
                                             ]
@@ -356,7 +358,7 @@ canadian_dashboard = html.Div(
                                                     min=0,
                                                     max=12,
                                                     step=1,
-                                                    value=9, # todo: change back to 3
+                                                    value=3, # todo: change back to 3
                                                     marks={ 0: '0 mo', 2: '2 mo', 4: '4 mo',
                                                         6: '6 mo', 8: '8 mo', 10: '10 mo', 12: '1 yr'
                                                     },
@@ -645,19 +647,22 @@ def init_slider_vals(province_name, region_name, date_str):
     # vac_dates = get_vaccination_dates(province_name, region_name)
     df_vac = vaccination_data(province_name, region_name)
 
-    num_days_to_forecast = 9
+    num_days_to_forecast = 3
 
     if (initial_load):
         mob = get_last_mob()
         trends = get_last_trends(province_name, region_name)
         vac = get_last_vac(province_name, region_name) / round(get_total_pop(province_name, region_name), 0) * 100
+        print("setting slider vac to be IF: " + str(vac) + " for day: " + str(date))
     else:
         mob = -get_mob_on_day(date, 0, 0)
         # trends = get_last_trends(province_name, region_name)
         trends = get_trends_on_day(province_name, region_name, date, 0)
-        vac = get_vac_on_day(date, 0, -1, df_vac, 0)
+        total_pop = get_total_pop(province_name, region_name)
+        vac = get_vac_on_day(date, 0, total_pop, df_vac, 0, True)
+        print("setting slider vac to be ELSE: " + str(vac) + " for day: " + str(date))
+
     initial_load = False
-    # print("setting slider vac to be: " + str(vac) + " for day: " + str(date))
     return trends, mob, vac, num_days_to_forecast # todo: change 0 -> vac
 
 @app.callback(
@@ -772,7 +777,9 @@ def update_mortality_chart(province_name, region, start_date, end_date, day_to_s
         if (i <= 2):
             time.sleep(4)
 
-        # print("===== CURVE: " + str(i) + " ========")
+        global curve_num 
+        curve_num = i
+        print("===== CURVE: " + str(i) + " ========")
         dates = predicted_dates(province_name, region, start_date, day_to_start_forecast, days_to_forecast)
         deaths = predicted_deaths(province_name, region, start_date, day_to_start_forecast, days_to_forecast, df_mobility, xMob, facemask, vac, df_vac)[0]
         # if (i > 1):
@@ -923,7 +930,7 @@ def update_weather_chart(province_name, region, start_date, end_date, forecasted
             name='Historical Average',	
         ))
 
-    delete_me = avg_temp_data_1_year(data)
+    # delete_me = avg_temp_data_1_year(data)
     # weather_fig = px.line(df_mort, x = temp_dates, y = temp_vals)
     # weather_fig.update_layout(xaxis_title='Date',
     #                yaxis_title='Mean Temperature')
@@ -1144,23 +1151,23 @@ def predicted_deaths(province_name, region_name, start_date, end_date, days_to_f
 
     total_population = get_total_pop(province_name, region_name)
     annDeath = get_ann_death(province_name, region_name)
-    tau = 25.1009
-    lS0 = -2.70768
-    trend1=-0.0311442
-    tmin2 = 24.6497
-    dT2 = 0.00562779
-    dT3 = 0.000182757
-    h0 = 2.30833
-    h2 = 5.89094
-    anl = -0.007345
+    # tau = 25.1009
+    # lS0 = -2.70768
+    # trend1=-0.0311442
+    # tmin2 = 24.6497
+    # dT2 = 0.00562779
+    # dT3 = 0.000182757
+    # h0 = 2.30833
+    # h2 = 5.89094
+    # anl = -0.007345
     xHouse = get_avg_house(province_name, region_name) # Average number of people/household
-    house2 = 0.0198985
-    mob1 = 0.0379239
-    v2 = 0.0 
-    v1 = 11.9697
+    # house2 = 0.0198985
+    # mob1 = 0.0379239
+    # v2 = 0.0 
+    # v1 = 11.9697
     xLogPWPD = math.log(get_pwpd(province_name, region_name) * get_frac_pop_over_80(province_name, region_name), 10) # Log10[PWD*AgreFrac[>80]] -> base 10
     xBeta = math.log(total_population / (get_pwpd(province_name, region_name) * get_land_area(province_name, region_name))) / math.log(0.25**2/get_land_area(province_name, region_name)) #get_total_pop(province_name, region_name) / get_land_area(province_name, region_name) # Population Sparsity
-    vax2 = 0.0
+    # vax2 = 0.0
     first = True
     deaths_tomorrow = 0.0
     deaths_today = last_mort
@@ -1175,10 +1182,15 @@ def predicted_deaths(province_name, region_name, start_date, end_date, days_to_f
             xMob1 = get_mob_on_day(date_in_forecast, xMob_slider, 14)
             xMob2 = get_mob_on_day(date_in_forecast, xMob_slider, 28)
             xTemp = get_past_temp(province_name, region_name, date_in_forecast)
-            vaxP1 = get_vac_on_day(date_in_forecast, vac_val, total_population, df_vac, 14)
-            vaxP2 = get_vac_on_day(date_in_forecast, vac_val, total_population, df_vac, 28)
+            vaxP1 = get_vac_on_day(date_in_forecast, vac_val, total_population, df_vac, 14, False)
+            vaxP2 = get_vac_on_day(date_in_forecast, vac_val, total_population, df_vac, 28, False)
             # print("vax1: " + str(vaxP1))
             # print("vax2: " + str(vaxP2))
+            # print("xMob1: " + str(xMob1))
+            # print("xMob2: " + str(xMob2))
+            # print("xHerd: " + str(xHerd))
+            # print("xTrends1: " + str(xTrends1))
+            # print("\n")
 
             if (i <= 60):
                 xHerd2 = total_deaths_2_months_prior / annDeath # Total Covid Death (more than 2 months ago)/Annual Death -> what does more than 2 months ago mean? 2 months prior
@@ -1220,9 +1232,34 @@ def predicted_deaths(province_name, region_name, start_date, end_date, days_to_f
             delta = random.gauss(0.0, sigma)
 
             lambda_ += delta # Sqrt[0.092/(14 + Death in Past two weeks)
+
             lambda_values.append(rt_equation(lambda_))
+            # lambda_values.append(0)
             deaths_tomorrow = math.exp(lambda_) * deaths_today
             yVals.append(deaths_tomorrow)
+
+            # if (curve_num == 9):
+                # print("date: " + str(date_in_forecast))
+                # print("total_deaths: " + str(total_deaths))
+                # print("annDeath: " + str(annDeath))
+                # print("xHerd: " + str(xHerd))
+                # print("xHerd2: " + str(xHerd2))
+                # print("xMob1: " + str(xMob1))
+                # print("xMob2: " + str(xMob2))
+                # print("xTemp: " + str(xTemp))
+                # print("xTrends1: " + str(xTrends1))
+                # print("xLogPWPD: " + str(xLogPWPD))
+                # print("xBeta: " + str(xBeta))
+                # print("xAnnual: " + str(xAnnual))
+                # print("xHouse: " + str(xHouse))
+                # print("vaxP1: " + str(vaxP1))
+                # print("vaxP2: " + str(vaxP2))
+                # print("delta: " + str(delta))
+                # print("exp_: " + str(exp_))
+                # print("lambda_: " + str(lambda_))
+                # print("deaths_tomorrow: " + str(deaths_tomorrow))
+                # print("deaths_today: " + str(deaths_today))
+                # print("\n")
             deaths_today = deaths_tomorrow
             total_deaths += deaths_today
             annDeath += deaths_today
@@ -1267,6 +1304,8 @@ def get_last_mort(province_name, region_name, start_date, end_date):
     for key in rolling_avgs_2:
         vals2.append(key)
 
+    # print("get_last_mort size: " + str(len(vals1)))
+    # print("rolling_avgs size: " + str(len(rolling_avgs)))
     last_mort = np.random.poisson(7.0 * vals1[-1]) / 7.0 # vals1[-1] + random.gauss(0.0, math.sqrt((vals2[-1] - vals1[-1]) ** 2)) / math.sqrt(7.0)
     return last_mort
 
@@ -1646,7 +1685,7 @@ def get_last_vac(province_name, region_name):
 
     return last_vac
 
-def get_vac_on_day(date_in_forecast, vac_val, total_population, df_vac, days_prior):
+def get_vac_on_day(date_in_forecast, vac_val, total_population, df_vac, days_prior, yes_print):
     vac_vals = []
 
     found_first_day = False
@@ -1657,17 +1696,30 @@ def get_vac_on_day(date_in_forecast, vac_val, total_population, df_vac, days_pri
         elif (day["total_vaccinations"] != None):
             vaccine = day['total_vaccinations']
             vac_vals.append(vaccine)
+            # if (yes_print == True):
+            #     print("vac date: " + str(day["date"]))
+            #     print("vac val: " + str(vaccine))
 
     first_day_vac_date = datetime.datetime.strptime(first_day_vac_str, '%Y-%m-%d')
     days_since_first_day = date_in_forecast.date() - first_day_vac_date.date() - datetime.timedelta(days=days_prior)
     delta = days_since_first_day.days
 
+    if (yes_print == True):
+        print("lenth of vac vals: " + str(len(vac_vals)))
     if (delta < len(vac_vals) and delta >= 0):
         vac = vac_vals[delta] / total_population
+        if (yes_print == True):
+            print("vac_vals[delta]: " + str(vac_vals[delta]))
+            print("total pop: " + str(total_population))
+            print("returning from IF: " + str(date_in_forecast) + " == " + str(vac) + " delta is: " + str(delta) + " days_prior: " + str(days_prior))
     elif (delta < 0):
         vac = 0.0
+        if (yes_print == True):
+            print("returning from ELIF: " + str(date_in_forecast) + " == " + str(vac) + " delta is: " + str(delta) + " days_prior: " + str(days_prior))
     else:
         vac = vac_val
+        if (yes_print == True):
+            print("returning from ELSE: " + str(date_in_forecast) + " == " + str(vac) + " delta is: " + str(delta) + " days_prior: " + str(days_prior))
     
     # print("returning vac on " + str(date_in_forecast) + " == " + str(vac) + " delta is: " + str(delta))
     
