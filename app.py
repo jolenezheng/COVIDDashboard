@@ -1559,16 +1559,40 @@ def provinceid(province_name, region_name):
     weat_info_province = static_data[static_data.province_name == province_name]
     return weat_info_province.prov_id[weat_info_province.health_region == region_name].item()
 
-def avg_temp_data_1_year(data):
+def avg_temp_data(begin_year, end_year, data):
     df_weat = pd.DataFrame(data, columns = ['Date','Mean Temperature'])
-    df_weat_date = df_weat.groupby('Date')['Mean Temperature'].mean()
+    one_day = datetime.timedelta(days=1)
 
+    next_day = begin_year
+    for day in range(366):  # Includes leap year
+        if next_day > end_year:
+            break
+        # Adds a day to the current date
+        next_day += one_day
+        date_range = next_day.strftime('%m-%d')
+        df_weat_date = df_weat.groupby('Date')['Mean Temperature'].mean()
+
+    # print(" df_weat_date: " + str(df_weat_date))
+    # print("size of df_weat_date: " + str(len(df_weat_date)))
+    # for val in df_weat_date:
+    #     global avg_temp_vals
+    #     avg_temp_vals.append(val)
+        # print("VAL_: " + str(val))
+
+    # print("!!!size of avg_temp_vals: " + str(len(avg_temp_vals)))
+    
     return df_weat_date.rolling(window=14).mean()
 
 def avg_temp_data_1_year(data):
     df_weat = pd.DataFrame(data, columns = ['Date','Mean Temperature'])
+
+    # for day in range(366):  # Includes leap year
     df_weat_date = df_weat.groupby('Date')['Mean Temperature'].mean()
 
+    print("!! df_weat_date: " + str(df_weat_date))
+    print("!!size of df_weat_date: " + str(len(df_weat_date)))
+
+    
     return df_weat_date.rolling(window=14).mean()
 
 def get_past_temp(province_name, region_name, date_in_forecast):
@@ -1829,4 +1853,3 @@ def moving_avg(x, n):
 
 if __name__ == "__main__":
     app.run_server(debug=True)
-
