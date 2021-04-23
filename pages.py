@@ -504,7 +504,6 @@ faq_page2 = html.Div(
   ], className="accordion"
 )
 
-
 faq_page = html.Div([
     dbc.Row(html.Div("Frequently Asked Questions")),
     dbc.Row([
@@ -734,57 +733,3 @@ faq_page = html.Div([
         ),
     ]),
 ])
-
-# dbc.Row([
-#         dbc.Col(
-#           dbc.Row(html.Div([
-#             dbc.Button(
-#               "How",
-#               id="q1",
-#               className="mb-3",
-#               color="primary",
-#             ),
-#             dbc.Collapse(
-#               dbc.Card(dbc.CardBody(faq1)),
-#               id="a1",
-#             ),
-#           ]))
-#         ),
-#         dbc.Col(
-#           dbc.Row(html.Div([
-#             dbc.Button(
-#               "How",
-#               id="q1",
-#               className="mb-3",
-#               color="primary",
-#             ),
-#             dbc.Collapse(
-#               dbc.Card(dbc.CardBody(faq1)),
-#               id="a1",
-#             ),
-#           ]))
-#         ),
-#     ]),
-
-# dbc.Row(html.Div([
-#       dbc.Button(
-#         "How",
-#         id="q1",
-#         className="mb-3",
-#         color="primary",
-#       ),
-#       dbc.Collapse(
-#         dbc.Card(dbc.CardBody(faq1)),
-#         id="a1",
-#       ),
-#     ])),
-
-base_intro = """Lorem ipsum dolor sit amet, consectetur adipiscing elit, \
-    sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. \
-        Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris \
-            nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor \
-                in reprehenderit in voluptate velit esse cillum dolore eu \
-                    fugiat nulla pariatur. Excepteur sint occaecat cupidatat \
-                        non proident, sunt in culpa qui officia deserunt mollit \
-                            anim id est laborum.
-"""
