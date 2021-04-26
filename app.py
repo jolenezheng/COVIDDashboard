@@ -562,6 +562,23 @@ canadian_dashboard = html.Div(
                                     # ),
                                 ], color="dark", inverse=True),
                         ), className="mb-4"),
+                        dbc.Row(dbc.Col(
+                            dbc.Card(
+                                [
+                                    dbc.CardHeader(id="cumulativedeaths-header"),
+                                    dbc.CardBody(
+                                         dcc.Loading(
+                                            children=[html.Div(dcc.Graph(
+                                                id="cumulativedeaths-chart", config={"displayModeBar": False}))],
+                                            type="default"
+                                    )),
+                                    # dbc.CardBody(
+                                    #     dcc.Graph(
+                                    #         id="cases-chart", config={"displayModeBar": False}, # style={'display': 'inline-block'},
+                                    #     ),
+                                    # ),
+                                ], color="dark", inverse=True),
+                        ), className="mb-4"),                        
                         dbc.Row([
                             dbc.Col(
                                 dbc.Card(
@@ -764,6 +781,7 @@ def init_slider_vals(province_name, region_name, date_str):
         Output("vac-header", "children"),
         Output("trends-header", "children"),
         Output("rtcurve-header", "children"),
+        Output("cumulativedeaths-header", "children"),        
     ],
     [dash.dependencies.Input('region-dropdown', 'value'), dash.dependencies.Input('subregion-dropdown', 'value'),]
 )
@@ -791,7 +809,8 @@ def update_region_names(province_name, region_name):
     vac_label = 'Fraction of the Population Vaccinated in ' + region_name + ', ' + province_name
     trends_label = 'Google Searches for Face Masks in ' + region_name + ', ' + province_name
     rtcurve_label = 'Future Effective Reproduction Number R(t) Curves in ' + region_name + ', ' + province_name
-    return total_pop, sparsity, pop_80, pwpd, avg_house, mob, deaths_label, cases_label, mob_label, temp_label, vac_label, trends_label, rtcurve_label
+    cumulativedeaths_label = 'Cumulative Deaths in ' + region_name + ', ' + province_name
+    return total_pop, sparsity, pop_80, pwpd, avg_house, mob, deaths_label, cases_label, mob_label, temp_label, vac_label, trends_label, rtcurve_label, cumulativedeaths_label
 
 
 @app.callback(
@@ -1216,6 +1235,34 @@ def update_rtcurve_charts(province_name, region, start_date, end_date, day_to_st
 
     return rtcurve_fig
 
+@app.callback(
+    Output("cumulativedeaths-chart", "figure"),
+    [
+        Input("region-dropdown", "value"),
+        Input("subregion-dropdown", "value"),
+        Input("date-range", "start_date"),
+        Input("date-range", "end_date"),
+    ],
+)
+def update_cumulativedeaths_charts(province_name, region, start_date, end_date):
+    province_name = update_province_name(province_name)
+    dates = date(province_name, region, start_date, end_date)
+    cumulativedeaths = cumulative_deaths(province_name, region, start_date, end_date)
+    
+    cumulativedeaths_fig = go.Figure()
+    
+     # ============== MOBILITY GRAPH ==============
+    cumulativedeaths_fig.add_trace(go.Scatter(
+            x=dates,
+            y=cumulativedeaths,
+            name='Cumulative Deaths',
+        ))
+    
+    cumulativedeaths_fig.update_layout(xaxis_title='Date',
+                   yaxis_title='Number of Deaths')
+    
+    return cumulativedeaths_fig
+
 # -------------- STATIC DATA HELPER FUNCTIONS --------------
 
 def get_region_info(province_name, region_name):
@@ -1571,8 +1618,21 @@ def set_total_deaths(province_name, region_name, start_date, end_date):
 
     for d in deaths:
         total_deaths += d
+        
+def cumulative_deaths(province_name, region_name, start_date, end_date): # todo: dates are in d-m-y
+    start_date_str = datetime.datetime.strptime(start_date, '%Y-%m-%d').strftime('%m-%d-%Y')
+    end_date_str = datetime.datetime.strptime(end_date, '%Y-%m-%d').strftime('%m-%d-%Y')
 
-
+    filtered_df2 = df_mort[df_mort.date_death_report.between(
+        start_date_str, end_date_str
+    )]
+    df_province = filtered_df2[filtered_df2.province == province_name]
+    
+    deaths = df_province.cumulative_deaths[df_province.health_region == region_name] #.rolling(window=7).mean()
+    print(deaths)
+        
+    return deaths
+    
 # -------------- CASES HELPER FUNCTIONS --------------
 
 def get_last_cases(province_name, region_name, start_date, end_date): # todo: d-m-y
