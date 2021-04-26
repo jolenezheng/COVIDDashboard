@@ -478,7 +478,7 @@ canadian_dashboard = html.Div(
                             dbc.Col(
                                 dbc.Card(
                                     [
-                                        dbc.CardHeader("Covid Deaths / Total Population"),
+                                        dbc.CardHeader("Covid Deaths / 1 Million Population"),
                                         dbc.CardBody(
                                             [
                                                 dbc.Spinner(html.H5(id="covid-deaths-card",className="card-title"), size="sm")
@@ -690,7 +690,7 @@ def display_page(pathname):
     [
         State("a1", "is_open"), State("a2", "is_open"), State("a3", "is_open"), State("a4", "is_open"),
         State("a5", "is_open"), State("a6", "is_open"), State("a7", "is_open"), State("a8", "is_open"),
-        State("a9", "is_open"), State("a10", "is_open"), State("a13", "is_open"), State("a12", "is_open"),
+        State("a9", "is_open"), State("a10", "is_open"), State("a11", "is_open"), State("a12", "is_open"),
         State("a13", "is_open"), State("a14", "is_open"), State("a15", "is_open")
     ],
 )
@@ -777,7 +777,7 @@ def update_region_names(province_name, region_name):
     pop_80 = round(get_frac_pop_over_80(province_name, region_name), 3)	
     pwpd = round(get_pwpd(province_name, region_name), 0)
     # covid_deaths = get_total_deaths(province_name, region_name, start_date, end_date)
-    mob = 0 - get_last_mob()
+    mob = str(0 - get_last_mob()) + "%"
 
     # todo: sparsity (3 digits)
     # pop_80 = round(get_frac_pop_over_80(province_name, region_name), 2)
@@ -808,8 +808,7 @@ def update_region_names(province_name, region_name):
     ]
 )
 def update_dynamic_cards(province_name, region_name, start_date, end_date):
-    todo = "todo"
-    print("end: " + str(end_date))
+    # print("end: " + str(end_date))
     total_covid_deaths = get_total_deaths(province_name, region_name, start_date, end_date)
     total_population = get_total_pop(province_name, region_name)
 
@@ -817,11 +816,11 @@ def update_dynamic_cards(province_name, region_name, start_date, end_date):
     start_date_this_year = year + "-01-01"
     annual_deaths = get_ann_death(province_name, region_name)
     annual_covid_deaths = get_total_deaths(province_name, region_name, start_date_this_year, end_date)
-    deaths_ann = round(annual_covid_deaths / annual_deaths, 3)
-    deaths_per_pop = round(total_covid_deaths / total_population, 3)
+    deaths_ann = str(round(annual_covid_deaths / annual_deaths, 3) * 100.0) + "%"
+    deaths_per_pop = round(total_covid_deaths / 1000000, 3)
 
     total_cases = get_total_cases(province_name, region_name, start_date, end_date)
-    cases_per_pop = round(total_cases / total_population, 3)
+    cases_per_pop = str(round(total_cases / total_population, 3) * 100.0) + "%"
     
     return deaths_per_pop, cases_per_pop, deaths_ann
 
@@ -850,6 +849,12 @@ def update_province_name(province_name):
         province_name == "PEI"
     elif (province_name == "Northwest Territories"):
         province_name == "NWT"
+
+    # if (province_name == "Quebec"):
+    #     print("updating mort locations")
+    #     global df_mort, df_cases
+    #     df_mort = pd.read_csv(r'data/mortality.csv')
+    #     df_cases = pd.read_csv(r'data/cases.csv')
     
     return province_name
 
@@ -1226,6 +1231,7 @@ def get_pwpd(province_name, region_name):
 
 def get_pop_sparsity(province_name, region_name):	
     return get_region_info(province_name, region_name).pop_sparsity.item()
+
 # -------------- PREDICTIVE MODEL HELPER FUNCTIONS --------------
 
 def predicted_dates(province_name, region_name, start_date, end_date, days_to_forecast):
@@ -1250,6 +1256,8 @@ def predicted_deaths(province_name, region_name, start_date, end_date, days_to_f
 
     total_population = get_total_pop(province_name, region_name)
     annDeath = get_ann_death(province_name, region_name)
+
+    print("ANNUAL DEATH: " + str(annDeath))
     # tau = 25.1009
     # lS0 = -2.70768
     # trend1=-0.0311442
@@ -1337,7 +1345,7 @@ def predicted_deaths(province_name, region_name, start_date, end_date, days_to_f
             deaths_tomorrow = math.exp(lambda_) * deaths_today
             yVals.append(deaths_tomorrow)
 
-            # if (curve_num == 9):
+            # if (curve_num == 9 and i < 5):
                 # print("date: " + str(date_in_forecast))
                 # print("total_deaths: " + str(total_deaths))
                 # print("annDeath: " + str(annDeath))
@@ -1353,11 +1361,11 @@ def predicted_deaths(province_name, region_name, start_date, end_date, days_to_f
                 # print("xHouse: " + str(xHouse))
                 # print("vaxP1: " + str(vaxP1))
                 # print("vaxP2: " + str(vaxP2))
-                # print("delta: " + str(delta))
-                # print("exp_: " + str(exp_))
+                # # print("delta: " + str(delta))
+                # # print("exp_: " + str(exp_))
                 # print("lambda_: " + str(lambda_))
                 # print("deaths_tomorrow: " + str(deaths_tomorrow))
-                # print("deaths_today: " + str(deaths_today))
+                # # print("deaths_today: " + str(deaths_today))
                 # print("\n")
             deaths_today = deaths_tomorrow
             total_deaths += deaths_today
@@ -1550,7 +1558,6 @@ def set_total_deaths(province_name, region_name, start_date, end_date):
 
     for d in deaths:
         total_deaths += d
-
 
 # -------------- CASES HELPER FUNCTIONS --------------
 

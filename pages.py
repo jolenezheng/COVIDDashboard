@@ -128,7 +128,7 @@ about_page = html.Div(
         dbc.Row(
             [
                 dbc.Col(dbc.Card([ 
-                    dbc.CardHeader("Niayesh Afshordi"),
+                    dbc.CardHeader(html.A("Niayesh Afshordi", href="mailto: nafshordi@uwaterloo.ca", target="_blank", style={"color": "white", "size":"14px"})),
                     dbc.CardBody(
                         [
                             html.P(
@@ -139,7 +139,7 @@ about_page = html.Div(
                     ),
                 ], color="danger", inverse=True)),
                 dbc.Col(dbc.Card([ 
-                    dbc.CardHeader("Mohammad Bahrami"),
+                    dbc.CardHeader(html.A("Mohammad Bahrami", href="https://sites.google.com/site/mohbahrami/", target="_blank", style={"color": "white", "size":"14px"})),
                     dbc.CardBody(
                         [
                             html.P(
@@ -150,7 +150,7 @@ about_page = html.Div(
                     ),
                 ], color="warning", inverse=True)),
                 dbc.Col(dbc.Card([ 
-                    dbc.CardHeader("Elizabeth Gould"),
+                    dbc.CardHeader(html.A("Elizabeth Gould", href="mailto: quantumwarrior@gmail.com", target="_blank", style={"color": "white", "size":"14px"})),
                     dbc.CardBody(
                         [
                             html.P(
@@ -161,7 +161,7 @@ about_page = html.Div(
                     ),
                 ], color="success", inverse=True)),
                 dbc.Col(dbc.Card([ 
-                    dbc.CardHeader("Benjamin Holder"),
+                    dbc.CardHeader(html.A("Benjamin Holder", href="https://www.gvsu.edu/physics/dr-benjamin-holder-80.htm", target="_blank", style={"color": "white", "size":"14px"})),
                     dbc.CardBody(
                         [
                             html.P(
@@ -178,7 +178,7 @@ about_page = html.Div(
         dbc.Row(
             [
                 dbc.Col(dbc.Card([ 
-                    dbc.CardHeader("Shafika Olalekan Koiki"),
+                    dbc.CardHeader(html.A("Shafika Olalekan Koiki", href="mailto: solalekankoiki@uwaterloo.ca", target="_blank", style={"color": "white", "size":"14px"})),
                     dbc.CardBody(
                         [
                             html.P(
@@ -189,7 +189,7 @@ about_page = html.Div(
                     ),
                 ], color="danger", inverse=True)),
                 dbc.Col(dbc.Card([ 
-                    dbc.CardHeader("Daniel Lichblau"),
+                    dbc.CardHeader(html.A("Daniel Lichblau", href="mailto: danl@wolfram.com", target="_blank", style={"color": "white", "size":"14px"})),
                     dbc.CardBody(
                         [
                             html.P(
@@ -200,7 +200,7 @@ about_page = html.Div(
                     ),
                 ], color="warning", inverse=True)),
                 dbc.Col(dbc.Card([ 
-                    dbc.CardHeader("Steve Weinstein"),
+                    dbc.CardHeader(html.A("Steve Weinstein", href="https://uwaterloo.ca/philosophy/people-profiles/steven-weinstein", target="_blank", style={"color": "white", "size":"14px"})),
                     dbc.CardBody(
                         [
                             html.P(
@@ -211,7 +211,7 @@ about_page = html.Div(
                     ),
                 ], color="success", inverse=True)),
                 dbc.Col(dbc.Card([ 
-                    dbc.CardHeader("Jolene Zheng"),
+                    dbc.CardHeader(html.A("Jolene Zheng", href="https://www.linkedin.com/in/jolenezheng/", target="_blank", style={"color": "white", "size":"14px"})),
                     dbc.CardBody(
                         [
                             html.P(
@@ -421,7 +421,7 @@ faq_page2 = html.Div(
             dbc.CardHeader(
                 html.H2(
                     dbc.Button(
-                        "What is Social Mobility and how does it impact the epidemic?",
+                        "How do you measure face mask usage?",
                         color="link",
                         id="q11",
                     )
@@ -504,232 +504,232 @@ faq_page2 = html.Div(
   ], className="accordion"
 )
 
-faq_page = html.Div([
-    dbc.Row(html.Div("Frequently Asked Questions")),
-    dbc.Row([
-        dbc.Col(
-          dbc.Row(html.Div([
-            dbc.Button(
-              "How does the model work?",
-              id="q1",
-              className="mb-3",
-              color="primary",
-            ),
-            dbc.Collapse(
-              dbc.Card(dbc.CardBody(faq1)),
-              id="a1",
-            ),
-          ]))
-        ),
-        dbc.Col(
-          dbc.Row(html.Div([
-            dbc.Button(
-              "What does the model depend on on?",
-              id="q2",
-              className="mb-3",
-              color="primary",
-            ),
-            dbc.Collapse(
-              dbc.Card(dbc.CardBody(faq2)),
-              id="a2",
-            ),
-          ]))
-        ),
-    ]),
-    dbc.Row([
-        dbc.Col(
-          dbc.Row(html.Div([
-            dbc.Button(
-              "What is Population Weighted Density (PWPD)?",
-              id="q3",
-              className="mb-3",
-              color="primary",
-            ),
-            dbc.Collapse(
-              dbc.Card(dbc.CardBody(faq3)),
-              id="a3",
-            ),
-          ]))
-        ),
-        dbc.Col(
-          dbc.Row(html.Div([
-            dbc.Button(
-              "What is Population Sparsity?",
-              id="q4",
-              className="mb-3",
-              color="primary",
-            ),
-            dbc.Collapse(
-              dbc.Card(dbc.CardBody(faq4)),
-              id="a4",
-            ),
-          ]))
-        ),
-    ]),
-    dbc.Row([
-        dbc.Col(
-          dbc.Row(html.Div([
-            dbc.Button(
-              "Why does the age distribution matter?",
-              id="q5",
-              className="mb-3",
-              color="primary",
-            ),
-            dbc.Collapse(
-              dbc.Card(dbc.CardBody(faq5)),
-              id="a5",
-            ),
-          ]))
-        ),
-        dbc.Col(
-          dbc.Row(html.Div([
-            dbc.Button(
-              "How does herd or population immunity enter the model?",
-              id="q6",
-              className="mb-3",
-              color="primary",
-            ),
-            dbc.Collapse(
-              dbc.Card(dbc.CardBody(faq6)),
-              id="a6",
-            ),
-          ]))
-        ),
-    ]),
-    dbc.Row([
-        dbc.Col(
-          dbc.Row(html.Div([
-            dbc.Button(
-              "How does vaccination enter the model?",
-              id="q7",
-              className="mb-3",
-              color="primary",
-            ),
-            dbc.Collapse(
-              dbc.Card(dbc.CardBody(faq7)),
-              id="a7",
-            ),
-          ]))
-        ),
-        dbc.Col(
-          dbc.Row(html.Div([
-            dbc.Button(
-              "Why does annual death matter?",
-              id="q8",
-              className="mb-3",
-              color="primary",
-            ),
-            dbc.Collapse(
-              dbc.Card(dbc.CardBody(faq8)),
-              id="a8",
-            ),
-          ]))
-        ),
-    ]),
-    dbc.Row([
-        dbc.Col(
-          dbc.Row(html.Div([
-            dbc.Button(
-              "How does the number of household members impact the epidemic?",
-              id="q9",
-              className="mb-3",
-              color="primary",
-            ),
-            dbc.Collapse(
-              dbc.Card(dbc.CardBody(faq9)),
-              id="a9",
-            ),
-          ]))
-        ),
-        dbc.Col(
-          dbc.Row(html.Div([
-            dbc.Button(
-              "What is Social Mobility and how does it impact the epidemic?",
-              id="q10",
-              className="mb-3",
-              color="primary",
-            ),
-            dbc.Collapse(
-              dbc.Card(dbc.CardBody(faq10)),
-              id="a10",
-            ),
-          ]))
-        ),
-    ]),
-    dbc.Row([
-        dbc.Col(
-          dbc.Row(html.Div([
-            dbc.Button(
-              "How do you measure face mask usage?",
-              id="q11",
-              className="mb-3",
-              color="primary",
-            ),
-            dbc.Collapse(
-              dbc.Card(dbc.CardBody(faq11)),
-              id="a11",
-            ),
-          ]))
-        ),
-        dbc.Col(
-          dbc.Row(html.Div([
-            dbc.Button(
-              "Why does temperature impact COVID-19 spread?",
-              id="q12",
-              className="mb-3",
-              color="primary",
-            ),
-            dbc.Collapse(
-              dbc.Card(dbc.CardBody(faq12)),
-              id="a12",
-            ),
-          ]))
-        ),
-    ]),
-    dbc.Row([
-        dbc.Col(
-          dbc.Row(html.Div([
-            dbc.Button(
-              "Where can I read more?",
-              id="q13",
-              className="mb-3",
-              color="primary",
-            ),
-            dbc.Collapse(
-              dbc.Card(dbc.CardBody(faq13)),
-              id="a13",
-            ),
-          ]))
-        ),
-        dbc.Col(
-          dbc.Row(html.Div([
-            dbc.Button(
-              "Do you have an epidemiologist on your team?",
-              id="q14",
-              className="mb-3",
-              color="primary",
-            ),
-            dbc.Collapse(
-              dbc.Card(dbc.CardBody(faq14)),
-              id="a14",
-            ),
-          ]))
-        ),
-    ]),
-    dbc.Row([
-        dbc.Col(
-          dbc.Row(html.Div([
-            dbc.Button(
-              "Can I contribute to this work?",
-              id="q15",
-              className="mb-3",
-              color="primary",
-            ),
-            dbc.Collapse(
-              dbc.Card(dbc.CardBody(faq15)),
-              id="a15",
-            ),
-          ]))
-        ),
-    ]),
-])
+# faq_page = html.Div([
+#     dbc.Row(html.Div("Frequently Asked Questions")),
+#     dbc.Row([
+#         dbc.Col(
+#           dbc.Row(html.Div([
+#             dbc.Button(
+#               "How does the model work?",
+#               id="q1",
+#               className="mb-3",
+#               color="primary",
+#             ),
+#             dbc.Collapse(
+#               dbc.Card(dbc.CardBody(faq1)),
+#               id="a1",
+#             ),
+#           ]))
+#         ),
+#         dbc.Col(
+#           dbc.Row(html.Div([
+#             dbc.Button(
+#               "What does the model depend on on?",
+#               id="q2",
+#               className="mb-3",
+#               color="primary",
+#             ),
+#             dbc.Collapse(
+#               dbc.Card(dbc.CardBody(faq2)),
+#               id="a2",
+#             ),
+#           ]))
+#         ),
+#     ]),
+#     dbc.Row([
+#         dbc.Col(
+#           dbc.Row(html.Div([
+#             dbc.Button(
+#               "What is Population Weighted Density (PWPD)?",
+#               id="q3",
+#               className="mb-3",
+#               color="primary",
+#             ),
+#             dbc.Collapse(
+#               dbc.Card(dbc.CardBody(faq3)),
+#               id="a3",
+#             ),
+#           ]))
+#         ),
+#         dbc.Col(
+#           dbc.Row(html.Div([
+#             dbc.Button(
+#               "What is Population Sparsity?",
+#               id="q4",
+#               className="mb-3",
+#               color="primary",
+#             ),
+#             dbc.Collapse(
+#               dbc.Card(dbc.CardBody(faq4)),
+#               id="a4",
+#             ),
+#           ]))
+#         ),
+#     ]),
+#     dbc.Row([
+#         dbc.Col(
+#           dbc.Row(html.Div([
+#             dbc.Button(
+#               "Why does the age distribution matter?",
+#               id="q5",
+#               className="mb-3",
+#               color="primary",
+#             ),
+#             dbc.Collapse(
+#               dbc.Card(dbc.CardBody(faq5)),
+#               id="a5",
+#             ),
+#           ]))
+#         ),
+#         dbc.Col(
+#           dbc.Row(html.Div([
+#             dbc.Button(
+#               "How does herd or population immunity enter the model?",
+#               id="q6",
+#               className="mb-3",
+#               color="primary",
+#             ),
+#             dbc.Collapse(
+#               dbc.Card(dbc.CardBody(faq6)),
+#               id="a6",
+#             ),
+#           ]))
+#         ),
+#     ]),
+#     dbc.Row([
+#         dbc.Col(
+#           dbc.Row(html.Div([
+#             dbc.Button(
+#               "How does vaccination enter the model?",
+#               id="q7",
+#               className="mb-3",
+#               color="primary",
+#             ),
+#             dbc.Collapse(
+#               dbc.Card(dbc.CardBody(faq7)),
+#               id="a7",
+#             ),
+#           ]))
+#         ),
+#         dbc.Col(
+#           dbc.Row(html.Div([
+#             dbc.Button(
+#               "Why does annual death matter?",
+#               id="q8",
+#               className="mb-3",
+#               color="primary",
+#             ),
+#             dbc.Collapse(
+#               dbc.Card(dbc.CardBody(faq8)),
+#               id="a8",
+#             ),
+#           ]))
+#         ),
+#     ]),
+#     dbc.Row([
+#         dbc.Col(
+#           dbc.Row(html.Div([
+#             dbc.Button(
+#               "How does the number of household members impact the epidemic?",
+#               id="q9",
+#               className="mb-3",
+#               color="primary",
+#             ),
+#             dbc.Collapse(
+#               dbc.Card(dbc.CardBody(faq9)),
+#               id="a9",
+#             ),
+#           ]))
+#         ),
+#         dbc.Col(
+#           dbc.Row(html.Div([
+#             dbc.Button(
+#               "What is Social Mobility and how does it impact the epidemic?",
+#               id="q10",
+#               className="mb-3",
+#               color="primary",
+#             ),
+#             dbc.Collapse(
+#               dbc.Card(dbc.CardBody(faq10)),
+#               id="a10",
+#             ),
+#           ]))
+#         ),
+#     ]),
+#     dbc.Row([
+#         dbc.Col(
+#           dbc.Row(html.Div([
+#             dbc.Button(
+#               "How do you measure face mask usage?",
+#               id="q11",
+#               className="mb-3",
+#               color="primary",
+#             ),
+#             dbc.Collapse(
+#               dbc.Card(dbc.CardBody(faq11)),
+#               id="a11",
+#             ),
+#           ]))
+#         ),
+#         dbc.Col(
+#           dbc.Row(html.Div([
+#             dbc.Button(
+#               "Why does temperature impact COVID-19 spread?",
+#               id="q12",
+#               className="mb-3",
+#               color="primary",
+#             ),
+#             dbc.Collapse(
+#               dbc.Card(dbc.CardBody(faq12)),
+#               id="a12",
+#             ),
+#           ]))
+#         ),
+#     ]),
+#     dbc.Row([
+#         dbc.Col(
+#           dbc.Row(html.Div([
+#             dbc.Button(
+#               "Where can I read more?",
+#               id="q13",
+#               className="mb-3",
+#               color="primary",
+#             ),
+#             dbc.Collapse(
+#               dbc.Card(dbc.CardBody(faq13)),
+#               id="a13",
+#             ),
+#           ]))
+#         ),
+#         dbc.Col(
+#           dbc.Row(html.Div([
+#             dbc.Button(
+#               "Do you have an epidemiologist on your team?",
+#               id="q14",
+#               className="mb-3",
+#               color="primary",
+#             ),
+#             dbc.Collapse(
+#               dbc.Card(dbc.CardBody(faq14)),
+#               id="a14",
+#             ),
+#           ]))
+#         ),
+#     ]),
+#     dbc.Row([
+#         dbc.Col(
+#           dbc.Row(html.Div([
+#             dbc.Button(
+#               "Can I contribute to this work?",
+#               id="q15",
+#               className="mb-3",
+#               color="primary",
+#             ),
+#             dbc.Collapse(
+#               dbc.Card(dbc.CardBody(faq15)),
+#               id="a15",
+#             ),
+#           ]))
+#         ),
+#     ]),
+# ])
