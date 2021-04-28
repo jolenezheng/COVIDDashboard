@@ -210,6 +210,8 @@ footer2 = html.Footer(html.Div([
 site_backbone = html.Div([
     dcc.Location(id='url', refresh=False),
     html.Div(navbar2),
+    html.H1('Health Regions of Canada'),
+    html.Iframe(id ='map', srcDoc = open('health_regions.html', 'r').read(), width = '100%', height = '600'),
     html.Div(id='page-content', className="page border"),
     footer2,
 ])
