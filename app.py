@@ -1378,26 +1378,26 @@ def predicted_deaths(c_num, province_name, region_name, start_date, end_date, da
 
             if (c_num == 4 and i <= 3):
                 print("date: " + str(date_in_forecast))
-            #     print("i == " + str(i))
-            #     print("total_deaths: " + str(total_deaths))
-            #     print("annDeath: " + str(annDeath))
-            #     print("xHerd: " + str(xHerd))
-            #     print("xHerd2: " + str(xHerd2))
-            #     print("xMob1: " + str(xMob1))
-            #     print("xMob2: " + str(xMob2))
+                print("i == " + str(i))
+                print("total_deaths: " + str(total_deaths))
+                print("annDeath: " + str(annDeath))
+                print("xHerd: " + str(xHerd))
+                print("xHerd2: " + str(xHerd2))
+                print("xMob1: " + str(xMob1))
+                print("xMob2: " + str(xMob2))
                 print("xTemp: " + str(xTemp))
-            #     print("xTrends1: " + str(xTrends1))
-            #     print("xLogPWPD: " + str(xLogPWPD))
-            #     print("xBeta: " + str(xBeta))
-            #     print("xAnnual: " + str(xAnnual))
-            #     print("xHouse: " + str(xHouse))
-            #     print("vaxP1: " + str(vaxP1))
-            #     print("vaxP2: " + str(vaxP2))
-            #     print("delta: " + str(delta))
-            #     print("exp_: " + str(exp_))
-            #     print("lambda_: " + str(lambda_))
-            #     print("deaths_tomorrow: " + str(deaths_tomorrow))
-            #     print("deaths_today: " + str(deaths_today))
+                print("xTrends1: " + str(xTrends1))
+                print("xLogPWPD: " + str(xLogPWPD))
+                print("xBeta: " + str(xBeta))
+                print("xAnnual: " + str(xAnnual))
+                print("xHouse: " + str(xHouse))
+                print("vaxP1: " + str(vaxP1))
+                print("vaxP2: " + str(vaxP2))
+                print("delta: " + str(delta))
+                print("exp_: " + str(exp_))
+                print("lambda_: " + str(lambda_))
+                print("deaths_tomorrow: " + str(deaths_tomorrow))
+                print("deaths_today: " + str(deaths_today))
                 print("\n")
             deaths_today = deaths_tomorrow
             total_deaths += deaths_today
@@ -1861,7 +1861,7 @@ def avg_temp_data_1_year(data):
 
 def get_past_temp(province_name, region_name, start_date, date_in_forecast):
     all_temp_vals_len = len(all_temp_vals)
-    print("length of all_temp_vals: " + str(len(all_temp_vals)))
+    # print("length of all_temp_vals: " + str(len(all_temp_vals)))
     # print("Size of avg_temp_vals: " + str(len(avg_temp_vals)))
     day_as_date = date_in_forecast.date()
     # year = str(day_as_date.year)
@@ -1869,7 +1869,7 @@ def get_past_temp(province_name, region_name, start_date, date_in_forecast):
     first_date = datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
     days_since_first_day = day_as_date - first_date
     delta = days_since_first_day.days
-    print("DAYSSS: " + str(delta))
+    # print("DAYSSS: " + str(delta))
     if (delta < all_temp_vals_len and delta >= 0):
         # print("[] method: " + str(all_temp_vals[delta]))
         # print("iloc method: " + str(all_temp_vals.iloc[delta]))
@@ -1877,7 +1877,7 @@ def get_past_temp(province_name, region_name, start_date, date_in_forecast):
         temp = all_temp_vals[delta]
     else:
         temp = default_temp
-    print("returning temp " + str(temp) + " for day: " + str(day_as_date))
+    # print("returning temp " + str(temp) + " for day: " + str(day_as_date))
     return temp
 
 
