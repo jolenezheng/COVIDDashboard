@@ -86,10 +86,10 @@ fnameDict = {
                 "Renfrew","Simcoe Muskoka","Southwestern","Sudbury","Thunder Bay","Timiskaming","Toronto","Waterloo",
                 "Wellington Dufferin Guelph","Windsor-Essex","York"], "Prince Edward Island": ["Prince Edward Island"],
     "Quebec": ["Abitibi-Temiscamingue","Bas-Saint-Laurent","Capitale-Nationale",
-                  "Chaudiere-Appalaches","Cote-Nord","Estrie","Gaspesie-Iles-de-la-Madeleine",
-                  "Lanaudiere","Laurentides","Laval","Mauricie","Monteregie",
-                  "Montreal","Nord-du-Quebec","Nunavik",
-                  "Outaouais","Saguenay","Terres-Cries-de-la-Baie-James"],
+               "Chaudiere-Appalaches","Cote-Nord","Estrie","Gaspesie-Iles-de-la-Madeleine",
+               "Lanaudiere","Laurentides","Laval","Mauricie","Monteregie",
+               "Montreal","Nord-du-Quebec","Nunavik",
+               "Outaouais","Saguenay","Terres-Cries-de-la-Baie-James"],
     "Saskatchewan":["Central","Far North","North","Regina","Saskatoon","South"],
     "Yukon": ["Yukon"]
 }
@@ -562,6 +562,23 @@ canadian_dashboard = html.Div(
                                     # ),
                                 ], color="dark", inverse=True),
                         ), className="mb-4"),
+                        dbc.Row(dbc.Col(
+                            dbc.Card(
+                                [
+                                    dbc.CardHeader(id="cumulativedeaths-header"),
+                                    dbc.CardBody(
+                                         dcc.Loading(
+                                            children=[html.Div(dcc.Graph(
+                                                id="cumulativedeaths-chart", config={"displayModeBar": False}))],
+                                            type="default"
+                                    )),
+                                    # dbc.CardBody(
+                                    #     dcc.Graph(
+                                    #         id="cases-chart", config={"displayModeBar": False}, # style={'display': 'inline-block'},
+                                    #     ),
+                                    # ),
+                                ], color="dark", inverse=True),
+                        ), className="mb-4"),                        
                         dbc.Row([
                             dbc.Col(
                                 dbc.Card(
@@ -764,6 +781,7 @@ def init_slider_vals(province_name, region_name, date_str):
         Output("vac-header", "children"),
         Output("trends-header", "children"),
         Output("rtcurve-header", "children"),
+        Output("cumulativedeaths-header", "children"),        
     ],
     [dash.dependencies.Input('region-dropdown', 'value'), dash.dependencies.Input('subregion-dropdown', 'value'),]
 )
@@ -791,7 +809,9 @@ def update_region_names(province_name, region_name):
     vac_label = 'Fraction of the Population Vaccinated in ' + region_name + ', ' + province_name
     trends_label = 'Google Searches for Face Masks in ' + region_name + ', ' + province_name
     rtcurve_label = 'Future Effective Reproduction Number R(t) Curves in ' + region_name + ', ' + province_name
-    return total_pop, sparsity, pop_80, pwpd, avg_house, mob, deaths_label, cases_label, mob_label, temp_label, vac_label, trends_label, rtcurve_label
+    cumulativedeaths_label = 'Cumulative Deaths in ' + region_name + ', ' + province_name
+    return total_pop, sparsity, pop_80, pwpd, avg_house, mob, deaths_label, cases_label, mob_label, temp_label, vac_label, trends_label, rtcurve_label, cumulativedeaths_label
+
 
 
 @app.callback(
@@ -808,7 +828,10 @@ def update_region_names(province_name, region_name):
     ]
 )
 def update_dynamic_cards(province_name, region_name, start_date, end_date):
+    todo = "todo"
+    print("end: " + str(end_date))
     # print("end: " + str(end_date))
+
     total_covid_deaths = get_total_deaths(province_name, region_name, start_date, end_date)
     total_population = get_total_pop(province_name, region_name)
 
@@ -816,12 +839,13 @@ def update_dynamic_cards(province_name, region_name, start_date, end_date):
     start_date_this_year = year + "-01-01"
     annual_deaths = get_ann_death(province_name, region_name)
     annual_covid_deaths = get_total_deaths(province_name, region_name, start_date_this_year, end_date)
+
     deaths_ann = str(round(annual_covid_deaths / annual_deaths, 3) * 100.0) + "%"
     deaths_per_pop = round(total_covid_deaths / 1000000, 3)
 
     total_cases = get_total_cases(province_name, region_name, start_date, end_date)
     cases_per_pop = str(round(total_cases / total_population, 3) * 100.0) + "%"
-    
+
     return deaths_per_pop, cases_per_pop, deaths_ann
 
 @app.callback(
@@ -979,26 +1003,47 @@ def update_cases_charts(province_name, region, start_date, end_date): # , facema
     ],
 )
 def update_weather_chart(province_name, region, start_date, end_date, forecasted_dates):
-    date_now = datetime.datetime.now()
-    temp_files = get_temp_files(province_name, region, start_date, end_date)
-    temp_dates = get_temp_dates(temp_files)
-    temp_vals = get_temp_vals(temp_files)
+    province_name = update_province_name(province_name)
+    
+    current_start_date = datetime.datetime(2020, 1, 1)
+    current_start_date = current_start_date.strftime('%Y-%m-%d')
+
+    current_end_date = datetime.datetime.now()
+    current_end_date = current_end_date.strftime('%Y-%m-%d')
+
+    past_start_date = datetime.datetime(2015, 1, 1)
+    past_start_date = past_start_date.strftime('%Y-%m-%d')
+    
+    past_end_date = datetime.datetime(2020, 12, 31)
+    past_end_date = past_end_date.strftime('%Y-%m-%d')
+
+    current_temp_files = get_current_temp_files(province_name, region, current_start_date, current_end_date)
+    past_temp_files = get_past_temp_files(province_name, region, past_start_date, past_end_date)
+    
+    begin_year = datetime.date(2015, 12, 31)
+    end_year = datetime.date(2016, 12, 31)
 
     new_dates = predicted_dates(province_name, region, start_date, end_date, forecasted_dates)
 
     # temp_files = get_temp_files(province_name, region, start_date, end_date)
-    data = {'Date':  get_temp_dates(temp_files),
-        'Mean Temperature': get_temp_vals(temp_files)}
-    forecasted = datetime.timedelta(days=forecasted_dates)
-
-    df_weather = pd.DataFrame(data, columns = ['Date', 'Mean Temperature'])	
-    forecasted = datetime.timedelta(days=forecasted_dates)	
-    weather_fig = px.line(df_weather, x = df_weather['Date'], y = df_weather['Mean Temperature'].rolling(window=14).mean())	
+    current_weather_data = {'Date':  get_current_temp_dates(current_temp_files),
+                            'Mean_Temperature': get_temp_vals(current_temp_files)}
+    past_weather_data = {'Date': get_past_temp_dates(past_temp_files),
+                         'Mean_Temperature': get_temp_vals(past_temp_files)}
+    
+    df_current_weather = pd.DataFrame(current_weather_data, columns = ['Date','Mean_Temperature'])
+    
+    weather_fig = px.line(df_current_weather, x = df_current_weather['Date'], y = df_current_weather['Mean_Temperature'].rolling(window=14).mean())	
+    
     weather_fig.update_layout(xaxis_title='Date',	
                    yaxis_title='Mean Temperature')	
+    
+    print(new_dates)
+    print(avg_temp_data(begin_year, end_year, past_weather_data, 255))
+    
     weather_fig.add_trace(go.Scatter(	
             x=new_dates,	
-            y=avg_temp_data(date_now, date_now + forecasted, data),	
+            y=avg_temp_data(begin_year, end_year, past_weather_data, 255),	
             name='Historical Average',	
         ))
 
@@ -1159,7 +1204,7 @@ def update_rtcurve_charts(province_name, region, start_date, end_date, day_to_st
     # ============== R(T) CURVE GRAPH ==============
     for i in range(10):    
         rtcurve_fig.add_trace(go.Scatter(
-            x=predicted_dates(province_name, region, start_date, end_date, days_to_forecast),
+            x=predicted_dates(province_name, region, start_date, day_to_start_forecast, days_to_forecast),
             y=predicted_deaths(province_name, region, start_date, day_to_start_forecast, days_to_forecast, df_mobility, xMob, facemask, vac, df_vac)[1],
         name = 'R(t)'
     ))
@@ -1199,6 +1244,34 @@ def update_rtcurve_charts(province_name, region, start_date, end_date, day_to_st
                    updatemenus=updatemenus)
 
     return rtcurve_fig
+
+@app.callback(
+    Output("cumulativedeaths-chart", "figure"),
+    [
+        Input("region-dropdown", "value"),
+        Input("subregion-dropdown", "value"),
+        Input("date-range", "start_date"),
+        Input("date-range", "end_date"),
+    ],
+)
+def update_cumulativedeaths_charts(province_name, region, start_date, end_date):
+    province_name = update_province_name(province_name)
+    dates = date(province_name, region, start_date, end_date)
+    cumulativedeaths = cumulative_deaths(province_name, region, start_date, end_date)
+    
+    cumulativedeaths_fig = go.Figure()
+    
+     # ============== MOBILITY GRAPH ==============
+    cumulativedeaths_fig.add_trace(go.Scatter(
+            x=dates,
+            y=cumulativedeaths,
+            name='Cumulative Deaths',
+        ))
+    
+    cumulativedeaths_fig.update_layout(xaxis_title='Date',
+                   yaxis_title='Number of Deaths')
+    
+    return cumulativedeaths_fig
 
 # -------------- STATIC DATA HELPER FUNCTIONS --------------
 
@@ -1558,7 +1631,21 @@ def set_total_deaths(province_name, region_name, start_date, end_date):
 
     for d in deaths:
         total_deaths += d
+        
+def cumulative_deaths(province_name, region_name, start_date, end_date): # todo: dates are in d-m-y
+    start_date_str = datetime.datetime.strptime(start_date, '%Y-%m-%d').strftime('%m-%d-%Y')
+    end_date_str = datetime.datetime.strptime(end_date, '%Y-%m-%d').strftime('%m-%d-%Y')
 
+    filtered_df2 = df_mort[df_mort.date_death_report.between(
+        start_date_str, end_date_str
+    )]
+    df_province = filtered_df2[filtered_df2.province == province_name]
+    
+    deaths = df_province.cumulative_deaths[df_province.health_region == region_name] #.rolling(window=7).mean()
+    print(deaths)
+        
+    return deaths
+    
 # -------------- CASES HELPER FUNCTIONS --------------
 
 def get_last_cases(province_name, region_name, start_date, end_date): # todo: d-m-y
@@ -1679,7 +1766,18 @@ def get_mob(province_name, region_name):
 
 # -------------- WEATHER HELPER FUNCTIONS --------------
 
-def get_temp_dates(temp_files):
+def get_past_temp_dates(temp_files):
+    dates = []
+    for file in temp_files:
+        weat_data = pd.read_csv(file, encoding='Latin-1')
+        weat_data['Date/Time'] = pd.to_datetime(weat_data['Date/Time'], errors='coerce')
+        formatted_dates = weat_data['Date/Time'].dt.strftime('%m-%d')
+        temp_dates = formatted_dates.values
+        dates.extend(temp_dates)
+
+    return dates
+
+def get_current_temp_dates(temp_files):
     dates = []
     for file in temp_files:
         weat_data =  pd.read_csv(file, encoding='Latin-1')
@@ -1697,7 +1795,7 @@ def get_temp_vals(temp_files):
         temps.extend(temp_dates)
     return temps
 
-def get_temp_files(province_name, region, start_date, end_date):
+def get_current_temp_files(province_name, region, start_date, end_date):
     date_now_str = datetime.datetime.now().strftime('%Y-%m')
 
     start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d')
@@ -1726,29 +1824,29 @@ def get_temp_files(province_name, region, start_date, end_date):
 
     return temp_files
 
-# def get_temp_files(province_name, region_name, start_date, end_date):
+def get_past_temp_files(province_name, region_name, start_date, end_date):
 
-#     start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d')
-#     end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d')
-#     # num_months = (end_date.year - start_date.year) * 12 + end_date.month - start_date.month + 1
-#     temp_files = []
+    start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d')
+    end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d')
+    num_months = (end_date.year - start_date.year) * 12 + end_date.month - start_date.month + 1
+    temp_files = []
 
-#     prov_id = provinceid(province_name, region_name)
-#     climate_id = climateid(province_name, region_name)
+    prov_id = provinceid(province_name, region_name)
+    climate_id = climateid(province_name, region_name)
 
-#     for year in range(start_date.year, end_date.year+1):
-#         year = str(year)
-#         for month in range(1,13):
-#             if month in range(1,10):
-#                 month = '0' + str(month)
-#             else:
-#                 month = str(month)
+    for year in range(start_date.year, end_date.year+1):
+        year = str(year)
+        for month in range(1,13):
+            if month in range(1,10):
+                month = '0' + str(month)
+            else:
+                month = str(month)
 
-#             gloabl_date = str(year) + "-" + month
-#             target_url = weather_base_url + prov_id + '/climate_daily_' + prov_id + '_' + climate_id + '_' + gloabl_date + '_P1D.csv'
-#             temp_files.append(target_url)
+            gloabl_date = str(year) + "-" + month
+            target_url = weather_base_url + prov_id + '/climate_daily_' + prov_id + '_' + climate_id + '_' + gloabl_date + '_P1D.csv'
+            temp_files.append(target_url)
 
-#     return temp_files
+    return temp_files
 
 # Gets the climate ID for the health region
 def climateid(province_name, region_name):
@@ -1764,10 +1862,21 @@ def provinceid(province_name, region_name):
     weat_info_province = static_data[static_data.province_name == province_name]
     return weat_info_province.prov_id[weat_info_province.health_region == region_name].item()
 
-def avg_temp_data(begin_year, end_year, data):
-    df_weat = pd.DataFrame(data, columns = ['Date','Mean Temperature'])
+def avg_temp_data(begin_year, end_year, data, forecasted_dates):
+    
+    df_past_weather = pd.DataFrame(data, columns = ['Date','Mean_Temperature'])
+    df_past_weather['Mean_Temperature'] = df_past_weather['Mean_Temperature'].astype(float)
     one_day = datetime.timedelta(days=1)
-
+    
+    #print(df_past_weather)
+    date_now = datetime.date(2021, 4, 20) - datetime.timedelta(days=13)  # datetime.datetime.now() - datetime.timedelta(days=13)
+    date_now = date_now.strftime('%m-%d')
+    
+    forecasted = datetime.date(2021, 4, 20) + datetime.timedelta(days=forecasted_dates)     # datetime.datetime.now() + datetime.timedelta(days=forecasted_dates)
+    forecasted = forecasted.strftime('%m-%d')
+    
+    print(forecasted)
+    
     next_day = begin_year
     for day in range(366):  # Includes leap year
         if next_day > end_year:
@@ -1775,7 +1884,11 @@ def avg_temp_data(begin_year, end_year, data):
         # Adds a day to the current date
         next_day += one_day
         date_range = next_day.strftime('%m-%d')
-        df_weat_date = df_weat.groupby('Date')['Mean Temperature'].mean()
+        
+        filtered_avg_temp = df_past_weather.loc[df_past_weather['Date'].between(date_now, forecasted)]
+        avg_temp_5_years = filtered_avg_temp.groupby('Date')['Mean_Temperature'].mean()
+        
+        avg_temp_5_years = avg_temp_5_years.rolling(window=14).mean()
 
     # print(" df_weat_date: " + str(df_weat_date))
     # print("size of df_weat_date: " + str(len(df_weat_date)))
@@ -1786,13 +1899,13 @@ def avg_temp_data(begin_year, end_year, data):
 
     # print("!!!size of avg_temp_vals: " + str(len(avg_temp_vals)))
     
-    return df_weat_date.rolling(window=14).mean()
+    return avg_temp_5_years.dropna()
 
 def avg_temp_data_1_year(data):
-    df_weat = pd.DataFrame(data, columns = ['Date','Mean Temperature'])
+    df_weat = pd.DataFrame(data, columns = ['Date','Mean_Temperature'])
 
     # for day in range(366):  # Includes leap year
-    df_weat_date = df_weat.groupby('Date')['Mean Temperature'].mean()
+    df_weat_date = df_weat.groupby('Date')['Mean_Temperature'].mean()
 
     print("!! df_weat_date: " + str(df_weat_date))
     print("!!size of df_weat_date: " + str(len(df_weat_date)))
@@ -1815,7 +1928,6 @@ def get_past_temp(province_name, region_name, date_in_forecast):
     # # print("returning temp " + str(temp) + " for day: " + str(day))
     # return temp
     return 0.0
-
 
 
 # -------------- VACCINATION HELPER FUNCTIONS --------------
@@ -2076,7 +2188,7 @@ def past_rt_equation(province_name, region_name):
     past_data = np.clip(past_data, -3, 10)
     #print(past_data)
         
-    return past_data 
+    return moving_avg(past_data, 14)
 
 def moving_avg(x, n):
     cumsum = np.cumsum(np.insert(x, 0, 0))
