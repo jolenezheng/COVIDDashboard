@@ -903,8 +903,8 @@ def update_mortality_chart(province_name, region, start_date, end_date, day_to_s
     # fig.update_xaxes(type="log", range=[0,5])
     time.sleep(2)
     for i in range(10):
-        if (i <= 2):
-            time.sleep(3)
+        # if (i <= 2):
+        #     time.sleep(3)
 
         print("===== CURVE: " + str(i) + " ========")
         dates = predicted_dates(province_name, region, start_date, day_to_start_forecast, days_to_forecast)
@@ -1023,10 +1023,20 @@ def update_weather_chart(province_name, region, start_date, end_date, forecasted
     
     global all_temp_vals
     all_temp_vals = []
+    last_known_val = 0.0
     for t in past_temp_vals:
+        if (math.isnan(t)):
+            t = last_known_val
+            # past_temp_vals[t] = last_known_val
+        else:
+            last_known_val = t
         all_temp_vals.append(t)
 
     for t in new_temp_vals:
+        if (math.isnan(t)):
+            t = last_known_val
+        else:
+            last_known_val = t
         all_temp_vals.append(t)
 
 
@@ -1337,7 +1347,7 @@ def predicted_deaths(c_num, province_name, region_name, start_date, end_date, da
             vaxP2 = get_vac_on_day(date_in_forecast, vac_val, total_population, df_vac, 28, False, last_vac)
 
             if (i <= 60):
-                xHerd2 = total_deaths_2_months_prior / annDeath # Total Covid Death (more than 2 months ago)/Annual Death -> what does more than 2 months ago mean? 2 months prior
+                xHerd2 = total_deaths_2_months_prior / annDeath
             else:
                 deaths_2_months = total_deaths_2_months_prior
                 prior = i - 60
@@ -1376,16 +1386,18 @@ def predicted_deaths(c_num, province_name, region_name, start_date, end_date, da
             deaths_tomorrow = math.exp(lambda_) * deaths_today
             yVals.append(deaths_tomorrow)
 
-            if (c_num == 4 and i <= 3):
+            if (c_num == 4 and (i <= 3 or i >= 300)):
                 print("date: " + str(date_in_forecast))
                 print("i == " + str(i))
                 print("total_deaths: " + str(total_deaths))
+                print("deaths_2_weeks: " + str(deaths_2_weeks))
+                print("total_deaths_2_months_prior: " + str(total_deaths_2_months_prior))
                 print("annDeath: " + str(annDeath))
+                print("xTemp: " + str(xTemp))
                 print("xHerd: " + str(xHerd))
                 print("xHerd2: " + str(xHerd2))
                 print("xMob1: " + str(xMob1))
                 print("xMob2: " + str(xMob2))
-                print("xTemp: " + str(xTemp))
                 print("xTrends1: " + str(xTrends1))
                 print("xLogPWPD: " + str(xLogPWPD))
                 print("xBeta: " + str(xBeta))
@@ -1397,8 +1409,12 @@ def predicted_deaths(c_num, province_name, region_name, start_date, end_date, da
                 print("exp_: " + str(exp_))
                 print("lambda_: " + str(lambda_))
                 print("deaths_tomorrow: " + str(deaths_tomorrow))
-                print("deaths_today: " + str(deaths_today))
+                # print("deaths_today: " + str(deaths_today))
+
+                # if (xTemp != 0.0):
+                #     print("xTemp: " + str(xTemp))
                 print("\n")
+                
             deaths_today = deaths_tomorrow
             total_deaths += deaths_today
             annDeath += deaths_today
@@ -1449,7 +1465,6 @@ def get_last_mort_val(province_name, region_name):
     return last_mort
 
 def get_total_deaths(province_name, region_name, start_date, end_date, yes_print):
-    
     start_date_str = datetime.datetime.strptime(start_date, '%Y-%m-%d').strftime('%m-%d-%Y')
     end_date_str = datetime.datetime.strptime(end_date, '%Y-%m-%d').strftime('%m-%d-%Y')
 
@@ -1472,6 +1487,9 @@ def get_total_deaths(province_name, region_name, start_date, end_date, yes_print
 
     for d in deaths:
         total_deaths_local += d
+    
+    if (yes_print == True):
+        print("returning total deaths: " + str(total_deaths_local))
     
     return total_deaths_local
 
@@ -1543,11 +1561,11 @@ def r_avg(province_name, region_name, start_date, end_date): # todo: dates are i
 
 def get_total_deaths_2_months_prior(province_name, region_name, end_date):
     date_up_to = datetime.datetime.strptime(end_date, "%Y-%m-%d")
-    first_day = df_mort.date_death_report.min().date().strftime('%d-%m-%Y')
+    first_day = df_mort.date_death_report.min().date().strftime('%m-%d-%Y')
 
     delta_2_months = datetime.timedelta(days=60)
     end_date_2_months_ago = date_up_to - delta_2_months
-    end_date_2_months_ago = end_date_2_months_ago.strftime('%d-%m-%Y')
+    end_date_2_months_ago = end_date_2_months_ago.strftime('%m-%d-%Y')
 
     df_2_months = df_mort[df_mort.date_death_report.between(
         first_day, end_date_2_months_ago
