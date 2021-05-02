@@ -1021,12 +1021,11 @@ def update_weather_chart(province_name, region, start_date, end_date, forecasted
 
     current_temp_files = get_current_temp_files(province_name, region, current_start_date, current_end_date)
     past_temp_files = get_past_temp_files(province_name, region, past_start_date, past_end_date)
-    
-    begin_year = datetime.date(2015, 12, 31)
-    end_year = datetime.date(2016, 12, 31)
 
     new_dates = predicted_dates(province_name, region, start_date, end_date, forecasted_dates)
-
+    
+    print(new_dates)
+    
     # temp_files = get_temp_files(province_name, region, start_date, end_date)
     current_weather_data = {'Date':  get_current_temp_dates(current_temp_files),
                             'Mean_Temperature': get_temp_vals(current_temp_files)}
@@ -1040,12 +1039,12 @@ def update_weather_chart(province_name, region, start_date, end_date, forecasted
     weather_fig.update_layout(xaxis_title='Date',	
                    yaxis_title='Mean Temperature')	
     
-    print(new_dates)
-    print(avg_temp_data(begin_year, end_year, past_weather_data, 255))
+    #print(new_dates)
+    #print(avg_temp_data(begin_year, end_year, past_weather_data, 255))
     
     weather_fig.add_trace(go.Scatter(	
             x=new_dates,	
-            y=avg_temp_data(begin_year, end_year, past_weather_data, 255),	
+            y=avg_temp_data(past_weather_data, forecasted_dates*30),	
             name='Historical Average',	
         ))
 
@@ -1254,25 +1253,50 @@ def update_rtcurve_charts(province_name, region, start_date, end_date, day_to_st
         Input("subregion-dropdown", "value"),
         Input("date-range", "start_date"),
         Input("date-range", "end_date"),
+        Input("forecast-start-date", "date"),
+        Input('forecast-slider', 'value'),
+        Input('facemask-slider', 'value'),
+        Input('mobility-slider', 'value'),
+        Input('vaccine-slider', 'value'),
     ],
 )
-def update_cumulativedeaths_charts(province_name, region, start_date, end_date):
+def update_cumulativedeaths_charts(province_name, region, start_date, end_date, day_to_start_forecast, days_to_forecast, facemask, xMob, vac):
     province_name = update_province_name(province_name)
+    xMob = -xMob
+    facemask = facemask * 70 / 100
+    vac = vac / 100.0
+    today = datetime.datetime.now()
+    
+    #global df_mobility
+    df_mobility = get_mob(province_name, region)
+
+    df_vac = vaccination_data(province_name, region)
+    
     dates = date(province_name, region, start_date, end_date)
     cumulativedeaths = cumulative_deaths(province_name, region, start_date, end_date)
     
     cumulativedeaths_fig = go.Figure()
+    time.sleep(2)
     
-     # ============== MOBILITY GRAPH ==============
+     # ============== CUMULATIVE DEATHS GRAPH ==============
     cumulativedeaths_fig.add_trace(go.Scatter(
             x=dates,
             y=cumulativedeaths,
             name='Cumulative Deaths',
+            line=dict(color='black', width=2),
         ))
     
     cumulativedeaths_fig.update_layout(xaxis_title='Date',
                    yaxis_title='Number of Deaths')
     
+    for i in range(10):    
+        cumulativedeaths_fig.add_trace(go.Scatter(
+            x=predicted_dates(province_name, region, start_date, day_to_start_forecast, days_to_forecast),
+            y=predicted_cumulative_deaths(province_name, region, start_date, end_date, days_to_forecast, day_to_start_forecast, df_mobility, xMob, facemask, vac, df_vac),
+        name = 'Predicted Cumulative Deaths'
+    ))
+        
+    print(last_deaths(province_name, region, start_date, end_date, day_to_start_forecast))   
     return cumulativedeaths_fig
 
 # -------------- STATIC DATA HELPER FUNCTIONS --------------
@@ -1634,6 +1658,8 @@ def set_total_deaths(province_name, region_name, start_date, end_date):
     for d in deaths:
         total_deaths += d
         
+# -------------- CUMULATIVE DEATHS HELPER FUNCTIONS --------------        
+        
 def cumulative_deaths(province_name, region_name, start_date, end_date): # todo: dates are in d-m-y
     start_date_str = datetime.datetime.strptime(start_date, '%Y-%m-%d').strftime('%m-%d-%Y')
     end_date_str = datetime.datetime.strptime(end_date, '%Y-%m-%d').strftime('%m-%d-%Y')
@@ -1643,11 +1669,32 @@ def cumulative_deaths(province_name, region_name, start_date, end_date): # todo:
     )]
     df_province = filtered_df2[filtered_df2.province == province_name]
     
-    deaths = df_province.cumulative_deaths[df_province.health_region == region_name] #.rolling(window=7).mean()
-    print(deaths)
-        
+    deaths = df_province.cumulative_deaths[df_province.health_region == region_name] #.rolling(window=7).mean()  
     return deaths
+
+def last_deaths(province_name, region_name, start_date, end_date, day_to_start_forecast):
     
+    df_province = df_mort[df_mort.province == province_name]
+    df_region = df_province[df_province.health_region == region_name]
+    deaths = df_region.cumulative_deaths[df_mort.date_death_report == day_to_start_forecast].item()
+    
+    return deaths
+
+def cumulative(lists):
+    cu_list = []
+    length = len(lists)
+    cu_list = [sum(lists[0:x:1]) for x in range(0, length+1)]
+    return cu_list[1:]
+
+def predicted_cumulative_deaths(province_name, region_name, start_date, end_date, days_to_forecast, day_to_start_forecast, df_mobility, xMob_slider, facemask_val, vac_val, df_vac):
+    cumulative_deaths = []
+    cumulative_deaths.append(last_deaths(province_name, region_name, start_date, end_date, day_to_start_forecast))
+    deaths = cumulative_deaths + predicted_deaths(province_name, region_name, start_date, end_date, days_to_forecast, df_mobility, xMob_slider, facemask_val, vac_val, df_vac)[0]
+    
+    #print(deaths)
+    
+    return cumulative(deaths)
+
 # -------------- CASES HELPER FUNCTIONS --------------
 
 def get_last_cases(province_name, region_name, start_date, end_date): # todo: d-m-y
@@ -1864,44 +1911,54 @@ def provinceid(province_name, region_name):
     weat_info_province = static_data[static_data.province_name == province_name]
     return weat_info_province.prov_id[weat_info_province.health_region == region_name].item()
 
-def avg_temp_data(begin_year, end_year, data, forecasted_dates):
-    
+def avg_temp_data(data, forecasted_dates):
+
     df_past_weather = pd.DataFrame(data, columns = ['Date','Mean_Temperature'])
     df_past_weather['Mean_Temperature'] = df_past_weather['Mean_Temperature'].astype(float)
     one_day = datetime.timedelta(days=1)
     
     #print(df_past_weather)
-    date_now = datetime.date(2021, 4, 20) - datetime.timedelta(days=13)  # datetime.datetime.now() - datetime.timedelta(days=13)
+    date_now = datetime.datetime(2021, 4, 25) - datetime.timedelta(days=13) # datetime.datetime.now() - datetime.timedelta(days=13)
     date_now = date_now.strftime('%m-%d')
     
-    forecasted = datetime.date(2021, 4, 20) + datetime.timedelta(days=forecasted_dates)     # datetime.datetime.now() + datetime.timedelta(days=forecasted_dates)
-    forecasted = forecasted.strftime('%m-%d')
+    forecasted = datetime.datetime.now() + datetime.timedelta(days=forecasted_dates)
     
-    print(forecasted)
-    
-    next_day = begin_year
-    for day in range(366):  # Includes leap year
-        if next_day > end_year:
-            break
-        # Adds a day to the current date
-        next_day += one_day
-        date_range = next_day.strftime('%m-%d')
+    if forecasted > datetime.datetime(2021, 12, 31):
         
-        filtered_avg_temp = df_past_weather.loc[df_past_weather['Date'].between(date_now, forecasted)]
-        avg_temp_5_years = filtered_avg_temp.groupby('Date')['Mean_Temperature'].mean()
+        days_from_end_of_year = abs(datetime.datetime(2021, 12, 31) - forecasted)
+        days_from_end_of_year = days_from_end_of_year.days
         
-        avg_temp_5_years = avg_temp_5_years.rolling(window=14).mean()
-
-    # print(" df_weat_date: " + str(df_weat_date))
-    # print("size of df_weat_date: " + str(len(df_weat_date)))
-    # for val in df_weat_date:
-    #     global avg_temp_vals
-    #     avg_temp_vals.append(val)
-        # print("VAL_: " + str(val))
-
-    # print("!!!size of avg_temp_vals: " + str(len(avg_temp_vals)))
+        #print(days_from_end_of_year)
+        
+        forecasted_1 = datetime.datetime(2021, 1, 1) + datetime.timedelta(days=days_from_end_of_year)
+        forecasted = forecasted.strftime('%m-%d')
+        forecasted_1 = forecasted_1.strftime('%m-%d')
+        #print(forecasted_1)
+        
+        filtered_avg_temp = df_past_weather.loc[df_past_weather['Date'].between(date_now, '12-31')]
+        into_new_year = df_past_weather.loc[df_past_weather['Date'].between('01-01', forecasted_1)] 
+        avg_temp_5_years1 = filtered_avg_temp.groupby('Date')['Mean_Temperature'].mean()
+        avg_temp_5_years2 = into_new_year.groupby('Date')['Mean_Temperature'].mean()
+        
+        # print(filtered_avg_temp)
+        # print(into_new_year)
+        
+        #print(avg_temp_5_years1)
+        #print(avg_temp_5_years2)
+        
+        #print(avg_temp_5_years1)
+        
+        averaged_temps = pd.concat([avg_temp_5_years1, avg_temp_5_years2])
     
-    return avg_temp_5_years.dropna()
+    #print(forecasted)
+    else:
+    
+        filtered_avg_temp = df_past_weather.loc[df_past_weather['Date'].between(date_now, '12-31')]
+        averaged_temps = filtered_avg_temp.groupby('Date')['Mean_Temperature'].mean()
+        
+        #avg_temp_5_years = avg_temp_5_years #.rolling(window=14).mean()
+
+    return averaged_temps.rolling(window=14).mean().dropna()
 
 def avg_temp_data_1_year(data):
     df_weat = pd.DataFrame(data, columns = ['Date','Mean_Temperature'])
@@ -1930,7 +1987,6 @@ def get_past_temp(province_name, region_name, date_in_forecast):
     # # print("returning temp " + str(temp) + " for day: " + str(day))
     # return temp
     return 0.0
-
 
 # -------------- VACCINATION HELPER FUNCTIONS --------------
 
