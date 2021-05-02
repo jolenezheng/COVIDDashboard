@@ -1117,9 +1117,9 @@ def update_vaccination_charts(province_name, region, start_date, end_date, forec
     #     time.sleep(1)
     #     print("SLEEPING!!!!!")
 
-    if (not df_vac2.empty):
-        print(df_vac2)
-    print("df_vac2.empty: " + str(df_vac2.empty))
+    # if (not df_vac2.empty):
+    #     print(df_vac2)
+    # print("df_vac2.empty: " + str(df_vac2.empty))
     province_name = update_province_name(province_name)
     df_vac = vaccination_data(province_name, region)
     regional_population = get_total_pop(province_name, region)
