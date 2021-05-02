@@ -53,7 +53,7 @@ df_mobility = None
 
 df_trends = pd.read_csv(r'data/google_trends_face_mask_canada.csv')
 
-df_vac = pd.DataFrame({'Init' : []})
+df_vac2 = pd.DataFrame()
 
 prov_id = "ON"
 climate_id = 0
@@ -61,14 +61,15 @@ target_url = ""
 weat_data = None
 weat_city = None
 date_city = None
-total_deaths = 0
+# total_deaths = 0
 
 # avg_temp_vals = []
 
 initial_load = True
 prev_states = [None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
 
-curve_num = 0
+default_temp = 0.0
+all_temp_vals = []
 
 
 fnameDict = {    
@@ -210,8 +211,6 @@ footer2 = html.Footer(html.Div([
 site_backbone = html.Div([
     dcc.Location(id='url', refresh=False),
     html.Div(navbar2),
-    html.H1('Health Regions of Canada'),
-    html.Iframe(id ='map', srcDoc = open('health_regions.html', 'r').read(), width = '100%', height = '600'),
     html.Div(id='page-content', className="page border"),
     footer2,
 ])
@@ -365,7 +364,7 @@ canadian_dashboard = html.Div(
                                                     min_date_allowed=df_mort.date_death_report.min().date(),
                                                     max_date_allowed= df_mort.date_death_report.max().date(), # df_mort.date_death_report.max().date(),
                                                     initial_visible_month=df_mort.date_death_report.max().date(),
-                                                    date= "2021-04-01", # df_mort.date_death_report.max().date(), # "2020-11-01"
+                                                    date= "2020-05-01", #"2021-04-01", # df_mort.date_death_report.max().date(), # "2020-11-01"
                                                     # end_date=df_mort.date_death_report.max().date(), #"2021-03-31"
                                                 ),
                                             ]
@@ -383,7 +382,7 @@ canadian_dashboard = html.Div(
                                                     min=0,
                                                     max=12,
                                                     step=1,
-                                                    value=3, # todo: change back to 3
+                                                    value=12, # todo: change back to 3
                                                     marks={ 0: '0 mo', 2: '2 mo', 4: '4 mo',
                                                         6: '6 mo', 8: '8 mo', 10: '10 mo', 12: '1 yr'
                                                     },
@@ -480,7 +479,7 @@ canadian_dashboard = html.Div(
                             dbc.Col(
                                 dbc.Card(
                                     [
-                                        dbc.CardHeader("Covid Deaths / 1 Million Population"),
+                                        dbc.CardHeader("Covid Deaths / Total Population"),
                                         dbc.CardBody(
                                             [
                                                 dbc.Spinner(html.H5(id="covid-deaths-card",className="card-title"), size="sm")
@@ -666,7 +665,22 @@ canadian_dashboard = html.Div(
                                         )),
                                     ], color="dark", inverse=True),	
                             ),	
-                    ], className="mb-4")]),
+                        ], className="mb-4"),
+                        dbc.Row([	
+                            dbc.Col(	
+                                dbc.Card(	
+                                    [	
+                                        dbc.CardHeader("7-day Average Facemask"), #(id="trends-calibration-header"),
+                                        dbc.CardBody(
+                                            dcc.Loading(
+                                                children=[html.Div(dcc.Graph(
+                                                    id="trends-calibration-chart", config={"displayModeBar": False}))],
+                                                type="default"
+                                        )),
+                                    ], color="dark", inverse=True),	
+                            ),	
+                        ], className="mb-4"),
+                    ]),
                     className="column",
                     xl=9, lg=9, md=12, sm=12, xs=12,
                 ),
@@ -750,20 +764,18 @@ def init_slider_vals(province_name, region_name, date_str):
     df_vac = vaccination_data(province_name, region_name)
     last_vac = get_last_vac(province_name, region_name)
 
-    num_days_to_forecast = 3
+    num_days_to_forecast = 12
 
     if (initial_load):
         mob = get_last_mob()
         trends = get_last_trends(province_name, region_name)
         vac = last_vac / round(get_total_pop(province_name, region_name), 0) * 100
-        print("setting slider vac to be IF: " + str(vac) + " for day: " + str(date))
     else:
         mob = -get_mob_on_day(date, 0, 0)
         # trends = get_last_trends(province_name, region_name)
         trends = get_trends_on_day(province_name, region_name, date, 0)
         total_pop = get_total_pop(province_name, region_name)
         vac = get_vac_on_day(date, 0, total_pop, df_vac, 0, True, last_vac)
-        print("setting slider vac to be ELSE: " + str(vac) + " for day: " + str(date))
 
     initial_load = False
     return trends, mob, 3, num_days_to_forecast # todo: change 0 -> vac
@@ -788,15 +800,14 @@ def init_slider_vals(province_name, region_name, date_str):
     [dash.dependencies.Input('region-dropdown', 'value'), dash.dependencies.Input('subregion-dropdown', 'value'),]
 )
 def update_region_names(province_name, region_name):
-    global df_vac
-    df_vac = df_vaccinations(province_name, region_name)
+    global df_vac2
+    df_vac2 = vaccination_data(province_name, region_name) #df_vaccinations(province_name, region_name)
 
     # Card Values
     total_pop = round(get_total_pop(province_name, region_name), 0)
     sparsity = round(get_pop_sparsity(province_name, region_name), 3)	
     pop_80 = round(get_frac_pop_over_80(province_name, region_name), 3)	
     pwpd = round(get_pwpd(province_name, region_name), 0)
-    # covid_deaths = get_total_deaths(province_name, region_name, start_date, end_date)
     mob = str(0 - get_last_mob()) + "%"
 
     # todo: sparsity (3 digits)
@@ -814,8 +825,6 @@ def update_region_names(province_name, region_name):
     cumulativedeaths_label = 'Cumulative Deaths in ' + region_name + ', ' + province_name
     return total_pop, sparsity, pop_80, pwpd, avg_house, mob, deaths_label, cases_label, mob_label, temp_label, vac_label, trends_label, rtcurve_label, cumulativedeaths_label
 
-
-
 @app.callback(
     [
         dash.dependencies.Output('covid-deaths-card', 'children'),
@@ -830,23 +839,19 @@ def update_region_names(province_name, region_name):
     ]
 )
 def update_dynamic_cards(province_name, region_name, start_date, end_date):
-    todo = "todo"
-    print("end: " + str(end_date))
-    # print("end: " + str(end_date))
-
-    total_covid_deaths = get_total_deaths(province_name, region_name, start_date, end_date)
+    total_covid_deaths = get_total_deaths(province_name, region_name, start_date, end_date, False)
     total_population = get_total_pop(province_name, region_name)
 
     year = end_date.split("-")[0]
     start_date_this_year = year + "-01-01"
     annual_deaths = get_ann_death(province_name, region_name)
-    annual_covid_deaths = get_total_deaths(province_name, region_name, start_date_this_year, end_date)
+    annual_covid_deaths = get_total_deaths(province_name, region_name, start_date_this_year, end_date, False)
 
-    deaths_ann = str(round(annual_covid_deaths / annual_deaths, 3) * 100.0) + "%"
-    deaths_per_pop = round(total_covid_deaths / 1000000, 3)
+    deaths_ann = str(round(annual_covid_deaths / annual_deaths * 100.0, 3)) + "%"
+    deaths_per_pop = str(round(total_covid_deaths / total_population * 100.0, 3)) + "%"
 
     total_cases = get_total_cases(province_name, region_name, start_date, end_date)
-    cases_per_pop = str(round(total_cases / total_population, 3) * 100.0) + "%"
+    cases_per_pop = str(round(total_cases / total_population * 100.0, 3)) + "%"
 
     return deaths_per_pop, cases_per_pop, deaths_ann
 
@@ -860,10 +865,6 @@ def update_date_dropdown(name):
 
  # ============== SLIDER CALLBACK ==============
 
-# @app.callback(Output('slider-drag-output', 'children'),
-#               [Input('facemask-slider', 'drag_value'), Input('facemask-slider', 'value')])
-# def display_value(drag_value, value):
-#     return 'For testing purposes: Drag Value: {} | Value: {}'.format(drag_value, value)
 
 # Update names to abbreviated form
 def update_province_name(province_name):
@@ -899,7 +900,7 @@ def update_province_name(province_name):
         Input('rerun-btn', 'n_clicks')
     ],
 )
-def update_mortality_chart(province_name, region, start_date, end_date, day_to_start_forecast, days_to_forecast, facemask, xMob, vac, n_clicks):
+def update_mortality_chart(province_name, region, start_date, end_date, day_to_start_forecast, days_to_forecast, facemask, xMob, vac, n_clicks):    
     province_name = update_province_name(province_name)
     xMob = -xMob
     facemask = facemask * 70 / 100
@@ -916,15 +917,13 @@ def update_mortality_chart(province_name, region, start_date, end_date, day_to_s
 
     # fig.update_xaxes(type="log", range=[0,5])
     time.sleep(2)
-    for i in range(10):
-        if (i <= 2):
-            time.sleep(4)
+    for i in range(5):
+        # if (i < 2):
+        #     time.sleep(3)
 
-        global curve_num 
-        curve_num = i
         print("===== CURVE: " + str(i) + " ========")
         dates = predicted_dates(province_name, region, start_date, day_to_start_forecast, days_to_forecast)
-        deaths = predicted_deaths(province_name, region, start_date, day_to_start_forecast, days_to_forecast, df_mobility, xMob, facemask, vac, df_vac)[0]
+        deaths = predicted_deaths(i, province_name, region, start_date, day_to_start_forecast, days_to_forecast, df_mobility, xMob, facemask, vac, df_vac)[0]
         # if (i > 1):
         pred_fig.add_trace(go.Scatter(
             x=dates,
@@ -1005,6 +1004,7 @@ def update_cases_charts(province_name, region, start_date, end_date): # , facema
     ],
 )
 def update_weather_chart(province_name, region, start_date, end_date, forecasted_dates):
+    print("forecasted_dates weather: " + str(forecasted_dates))
     province_name = update_province_name(province_name)
     
     current_start_date = datetime.datetime(2020, 1, 1)
@@ -1019,22 +1019,41 @@ def update_weather_chart(province_name, region, start_date, end_date, forecasted
     past_end_date = datetime.datetime(2020, 12, 31)
     past_end_date = past_end_date.strftime('%Y-%m-%d')
 
-    current_temp_files = get_current_temp_files(province_name, region, current_start_date, current_end_date)
+    current_temp_files = get_current_temp_files(province_name, region, start_date, current_end_date)
     past_temp_files = get_past_temp_files(province_name, region, past_start_date, past_end_date)
 
     new_dates = predicted_dates(province_name, region, start_date, end_date, forecasted_dates)
-    
-    print(new_dates)
-    
-    # temp_files = get_temp_files(province_name, region, start_date, end_date)
+
     current_weather_data = {'Date':  get_current_temp_dates(current_temp_files),
                             'Mean_Temperature': get_temp_vals(current_temp_files)}
     past_weather_data = {'Date': get_past_temp_dates(past_temp_files),
                          'Mean_Temperature': get_temp_vals(past_temp_files)}
     
     df_current_weather = pd.DataFrame(current_weather_data, columns = ['Date','Mean_Temperature'])
+    past_temp_vals = df_current_weather['Mean_Temperature'].rolling(window=14).mean()
+    new_temp_vals = avg_temp_data(past_weather_data, forecasted_dates * 30)
     
-    weather_fig = px.line(df_current_weather, x = df_current_weather['Date'], y = df_current_weather['Mean_Temperature'].rolling(window=14).mean())	
+    global all_temp_vals
+    all_temp_vals = []
+    last_known_val = 0.0
+    for t in past_temp_vals:
+        if (math.isnan(t)):
+            t = last_known_val
+            # past_temp_vals[t] = last_known_val
+        else:
+            last_known_val = t
+        all_temp_vals.append(t)
+
+    for t in new_temp_vals:
+        if (math.isnan(t)):
+            t = last_known_val
+        else:
+            last_known_val = t
+        all_temp_vals.append(t)
+    
+    df_current_weather = pd.DataFrame(current_weather_data, columns = ['Date','Mean_Temperature'])
+    
+    weather_fig = px.line(df_current_weather, x = df_current_weather['Date'], y = past_temp_vals)
     
     weather_fig.update_layout(xaxis_title='Date',	
                    yaxis_title='Mean Temperature')	
@@ -1042,10 +1061,10 @@ def update_weather_chart(province_name, region, start_date, end_date, forecasted
     #print(new_dates)
     #print(avg_temp_data(begin_year, end_year, past_weather_data, 255))
     
-    weather_fig.add_trace(go.Scatter(	
-            x=new_dates,	
-            y=avg_temp_data(past_weather_data, forecasted_dates*30),	
-            name='Historical Average',	
+    weather_fig.add_trace(go.Scatter(
+            x=new_dates,
+            y=new_temp_vals,
+            name='Historical Average',
         ))
 
     # delete_me = avg_temp_data_1_year(data)
@@ -1082,7 +1101,8 @@ def update_mob_charts(province_name, region, start_date, end_date, forecasted_da
      # ============== MOBILITY GRAPH ==============
     mobility_fig = px.line(df_mort, x = date_mob(province_name, region, start_date, end_date), y = mobility(province_name, region, start_date, end_date))
     mobility_fig.update_layout(xaxis_title='Date',
-                   yaxis_title='Workplace Social Mobility')
+                   yaxis_title='Workplace Social Mobility',
+                   showlegend=False,)
     mobility_fig.add_trace(go.Scatter(
             x=dates,
             y=mob_values,
@@ -1103,14 +1123,19 @@ def update_mob_charts(province_name, region, start_date, end_date, forecasted_da
     ],
 )
 def update_vaccination_charts(province_name, region, start_date, end_date, forecasted_dates, vac_slider_val):
+    # while (df_vac2.empty):
+    #     time.sleep(1)
+    #     print("SLEEPING!!!!!")
+
+    # if (not df_vac2.empty):
+    #     print(df_vac2)
+    # print("df_vac2.empty: " + str(df_vac2.empty))
     province_name = update_province_name(province_name)
     df_vac = vaccination_data(province_name, region)
     regional_population = get_total_pop(province_name, region)
     provincial_population = get_prov_pop(province_name, region)
     total_pop = get_total_pop(province_name, region)
     last_vac = get_last_vac(province_name, region)
-    # vac_dates = df_vac.date
-    # vac_vals = df_vac.total_vaccinations
     vac_slider_val = vac_slider_val / 100.0
     dates = predicted_dates(province_name, region, start_date, end_date, forecasted_dates)
     vac_forecasted_values = []
@@ -1135,7 +1160,7 @@ def update_vaccination_charts(province_name, region, start_date, end_date, forec
 
     vaccination_fig = px.line(vac_vals, x = vac_dates, y = vac_vals)
     vaccination_fig.update_layout(xaxis_title='Date',
-                   yaxis_title='Total Vaccinations/Population of Region')
+                   yaxis_title='Total Vaccinations/Population of Region', showlegend=False)
     vaccination_fig.add_trace(go.Scatter(
             x=dates,
             y=vac_forecasted_values,
@@ -1145,7 +1170,7 @@ def update_vaccination_charts(province_name, region, start_date, end_date, forec
     return vaccination_fig
 
 @app.callback(
-    Output("trends-chart", "figure"),
+    [ Output("trends-chart", "figure"), Output("trends-calibration-chart", "figure") ],
     [
         Input("region-dropdown", "value"),
         Input("subregion-dropdown", "value"),
@@ -1164,17 +1189,41 @@ def update_trends_charts(province_name, region, start_date, end_date, forecasted
         trends_vals.append(mask_slider_val)
 
     df_trends = df_trends_data(province_name, region)
-    trends_fig = px.line(df_trends, x = df_trends['date'], y = df_trends[str(get_geocode(province_name, region))])
-    trends_fig.update_layout(xaxis_title='Date',
-                   yaxis_title='Number of Google Searches for Face Masks')
+    trends_past_dates = df_trends['date']
+    trends_past_vals = df_trends[str(get_geocode(province_name, region))]
+    trends_fig = px.line(df_trends, x = trends_past_dates, y = trends_past_vals)
+    trends_fig.update_layout(
+        xaxis_title='Date',
+        yaxis_title='Number of Google Searches for Face Masks',
+        showlegend=False,
+    )
     trends_fig.add_trace(go.Scatter(
             x=dates,
             y=trends_vals,
             name='Simulated Facemask Use',
         ))
 
-    return trends_fig
+    first_date = datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
+    mid_april = datetime.datetime.strptime("2021-04-15", "%Y-%m-%d").date()
+    
+    days_since_first_day = first_date - mid_april
+    delta = days_since_first_day.days
 
+    print("FIRST DATE: " + str(first_date))
+    print("mid_april: " + str(mid_april))
+    print("delta: " + str(delta))
+
+    facemask_vals = []
+    for i in range(len(trends_past_vals)):
+        gTrends = trends_past_vals[i]
+        fm = gTrends * 0.5 * (1 + (np.tanh(delta) / 14))
+        facemask_vals.append(fm)
+
+    facemask_fig = px.line(df_trends, x = trends_past_dates, y = facemask_vals)
+    facemask_fig.update_layout(xaxis_title='Date',
+                   yaxis_title='7-day Average Facemask')
+
+    return trends_fig, facemask_fig
 
 @app.callback(
     Output("rtcurve-chart", "figure"),
@@ -1206,7 +1255,7 @@ def update_rtcurve_charts(province_name, region, start_date, end_date, day_to_st
     for i in range(10):    
         rtcurve_fig.add_trace(go.Scatter(
             x=predicted_dates(province_name, region, start_date, day_to_start_forecast, days_to_forecast),
-            y=predicted_deaths(province_name, region, start_date, day_to_start_forecast, days_to_forecast, df_mobility, xMob, facemask, vac, df_vac)[1],
+            y=predicted_deaths(0, province_name, region, start_date, day_to_start_forecast, days_to_forecast, df_mobility, xMob, facemask, vac, df_vac)[1],
         name = 'R(t)'
     ))
 
@@ -1253,51 +1302,27 @@ def update_rtcurve_charts(province_name, region, start_date, end_date, day_to_st
         Input("subregion-dropdown", "value"),
         Input("date-range", "start_date"),
         Input("date-range", "end_date"),
-        Input("forecast-start-date", "date"),
-        Input('forecast-slider', 'value'),
-        Input('facemask-slider', 'value'),
-        Input('mobility-slider', 'value'),
-        Input('vaccine-slider', 'value'),
     ],
 )
-def update_cumulativedeaths_charts(province_name, region, start_date, end_date, day_to_start_forecast, days_to_forecast, facemask, xMob, vac):
+def update_cumulativedeaths_charts(province_name, region, start_date, end_date):
     province_name = update_province_name(province_name)
-    xMob = -xMob
-    facemask = facemask * 70 / 100
-    vac = vac / 100.0
-    today = datetime.datetime.now()
-    
-    #global df_mobility
-    df_mobility = get_mob(province_name, region)
-
-    df_vac = vaccination_data(province_name, region)
-    
     dates = date(province_name, region, start_date, end_date)
     cumulativedeaths = cumulative_deaths(province_name, region, start_date, end_date)
     
     cumulativedeaths_fig = go.Figure()
-    time.sleep(2)
     
-     # ============== CUMULATIVE DEATHS GRAPH ==============
+     # ============== MOBILITY GRAPH ==============
     cumulativedeaths_fig.add_trace(go.Scatter(
             x=dates,
             y=cumulativedeaths,
             name='Cumulative Deaths',
-            line=dict(color='black', width=2),
         ))
     
     cumulativedeaths_fig.update_layout(xaxis_title='Date',
                    yaxis_title='Number of Deaths')
     
-    for i in range(10):    
-        cumulativedeaths_fig.add_trace(go.Scatter(
-            x=predicted_dates(province_name, region, start_date, day_to_start_forecast, days_to_forecast),
-            y=predicted_cumulative_deaths(province_name, region, start_date, end_date, days_to_forecast, day_to_start_forecast, df_mobility, xMob, facemask, vac, df_vac),
-        name = 'Predicted Cumulative Deaths'
-    ))
-        
-    print(last_deaths(province_name, region, start_date, end_date, day_to_start_forecast))   
     return cumulativedeaths_fig
+
 
 # -------------- STATIC DATA HELPER FUNCTIONS --------------
 
@@ -1342,42 +1367,32 @@ def predicted_dates(province_name, region_name, start_date, end_date, days_to_fo
     
     return add_dates
 
-def predicted_deaths(province_name, region_name, start_date, end_date, days_to_forecast, df_mobility, xMob_slider, facemask_val, vac_val, df_vac):
+def predicted_deaths(c_num, province_name, region_name, start_date, end_date, days_to_forecast, df_mobility, xMob_slider, facemask_val, vac_val, df_vac):
     base = datetime.datetime.strptime(end_date, '%Y-%m-%d')
     add_dates = [base + datetime.timedelta(days=x) for x in range(days_to_forecast * 30)]
     yVals = []
     lambda_values = [] 
-    global total_deaths
+    # global total_deaths
 
-    set_total_deaths(province_name, region_name, start_date, end_date)
+    yes_print2 = False
+    if (c_num == 4):
+        yes_print2 = True
+    total_deaths = get_total_deaths(province_name, region_name, start_date, end_date, yes_print2)
     last_mort = get_last_mort(province_name, region_name, start_date, end_date)
     last_vac = get_last_vac(province_name, region_name)
 
     total_population = get_total_pop(province_name, region_name)
     annDeath = get_ann_death(province_name, region_name)
-
-    print("ANNUAL DEATH: " + str(annDeath))
-    # tau = 25.1009
-    # lS0 = -2.70768
-    # trend1=-0.0311442
-    # tmin2 = 24.6497
-    # dT2 = 0.00562779
-    # dT3 = 0.000182757
-    # h0 = 2.30833
-    # h2 = 5.89094
-    # anl = -0.007345
     xHouse = get_avg_house(province_name, region_name) # Average number of people/household
-    # house2 = 0.0198985
-    # mob1 = 0.0379239
-    # v2 = 0.0 
-    # v1 = 11.9697
-    xLogPWPD = math.log(get_pwpd(province_name, region_name) * get_frac_pop_over_80(province_name, region_name), 10) # Log10[PWD*AgreFrac[>80]] -> base 10
-    xBeta = math.log(total_population / (get_pwpd(province_name, region_name) * get_land_area(province_name, region_name))) / math.log(0.25**2/get_land_area(province_name, region_name)) #get_total_pop(province_name, region_name) / get_land_area(province_name, region_name) # Population Sparsity
-    # vax2 = 0.0
+    xLogPWPD = math.log(get_pwpd(province_name, region_name) * get_frac_pop_over_80(province_name, region_name), 10)
+    xBeta = math.log(total_population / (get_pwpd(province_name, region_name) * get_land_area(province_name, region_name))) / math.log(0.25**2/get_land_area(province_name, region_name))
     first = True
     deaths_tomorrow = 0.0
     deaths_today = last_mort
-    total_deaths_2_months_prior = get_total_deaths_2_months_prior(province_name, region_name, end_date)
+    [total_deaths_2_months_prior, two_months_death] = get_total_deaths_2_months_prior(province_name, region_name, end_date)
+
+    if (c_num == 4):
+        print("==== \ntotal_deaths_2_months_prior: " + str(total_deaths_2_months_prior))
 
     for i in range(len(add_dates)):
         date_in_forecast = datetime.datetime.strptime(end_date, '%Y-%m-%d') + datetime.timedelta(days=i)
@@ -1387,25 +1402,33 @@ def predicted_deaths(province_name, region_name, start_date, end_date, days_to_f
             xTrends1 = get_trends_on_day(province_name, region_name, date_in_forecast, facemask_val) # todo: Google Trends for face mask
             xMob1 = get_mob_on_day(date_in_forecast, xMob_slider, 14)
             xMob2 = get_mob_on_day(date_in_forecast, xMob_slider, 28)
-            xTemp = get_past_temp(province_name, region_name, date_in_forecast)
+            xTemp = get_past_temp(province_name, region_name, start_date, date_in_forecast)
             vaxP1 = get_vac_on_day(date_in_forecast, vac_val, total_population, df_vac, 14, False, last_vac)
             vaxP2 = get_vac_on_day(date_in_forecast, vac_val, total_population, df_vac, 28, False, last_vac)
-            # print("vax1: " + str(vaxP1))
-            # print("vax2: " + str(vaxP2))
-            # print("xMob1: " + str(xMob1))
-            # print("xMob2: " + str(xMob2))
-            # print("xHerd: " + str(xHerd))
-            # print("xTrends1: " + str(xTrends1))
-            # print("\n")
 
             if (i <= 60):
-                xHerd2 = total_deaths_2_months_prior / annDeath # Total Covid Death (more than 2 months ago)/Annual Death -> what does more than 2 months ago mean? 2 months prior
+                # xHerd2 = total_deaths_2_months_prior / annDeath
+                if i<(60-len(two_months_death)):
+                    xHerd2 = total_deaths_2_months_prior / annDeath
+                else:
+                    total_deaths_2_months_prior = \
+                        total_deaths_2_months_prior + two_months_death[-(60-i)]
+                    xHerd2 = total_deaths_2_months_prior / annDeath
             else:
                 deaths_2_months = total_deaths_2_months_prior
                 prior = i - 60
                 prior_2_months = yVals[0:prior]
+                # if (c_num == 2):
+                #     print("len(prior_2_months) = " + str(len(prior_2_months)))
                 for j in range(len(prior_2_months)):
                     deaths_2_months += prior_2_months[j]
+                    # if (c_num == 2 and (i >= 150 and i < 153)):
+                    #     print("yvals[" + str(j) +"] = " + str(prior_2_months[j]))
+                    # if (c_num == 4 and (i > 350)):
+                        # print("adding " + str(prior_2_months[j]))
+                # if (c_num == 2 and (i >= 150 and i < 153)):
+                #     print("deaths_2_months: " + str(deaths_2_months))
+                #     print("annDeath: " + str(annDeath))
                 xHerd2 = deaths_2_months / annDeath
             if (i < 14):
                 prior = 14 - i
@@ -1419,13 +1442,7 @@ def predicted_deaths(province_name, region_name, start_date, end_date, days_to_f
                     deaths_2_weeks += prior_2_weeks[j]
             
             sigma = math.sqrt(0.093 / (14.0 + deaths_2_weeks))
-            # lambda_ = math.exp(0.5*(lS0 + math.log(10.0)*xLogPWPD + math.log(0.25) +
-            #         2.0 / (4.0 - xBeta) * math.log((2.0 - xBeta / 2.0)/(2.0 * 10**xLogPWPD * 0.25**2.0)) - 
-            #         h0 * xHerd - h2 * (xHerd - xHerd2) * 6.0 - v1*vax1 + mob1*xMob + 
-            #         trend1 * xTrends1 * 1.25 + dT2*(xTemp - tmin2)**2.0 + dT3*(xTemp - tmin2)**3.0 -
-            #         math.log(tau))) - 1.0 / tau + house2 * (xHouse - 2.75) + anl * (xAnnual - 3.65) - v2*vax2
 
-            # print("\n logging: " + str(1 - 0.9 * vaxP2) + "\n")
             exp_ = math.exp(
                         0.5 * (-7.50188 - 34.5879 * (xHerd - xHerd2) - 1.51981 * xHerd2 +
                         0.011227 * xMob1 + 0.0296737 * xMob2 +
@@ -1444,28 +1461,38 @@ def predicted_deaths(province_name, region_name, start_date, end_date, days_to_f
             deaths_tomorrow = math.exp(lambda_) * deaths_today
             yVals.append(deaths_tomorrow)
 
-            # if (curve_num == 9 and i < 5):
-                # print("date: " + str(date_in_forecast))
-                # print("total_deaths: " + str(total_deaths))
-                # print("annDeath: " + str(annDeath))
-                # print("xHerd: " + str(xHerd))
-                # print("xHerd2: " + str(xHerd2))
-                # print("xMob1: " + str(xMob1))
-                # print("xMob2: " + str(xMob2))
-                # print("xTemp: " + str(xTemp))
-                # print("xTrends1: " + str(xTrends1))
-                # print("xLogPWPD: " + str(xLogPWPD))
-                # print("xBeta: " + str(xBeta))
-                # print("xAnnual: " + str(xAnnual))
-                # print("xHouse: " + str(xHouse))
-                # print("vaxP1: " + str(vaxP1))
-                # print("vaxP2: " + str(vaxP2))
-                # # print("delta: " + str(delta))
-                # # print("exp_: " + str(exp_))
-                # print("lambda_: " + str(lambda_))
-                # print("deaths_tomorrow: " + str(deaths_tomorrow))
-                # # print("deaths_today: " + str(deaths_today))
+            # if (c_num == 2): # and (i >= 150 and i < 153)):
+            #     print("date: " + str(date_in_forecast))
+            #     print("i == " + str(i))
+            #     print("total_deaths: " + str(total_deaths))
+            #     print("deaths_2_weeks: " + str(deaths_2_weeks))
+            #     if (i > 60):
+            #         print("deaths_2_months: " + str(deaths_2_months))
+            #     else:
+            #         print("total_deaths_2_months_prior: " + str(total_deaths_2_months_prior))
+
+            #     # print("annDeath: " + str(annDeath))
+            #     print("xHerd: " + str(xHerd))
+            #     print("xHerd2: " + str(xHerd2))
+            #     print("xMob1: " + str(xMob1))
+            #     print("xMob2: " + str(xMob2))
+            #     print("xTrends1: " + str(xTrends1))
+            #     print("xLogPWPD: " + str(xLogPWPD))
+            #     print("xBeta: " + str(xBeta))
+            #     print("xAnnual: " + str(xAnnual))
+            #     print("xHouse: " + str(xHouse))
+            #     print("vaxP1: " + str(vaxP1))
+            #     print("vaxP2: " + str(vaxP2))
+            #     print("delta: " + str(delta))
+            #     print("exp_: " + str(exp_))
+            #     print("lambda_: " + str(lambda_))
+            #     print("deaths_tomorrow: " + str(deaths_tomorrow))
+                # print("deaths_today: " + str(deaths_today))
+
+                # if (xTemp != 0.0):
+                #     print("xTemp: " + str(xTemp))
                 # print("\n")
+                
             deaths_today = deaths_tomorrow
             total_deaths += deaths_today
             annDeath += deaths_today
@@ -1490,34 +1517,9 @@ def predicted_cases(province_name, region_name, start_date, end_date, days_to_fo
     print("todo")
 
 # -------------- MORTALITY HELPER FUNCTIONS --------------
-def get_last_mort_val(province_name, region_name):
-    # start_date_str = datetime.datetime.strptime(start_date, '%Y-%m-%d').strftime('%m-%d-%Y')
-    # end_date_str = datetime.datetime.strptime(end_date, '%Y-%m-%d').strftime('%m-%d-%Y')
-
-    # filtered_df2 = df_mort[df_mort.date_death_report.between(
-    #     start_date_str, end_date_str
-    # )]
-    df_province = df_mort[df_mort.province == province_name]
-    rolling_avgs = df_province.deaths[df_province.health_region == region_name].rolling(window=7).mean()
-    last_mort = 0
-    for key in rolling_avgs:
-        last_mort += key
-    # vals1 = []
-    # vals2 = []
-    # rolling_avgs_2 = []
-    # for key in rolling_avgs:
-    #     vals1.append(key)
-    # for key in rolling_avgs_2:
-    #     vals2.append(key)
-
-    # print("get_last_mort size: " + str(len(vals1)))
-    # print("rolling_avgs size: " + str(len(rolling_avgs)))
-    # last_mort = np.random.poisson(7.0 * vals1[-1]) / 7.0 # vals1[-1] + random.gauss(0.0, math.sqrt((vals2[-1] - vals1[-1]) ** 2)) / math.sqrt(7.0)
-    return last_mort
-
-def get_total_deaths(province_name, region_name, start_date, end_date):
-    start_date_str = datetime.datetime.strptime(start_date, '%Y-%m-%d').strftime('%d-%m-%Y')
-    end_date_str = datetime.datetime.strptime(end_date, '%Y-%m-%d').strftime('%d-%m-%Y')
+def get_total_deaths(province_name, region_name, start_date, end_date, yes_print):
+    start_date_str = datetime.datetime.strptime(start_date, '%Y-%m-%d').strftime('%m-%d-%Y')
+    end_date_str = datetime.datetime.strptime(end_date, '%Y-%m-%d').strftime('%m-%d-%Y')
 
     filtered_df2 = df_mort[df_mort.date_death_report.between(
         start_date_str, end_date_str
@@ -1528,8 +1530,19 @@ def get_total_deaths(province_name, region_name, start_date, end_date):
 
     total_deaths_local = 0 # reset total deaths
 
+    # if (yes_print == True):
+    #     print("GET TOTAL DEATHSSSS")
+    #     print("length: " + str(len(deaths)))
+        # print("start_date: " + str(start_date))
+        # print("end_date: " + str(end_date))
+        # print("start_date_str: " + str(start_date_str))
+        # print("end_date_str: " + str(end_date_str))
+
     for d in deaths:
         total_deaths_local += d
+    
+    if (yes_print == True):
+        print("returning total deaths: " + str(total_deaths_local))
     
     return total_deaths_local
 
@@ -1542,18 +1555,16 @@ def get_last_mort(province_name, region_name, start_date, end_date):
     )]
     df_province = filtered_df2[filtered_df2.province == province_name]
     rolling_avgs = df_province.deaths[df_province.health_region == region_name].rolling(window=7).mean()
-    rolling_avgs_2 = (df_province.deaths[df_province.health_region == region_name]**2).rolling(window=7).mean()
+    # rolling_avgs_2 = (df_province.deaths[df_province.health_region == region_name]**2).rolling(window=7).mean()
 
     vals1 = []
-    vals2 = []
+    # vals2 = []
     # rolling_avgs_2 = []
     for key in rolling_avgs:
         vals1.append(key)
-    for key in rolling_avgs_2:
-        vals2.append(key)
+    # for key in rolling_avgs_2:
+    #     vals2.append(key)
 
-    # print("get_last_mort size: " + str(len(vals1)))
-    # print("rolling_avgs size: " + str(len(rolling_avgs)))
     last_mort = np.random.poisson(7.0 * vals1[-1]) / 7.0 # vals1[-1] + random.gauss(0.0, math.sqrt((vals2[-1] - vals1[-1]) ** 2)) / math.sqrt(7.0)
     return last_mort
 
@@ -1584,13 +1595,13 @@ def r_avg(province_name, region_name, start_date, end_date): # todo: dates are i
     df_province = filtered_df2[filtered_df2.province == province_name]
     
     rolling_avgs = df_province.deaths[df_province.health_region == region_name].rolling(window=7).mean()
-    deaths = df_province.deaths[df_province.health_region == region_name]
+    # deaths = df_province.deaths[df_province.health_region == region_name]
 
-    global total_deaths
-    total_deaths = 0 # reset total deaths
+    # global total_deaths1
+    # total_deaths1 = 0 # reset total deaths
 
-    for d in deaths:
-        total_deaths += d
+    # for d in deaths:
+    #     total_deaths1 += d
 
     vals1 = []
     for key in rolling_avgs:
@@ -1603,11 +1614,12 @@ def r_avg(province_name, region_name, start_date, end_date): # todo: dates are i
 
 def get_total_deaths_2_months_prior(province_name, region_name, end_date):
     date_up_to = datetime.datetime.strptime(end_date, "%Y-%m-%d")
-    first_day = df_mort.date_death_report.min().date().strftime('%d-%m-%Y')
+    first_day = df_mort.date_death_report.min().date().strftime('%m-%d-%Y')
 
     delta_2_months = datetime.timedelta(days=60)
     end_date_2_months_ago = date_up_to - delta_2_months
-    end_date_2_months_ago = end_date_2_months_ago.strftime('%d-%m-%Y')
+    end_date_2_months_ago = end_date_2_months_ago.strftime('%m-%d-%Y')
+    date_up_to = date_up_to.strftime('%m-%d-%Y')
 
     df_2_months = df_mort[df_mort.date_death_report.between(
         first_day, end_date_2_months_ago
@@ -1615,12 +1627,37 @@ def get_total_deaths_2_months_prior(province_name, region_name, end_date):
     df_province_2_months = df_2_months[df_2_months.province == province_name]
     deaths_2_months = df_province_2_months.deaths[df_province_2_months.health_region == region_name]
 
+    A = df_mort[df_mort.date_death_report.between(
+        end_date_2_months_ago, date_up_to)]
+    B = A[A.province == province_name]
+    twomonths_deaths = B.deaths[B.health_region == region_name].to_list()
+        
     total_deaths_2_months = 0 # reset total deaths
 
     for d in deaths_2_months:
         total_deaths_2_months += d
 
-    return total_deaths_2_months
+    return [total_deaths_2_months, twomonths_deaths]
+    # date_up_to = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+    # first_day = df_mort.date_death_report.min().date().strftime('%m-%d-%Y')
+
+    # delta_2_months = datetime.timedelta(days=60)
+    # end_date_2_months_ago = date_up_to - delta_2_months
+    # end_date_2_months_ago = end_date_2_months_ago.strftime('%m-%d-%Y')
+
+    # df_2_months = df_mort[df_mort.date_death_report.between(
+    #     first_day, end_date_2_months_ago
+    # )]
+    # df_province_2_months = df_2_months[df_2_months.province == province_name]
+    # deaths_2_months = df_province_2_months.deaths[df_province_2_months.health_region == region_name]
+    # two_months_death = deaths_2_months.to_list()
+
+    # total_deaths_2_months = 0 # reset total deaths
+
+    # for d in deaths_2_months:
+    #     total_deaths_2_months += d
+
+    # return [total_deaths_2_months, two_months_death]
 
 def get_total_deaths_2_weeks_prior(province_name, region_name, days_prior, date_up_to_str):
     date_up_to = datetime.datetime.strptime(date_up_to_str, "%Y-%m-%d")
@@ -1640,25 +1677,6 @@ def get_total_deaths_2_weeks_prior(province_name, region_name, days_prior, date_
         total_deaths_2_weeks += d
 
     return total_deaths_2_weeks
-
-def set_total_deaths(province_name, region_name, start_date, end_date):
-    start_date_str = datetime.datetime.strptime(start_date, '%Y-%m-%d').strftime('%d-%m-%Y')
-    end_date_str = datetime.datetime.strptime(end_date, '%Y-%m-%d').strftime('%d-%m-%Y')
-
-    filtered_df2 = df_mort[df_mort.date_death_report.between(
-        start_date_str, end_date_str
-    )]
-    df_province = filtered_df2[filtered_df2.province == province_name]
-    
-    deaths = df_province.deaths[df_province.health_region == region_name]
-
-    global total_deaths
-    total_deaths = 0 # reset total deaths
-
-    for d in deaths:
-        total_deaths += d
-        
-# -------------- CUMULATIVE DEATHS HELPER FUNCTIONS --------------        
         
 def cumulative_deaths(province_name, region_name, start_date, end_date): # todo: dates are in d-m-y
     start_date_str = datetime.datetime.strptime(start_date, '%Y-%m-%d').strftime('%m-%d-%Y')
@@ -1669,32 +1687,10 @@ def cumulative_deaths(province_name, region_name, start_date, end_date): # todo:
     )]
     df_province = filtered_df2[filtered_df2.province == province_name]
     
-    deaths = df_province.cumulative_deaths[df_province.health_region == region_name] #.rolling(window=7).mean()  
+    deaths = df_province.cumulative_deaths[df_province.health_region == region_name] #.rolling(window=7).mean()
+        
     return deaths
-
-def last_deaths(province_name, region_name, start_date, end_date, day_to_start_forecast):
     
-    df_province = df_mort[df_mort.province == province_name]
-    df_region = df_province[df_province.health_region == region_name]
-    deaths = df_region.cumulative_deaths[df_mort.date_death_report == day_to_start_forecast].item()
-    
-    return deaths
-
-def cumulative(lists):
-    cu_list = []
-    length = len(lists)
-    cu_list = [sum(lists[0:x:1]) for x in range(0, length+1)]
-    return cu_list[1:]
-
-def predicted_cumulative_deaths(province_name, region_name, start_date, end_date, days_to_forecast, day_to_start_forecast, df_mobility, xMob_slider, facemask_val, vac_val, df_vac):
-    cumulative_deaths = []
-    cumulative_deaths.append(last_deaths(province_name, region_name, start_date, end_date, day_to_start_forecast))
-    deaths = cumulative_deaths + predicted_deaths(province_name, region_name, start_date, end_date, days_to_forecast, df_mobility, xMob_slider, facemask_val, vac_val, df_vac)[0]
-    
-    #print(deaths)
-    
-    return cumulative(deaths)
-
 # -------------- CASES HELPER FUNCTIONS --------------
 
 def get_last_cases(province_name, region_name, start_date, end_date): # todo: d-m-y
@@ -1972,21 +1968,18 @@ def avg_temp_data_1_year(data):
     
     return df_weat_date.rolling(window=14).mean()
 
-def get_past_temp(province_name, region_name, date_in_forecast):
-    # print("Size of avg_temp_vals: " + str(len(avg_temp_vals)))
-    # day_as_date = day.date()
-    # year = str(day_as_date.year)
-    # first_day_of_year = year + "-01-01"
-    # first_date = datetime.datetime.strptime(first_day_of_year, "%Y-%m-%d").date()
-    # days_since_first_day = day.date() - first_date
-    # delta = days_since_first_day.days
-    # if (delta < len(avg_temp_vals) and delta >= 0):
-    #     temp = avg_temp_vals[delta]
-    # else:
-    #     temp = 0.0
-    # # print("returning temp " + str(temp) + " for day: " + str(day))
-    # return temp
-    return 0.0
+def get_past_temp(province_name, region_name, start_date, date_in_forecast):
+    all_temp_vals_len = len(all_temp_vals)
+    day_as_date = date_in_forecast.date()
+    first_date = datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
+    days_since_first_day = day_as_date - first_date
+    delta = days_since_first_day.days
+    if (delta < all_temp_vals_len and delta >= 0):
+        temp = all_temp_vals[delta]
+    else:
+        temp = default_temp
+
+    return temp
 
 # -------------- VACCINATION HELPER FUNCTIONS --------------
 
@@ -2017,7 +2010,6 @@ def get_last_vac(province_name, region_name):
         total_vaccinations.append(vaccine)
 
     last_vac = total_vaccinations[len(total_vaccinations) - 1]
-    # print("last vac: " + str(last_vac))
 
     return last_vac
 
@@ -2048,28 +2040,13 @@ def get_vac_on_day(date_in_forecast, vac_val, total_population, df_vac, days_pri
     #     print("lenth of vac vals: " + str(len(vac_vals)))
     if (delta < len(vac_vals) and delta >= 0):
         vac = vac_vals[delta] / total_population
-        # if (yes_print == True):
-        #     print("vac_vals[delta]: " + str(vac_vals[delta]))
-        #     print("total pop: " + str(total_population))
-        #     print("returning from IF: " + str(date_in_forecast) + " == " + str(vac) + " delta is: " + str(delta) + " days_prior: " + str(days_prior))
     elif (delta < 0):
         vac = 0.0
-        # if (yes_print == True):
-        #     print("returning from ELIF: " + str(date_in_forecast) + " == " + str(vac) + " delta is: " + str(delta) + " days_prior: " + str(days_prior))
     else:
         temp = vac_val * total_population * (days_since_last_day) / 7.0
         vac = last_vac + temp
         vac = vac / total_population
         vac = min(vac, 1.0)
-        # if (yes_print == True):
-        #     print("vac_val: " + str(vac_val))
-        #     print("last_vac: " + str(last_vac))
-        #     print("temp: " + str(temp))
-        #     print("days_since_last_day: " + str(days_since_last_day))
-        # print("vac from else: last_vac = " + str(last_vac)  + " + vac_val= " + str(vac_val) + " days since: " + str(days_since_last_day) + " === vac -=== " + str(vac))
-        # if (yes_print == True):
-        # print("returning from ELSE: " + str(date_in_forecast) + " == " + str(vac) + " delta is: " + str(delta) + " days_prior: " + str(days_prior))
-    
     # print("returning vac on " + str(date_in_forecast) + " == " + str(vac) + " delta is: " + str(delta))
     
     return vac
@@ -2169,7 +2146,6 @@ def get_last_trends(province_name, region_name):
     df_dates = df_trends[str(get_geocode(province_name, region_name))]
     # print("returning trends: " + str(df_dates[len(df_trends.index) - 1]))
     return df_dates[len(df_trends.index) - 1]
-
 
 # -------------- REPRODUCTIVE NUMBER HELPER FUNCTIONS --------------
 
