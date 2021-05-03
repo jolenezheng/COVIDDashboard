@@ -1380,8 +1380,8 @@ def predicted_deaths(c_num, province_name, region_name, start_date, end_date, da
 
     total_population = get_total_pop(province_name, region_name)
     annDeath = get_ann_death(province_name, region_name)
-    if (region_name == "Toronto"):
-        annDeath = annDeath * 1.3
+    # if (region_name == "Toronto"):
+    #     annDeath = annDeath * 1.3
     xHouse = get_avg_house(province_name, region_name) # Average number of people/household
     xLogPWPD = math.log(get_pwpd(province_name, region_name) * get_frac_pop_over_80(province_name, region_name), 10)
     xBeta = math.log(total_population / (get_pwpd(province_name, region_name) * get_land_area(province_name, region_name))) / math.log(0.25**2/get_land_area(province_name, region_name))
