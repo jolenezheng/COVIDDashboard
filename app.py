@@ -918,8 +918,8 @@ def update_mortality_chart(province_name, region, start_date, end_date, day_to_s
     # fig.update_xaxes(type="log", range=[0,5])
     time.sleep(2)
     for i in range(10):
-        # if (i < 2):
-        #     time.sleep(3)
+        if (i < 2):
+            time.sleep(3)
 
         print("===== CURVE: " + str(i) + " ========")
         dates = predicted_dates(province_name, region, start_date, day_to_start_forecast, days_to_forecast)
