@@ -2269,8 +2269,7 @@ def past_rt_equation(province_name, region_name):
     past_data = [x / y if y != 0 else 0.0 for x, y in zip(D14_values, D14_t5_values)]
     
     past_data = np.clip(past_data, -3, 10)
-    #print(past_data)
-        
+
     return moving_avg(past_data, 14)
 
 def moving_avg(x, n):
