@@ -283,7 +283,7 @@ canadian_dashboard = html.Div(
                                         html.Div(
                                             children=[
                                                 html.Div(
-                                                    children="Face Mask Use",
+                                                    children="Face Mask Google Trends",
                                                     className="dropdown-title"
                                                     ),
                                                 dcc.Slider(
@@ -666,20 +666,20 @@ canadian_dashboard = html.Div(
                                     ], color="dark", inverse=True),	
                             ),	
                         ], className="mb-4"),
-                        dbc.Row([	
-                            dbc.Col(	
-                                dbc.Card(	
-                                    [	
-                                        dbc.CardHeader("7-day Average Facemask"), #(id="trends-calibration-header"),
-                                        dbc.CardBody(
-                                            dcc.Loading(
-                                                children=[html.Div(dcc.Graph(
-                                                    id="trends-calibration-chart", config={"displayModeBar": False}))],
-                                                type="default"
-                                        )),
-                                    ], color="dark", inverse=True),	
-                            ),	
-                        ], className="mb-4"),
+                        # dbc.Row([	
+                        #     dbc.Col(	
+                        #         dbc.Card(	
+                        #             [	
+                        #                 dbc.CardHeader("7-day Average Facemask"), #(id="trends-calibration-header"),
+                        #                 dbc.CardBody(
+                        #                     dcc.Loading(
+                        #                         children=[html.Div(dcc.Graph(
+                        #                             id="trends-calibration-chart", config={"displayModeBar": False}))],
+                        #                         type="default"
+                        #                 )),
+                        #             ], color="dark", inverse=True),	
+                        #     ),	
+                        # ], className="mb-4"),
                     ]),
                     className="column",
                     xl=9, lg=9, md=12, sm=12, xs=12,
@@ -775,7 +775,7 @@ def init_slider_vals(province_name, region_name, date_str):
         # trends = get_last_trends(province_name, region_name)
         trends = get_trends_on_day(province_name, region_name, date, 0)
         total_pop = get_total_pop(province_name, region_name)
-        vac = get_vac_on_day(date, 0, total_pop, df_vac, 0, True, last_vac)
+        vac = get_vac_on_day(date, 0, total_pop, df_vac, 0, False, last_vac)
 
     initial_load = False
     return trends, mob, 3, num_days_to_forecast # todo: change 0 -> vac
@@ -917,7 +917,7 @@ def update_mortality_chart(province_name, region, start_date, end_date, day_to_s
 
     # fig.update_xaxes(type="log", range=[0,5])
     time.sleep(2)
-    for i in range(5):
+    for i in range(10):
         # if (i < 2):
         #     time.sleep(3)
 
@@ -1131,7 +1131,14 @@ def update_vaccination_charts(province_name, region, start_date, end_date, forec
     vac_forecasted_values = []
     for i in range(len(dates)):
         date_in_forecast = datetime.datetime.strptime(end_date, '%Y-%m-%d') + datetime.timedelta(days=i)
-        vac_forecasted_values.append(get_vac_on_day(date_in_forecast, vac_slider_val, total_pop, df_vac, 0, True, last_vac))
+        printpls = False
+        if (i < 10):
+            printpls = True
+        curr_vac = get_vac_on_day(date_in_forecast, vac_slider_val, total_pop, df_vac, 0, printpls, last_vac)
+        # if (i < 10):
+            # print("VAC DATE: " + str(date_in_forecast))
+            # print("VAC val: " + str(curr_vac))
+        vac_forecasted_values.append(curr_vac)
 
     vac_dates = []
     vac_vals = []
@@ -1160,7 +1167,7 @@ def update_vaccination_charts(province_name, region, start_date, end_date, forec
     return vaccination_fig
 
 @app.callback(
-    [ Output("trends-chart", "figure"), Output("trends-calibration-chart", "figure") ],
+    Output("trends-chart", "figure"), # Output("trends-calibration-chart", "figure") ],
     [
         Input("region-dropdown", "value"),
         Input("subregion-dropdown", "value"),
@@ -1213,7 +1220,7 @@ def update_trends_charts(province_name, region, start_date, end_date, forecasted
     facemask_fig.update_layout(xaxis_title='Date',
                    yaxis_title='7-day Average Facemask')
 
-    return trends_fig, facemask_fig
+    return trends_fig #, facemask_fig
 
 @app.callback(
     Output("rtcurve-chart", "figure"),
@@ -1373,6 +1380,8 @@ def predicted_deaths(c_num, province_name, region_name, start_date, end_date, da
 
     total_population = get_total_pop(province_name, region_name)
     annDeath = get_ann_death(province_name, region_name)
+    if (region_name == "Toronto"):
+        annDeath = annDeath * 1.3
     xHouse = get_avg_house(province_name, region_name) # Average number of people/household
     xLogPWPD = math.log(get_pwpd(province_name, region_name) * get_frac_pop_over_80(province_name, region_name), 10)
     xBeta = math.log(total_population / (get_pwpd(province_name, region_name) * get_land_area(province_name, region_name))) / math.log(0.25**2/get_land_area(province_name, region_name))
@@ -2019,6 +2028,9 @@ def get_vac_on_day(date_in_forecast, vac_val, total_population, df_vac, days_pri
     #     print("lenth of vac vals: " + str(len(vac_vals)))
     if (delta < len(vac_vals) and delta >= 0):
         vac = vac_vals[delta] / total_population
+        if (yes_print == True):
+            print("vac_vals = " + str(vac_vals[delta]) + " total_population: " + str(total_population))
+            print("returning vac on " + str(date_in_forecast) + " == " + str(vac) + " delta is: " + str(delta))
     elif (delta < 0):
         vac = 0.0
     else:
