@@ -2261,10 +2261,7 @@ def past_rt_equation(province_name, region_name):
         #D14_t5 = get_total_cases_2_weeks_prior(province_name, region_name, days_prior, date_range)
         D14_t5_values.append(D14_t5)
         
-        #print('deaths from a time t five days ago:' + str(D14_t5) + ' date:' + str(date_range))
-   
-    #print(D14_values)
-    #print(D14_t5_values)
+        #print('deaths from a time t five days ago:' + str(D14_t5) + ' date:' + str(date_range)
     
     D14_values = [x+0.5 for x in D14_values]
     D14_t5_values = [x+0.5 for x in D14_t5_values]    
