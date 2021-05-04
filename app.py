@@ -11,7 +11,9 @@ import dash_bootstrap_components as dbc
 import dash_html_components as html
 import pandas as pd
 import numpy as np
-from dash.dependencies import Output, Input, State
+#===BPH make the Input, Output, and State calls explicit
+#from dash.dependencies import Output, Input, State
+import dash.dependencies as ddp
 import plotly.express as px
 import plotly.graph_objects as go
 import datetime as datetime
@@ -690,8 +692,8 @@ canadian_dashboard = html.Div(
 )
 
 @app.callback(
-    dash.dependencies.Output('page-content', 'children'),
-    [dash.dependencies.Input('url', 'pathname')]
+    ddp.Output('page-content', 'children'),
+    [ddp.Input('url', 'pathname')]
 )
 def display_page(pathname):
     # print("URL IS: " + pathname)
@@ -709,16 +711,16 @@ def display_page(pathname):
 # FAQ Page
 @app.callback(
     [
-        Output("a1", "is_open"), Output("a2", "is_open"), Output("a3", "is_open"), Output("a4", "is_open"),
-        Output("a5", "is_open"), Output("a6", "is_open"), Output("a7", "is_open"), Output("a8", "is_open"),
-        Output("a9", "is_open"), Output("a10", "is_open"), Output("a11", "is_open"), Output("a12", "is_open"),
-        Output("a13", "is_open"), Output("a14", "is_open"), Output("a15", "is_open")
+        ddp.Output("a1", "is_open"), ddp.Output("a2", "is_open"), ddp.Output("a3", "is_open"), ddp.Output("a4", "is_open"),
+        ddp.Output("a5", "is_open"), ddp.Output("a6", "is_open"), ddp.Output("a7", "is_open"), ddp.Output("a8", "is_open"),
+        ddp.Output("a9", "is_open"), ddp.Output("a10", "is_open"), ddp.Output("a11", "is_open"), ddp.Output("a12", "is_open"),
+        ddp.Output("a13", "is_open"), ddp.Output("a14", "is_open"), ddp.Output("a15", "is_open")
     ],
     [
-        Input("q1", "n_clicks"), Input("q2", "n_clicks"), Input("q3", "n_clicks"), Input("q4", "n_clicks"),
-        Input("q5", "n_clicks"), Input("q6", "n_clicks"), Input("q7", "n_clicks"), Input("q8", "n_clicks"),
-        Input("q9", "n_clicks"), Input("q10", "n_clicks"), Input("q11", "n_clicks"), Input("q12", "n_clicks"),
-        Input("q13", "n_clicks"), Input("q14", "n_clicks"), Input("q15", "n_clicks")
+        ddp.Input("q1", "n_clicks"), ddp.Input("q2", "n_clicks"), ddp.Input("q3", "n_clicks"), ddp.Input("q4", "n_clicks"),
+        ddp.Input("q5", "n_clicks"), ddp.Input("q6", "n_clicks"), ddp.Input("q7", "n_clicks"), ddp.Input("q8", "n_clicks"),
+        ddp.Input("q9", "n_clicks"), ddp.Input("q10", "n_clicks"), ddp.Input("q11", "n_clicks"), ddp.Input("q12", "n_clicks"),
+        ddp.Input("q13", "n_clicks"), ddp.Input("q14", "n_clicks"), ddp.Input("q15", "n_clicks")
     ],
     [
         State("a1", "is_open"), State("a2", "is_open"), State("a3", "is_open"), State("a4", "is_open"),
@@ -743,15 +745,15 @@ def toggle_collapse(q1, q2, q3, q4, q5, q6, q7, q8, q9, q10, q11, q12, q13, q14,
 
 @app.callback(
     [
-        Output("facemask-slider", "value"),
-        Output("mobility-slider", "value"),
-        Output("vaccine-slider", "value"),
-        Output("forecast-slider", "value"),
+        ddp.Output("facemask-slider", "value"),
+        ddp.Output("mobility-slider", "value"),
+        ddp.Output("vaccine-slider", "value"),
+        ddp.Output("forecast-slider", "value"),
     ],
     [
-        dash.dependencies.Input('region-dropdown', 'value'), 
-        dash.dependencies.Input('subregion-dropdown', 'value'), 
-        Input("forecast-start-date", "date"),
+        ddp.Input('region-dropdown', 'value'), 
+        ddp.Input('subregion-dropdown', 'value'), 
+        ddp.Input("forecast-start-date", "date"),
     ]
 )
 def init_slider_vals(province_name, region_name, date_str):
@@ -782,22 +784,22 @@ def init_slider_vals(province_name, region_name, date_str):
 
 @app.callback(
     [
-        dash.dependencies.Output('total-pop-card', 'children'),
-        dash.dependencies.Output('sparsity-card', 'children'),
-        dash.dependencies.Output('frac-pop-card', 'children'),
-        dash.dependencies.Output('pwpd-card', 'children'),
-        dash.dependencies.Output('avg-house-card', 'children'),
-        dash.dependencies.Output('mob-card', 'children'),
-        Output("simulation-header", "children"),
-        Output("cases-header", "children"),
-        Output("mob-header", "children"),
-        Output("temp-header", "children"),
-        Output("vac-header", "children"),
-        Output("trends-header", "children"),
-        Output("rtcurve-header", "children"),
-        Output("cumulativedeaths-header", "children"),        
+        ddp.Output('total-pop-card', 'children'),
+        ddp.Output('sparsity-card', 'children'),
+        ddp.Output('frac-pop-card', 'children'),
+        ddp.Output('pwpd-card', 'children'),
+        ddp.Output('avg-house-card', 'children'),
+        ddp.Output('mob-card', 'children'),
+        ddp.Output("simulation-header", "children"),
+        ddp.Output("cases-header", "children"),
+        ddp.Output("mob-header", "children"),
+        ddp.Output("temp-header", "children"),
+        ddp.Output("vac-header", "children"),
+        ddp.Output("trends-header", "children"),
+        ddp.Output("rtcurve-header", "children"),
+        ddp.Output("cumulativedeaths-header", "children"),        
     ],
-    [dash.dependencies.Input('region-dropdown', 'value'), dash.dependencies.Input('subregion-dropdown', 'value'),]
+    [ddp.Input('region-dropdown', 'value'), ddp.Input('subregion-dropdown', 'value'),]
 )
 def update_region_names(province_name, region_name):
     global df_vac2
@@ -827,15 +829,15 @@ def update_region_names(province_name, region_name):
 
 @app.callback(
     [
-        dash.dependencies.Output('covid-deaths-card', 'children'),
-        dash.dependencies.Output('cases-card', 'children'),
-        dash.dependencies.Output('covid-deaths2-card', 'children'),
+        ddp.Output('covid-deaths-card', 'children'),
+        ddp.Output('cases-card', 'children'),
+        ddp.Output('covid-deaths2-card', 'children'),
     ],
     [
-        dash.dependencies.Input('region-dropdown', 'value'),
-        dash.dependencies.Input('subregion-dropdown', 'value'),
-        Input("date-range", "start_date"),
-        Input("date-range", "end_date"),
+        ddp.Input('region-dropdown', 'value'),
+        ddp.Input('subregion-dropdown', 'value'),
+        ddp.Input("date-range", "start_date"),
+        ddp.Input("date-range", "end_date"),
     ]
 )
 def update_dynamic_cards(province_name, region_name, start_date, end_date):
@@ -856,8 +858,8 @@ def update_dynamic_cards(province_name, region_name, start_date, end_date):
     return deaths_per_pop, cases_per_pop, deaths_ann
 
 @app.callback(
-    dash.dependencies.Output('subregion-dropdown', 'options'),
-    [dash.dependencies.Input('region-dropdown', 'value')]
+    ddp.Output('subregion-dropdown', 'options'),
+    [ddp.Input('region-dropdown', 'value')]
 )
 def update_date_dropdown(name):
     return [{'label': i, 'value': i} for i in fnameDict[name]]
@@ -886,18 +888,18 @@ def update_province_name(province_name):
     return province_name
 
 @app.callback(
-    Output("simulation-chart", "figure"),
+    ddp.Output("simulation-chart", "figure"),
     [
-        Input("region-dropdown", "value"),
-        Input("subregion-dropdown", "value"),
-        Input("date-range", "start_date"),
-        Input("date-range", "end_date"),
-        Input("forecast-start-date", "date"),
-        Input('forecast-slider', 'value'),
-        Input('facemask-slider', 'value'),
-        Input('mobility-slider', 'value'),
-        Input('vaccine-slider', 'value'),
-        Input('rerun-btn', 'n_clicks')
+        ddp.Input("region-dropdown", "value"),
+        ddp.Input("subregion-dropdown", "value"),
+        ddp.Input("date-range", "start_date"),
+        ddp.Input("date-range", "end_date"),
+        ddp.Input("forecast-start-date", "date"),
+        ddp.Input('forecast-slider', 'value'),
+        ddp.Input('facemask-slider', 'value'),
+        ddp.Input('mobility-slider', 'value'),
+        ddp.Input('vaccine-slider', 'value'),
+        ddp.Input('rerun-btn', 'n_clicks')
     ],
 )
 def update_mortality_chart(province_name, region, start_date, end_date, day_to_start_forecast, days_to_forecast, facemask, xMob, vac, n_clicks):    
@@ -945,17 +947,17 @@ def update_mortality_chart(province_name, region, start_date, end_date, day_to_s
     return pred_fig
 
 @app.callback(
-    Output("cases-chart", "figure"), # Output("map1", "figure"), Output("map2", "figure")],
+    ddp.Output("cases-chart", "figure"), # ddp.Output("map1", "figure"), ddp.Output("map2", "figure")],
     [
-        Input("region-dropdown", "value"),
-        Input("subregion-dropdown", "value"),
-        Input("date-range", "start_date"),
-        Input("date-range", "end_date"),
-        # Input("forecast-start-date", "date"),
-        # Input('forecast-slider', 'value'),
-        # Input('facemask-slider', 'value'),
-        # Input('mobility-slider', 'value'),
-        # Input('vaccine-slider', 'value'),
+        ddp.Input("region-dropdown", "value"),
+        ddp.Input("subregion-dropdown", "value"),
+        ddp.Input("date-range", "start_date"),
+        ddp.Input("date-range", "end_date"),
+        # ddp.Input("forecast-start-date", "date"),
+        # ddp.Input('forecast-slider', 'value'),
+        # ddp.Input('facemask-slider', 'value'),
+        # ddp.Input('mobility-slider', 'value'),
+        # ddp.Input('vaccine-slider', 'value'),
     ],
 )
 def update_cases_charts(province_name, region, start_date, end_date): # , facemask, xMob, vac):
@@ -994,13 +996,13 @@ def update_cases_charts(province_name, region, start_date, end_date): # , facema
     return cases_fig
 
 @app.callback(
-    Output("weather-chart", "figure"),
+    ddp.Output("weather-chart", "figure"),
     [
-        Input("region-dropdown", "value"),
-        Input("subregion-dropdown", "value"),
-        Input("date-range", "start_date"),
-        Input("date-range", "end_date"),
-        Input('forecast-slider', 'value'), # todo: this isn't really needed to improve performance
+        ddp.Input("region-dropdown", "value"),
+        ddp.Input("subregion-dropdown", "value"),
+        ddp.Input("date-range", "start_date"),
+        ddp.Input("date-range", "end_date"),
+        ddp.Input('forecast-slider', 'value'), # todo: this isn't really needed to improve performance
     ],
 )
 def update_weather_chart(province_name, region, start_date, end_date, forecasted_dates):
@@ -1070,14 +1072,14 @@ def update_weather_chart(province_name, region, start_date, end_date, forecasted
     return weather_fig
 
 @app.callback(
-    Output("mobility-chart", "figure"),
+    ddp.Output("mobility-chart", "figure"),
     [
-        Input("region-dropdown", "value"),
-        Input("subregion-dropdown", "value"),
-        Input("date-range", "start_date"),
-        Input("date-range", "end_date"),
-        Input('forecast-slider', 'value'),
-        Input('mobility-slider', 'value'),
+        ddp.Input("region-dropdown", "value"),
+        ddp.Input("subregion-dropdown", "value"),
+        ddp.Input("date-range", "start_date"),
+        ddp.Input("date-range", "end_date"),
+        ddp.Input('forecast-slider', 'value'),
+        ddp.Input('mobility-slider', 'value'),
     ],
 )
 def update_mob_charts(province_name, region, start_date, end_date, forecasted_dates, xMob):
@@ -1102,14 +1104,14 @@ def update_mob_charts(province_name, region, start_date, end_date, forecasted_da
     return mobility_fig
 
 @app.callback(
-    Output("vac-chart", "figure"),
+    ddp.Output("vac-chart", "figure"),
     [
-        Input("region-dropdown", "value"),
-        Input("subregion-dropdown", "value"),
-        Input("date-range", "start_date"),
-        Input("date-range", "end_date"),
-        Input('forecast-slider', 'value'),
-        Input('vaccine-slider', 'value'),
+        ddp.Input("region-dropdown", "value"),
+        ddp.Input("subregion-dropdown", "value"),
+        ddp.Input("date-range", "start_date"),
+        ddp.Input("date-range", "end_date"),
+        ddp.Input('forecast-slider', 'value'),
+        ddp.Input('vaccine-slider', 'value'),
     ],
 )
 def update_vaccination_charts(province_name, region, start_date, end_date, forecasted_dates, vac_slider_val):
@@ -1167,14 +1169,14 @@ def update_vaccination_charts(province_name, region, start_date, end_date, forec
     return vaccination_fig
 
 @app.callback(
-    Output("trends-chart", "figure"), # Output("trends-calibration-chart", "figure") ],
+    ddp.Output("trends-chart", "figure"), # ddp.Output("trends-calibration-chart", "figure") ],
     [
-        Input("region-dropdown", "value"),
-        Input("subregion-dropdown", "value"),
-        Input("date-range", "start_date"),
-        Input("date-range", "end_date"),
-        Input('forecast-slider', 'value'),
-        Input('facemask-slider', 'value'),
+        ddp.Input("region-dropdown", "value"),
+        ddp.Input("subregion-dropdown", "value"),
+        ddp.Input("date-range", "start_date"),
+        ddp.Input("date-range", "end_date"),
+        ddp.Input('forecast-slider', 'value'),
+        ddp.Input('facemask-slider', 'value'),
     ],
 )
 def update_trends_charts(province_name, region, start_date, end_date, forecasted_dates, mask_slider_val):
@@ -1223,17 +1225,17 @@ def update_trends_charts(province_name, region, start_date, end_date, forecasted
     return trends_fig #, facemask_fig
 
 @app.callback(
-    Output("rtcurve-chart", "figure"),
+    ddp.Output("rtcurve-chart", "figure"),
      [
-         Input("region-dropdown", "value"),
-         Input("subregion-dropdown", "value"),
-         Input("date-range", "start_date"),
-         Input("date-range", "end_date"),
-         Input("forecast-start-date", "date"),
-         Input('forecast-slider', 'value'),
-         Input('facemask-slider', 'value'),
-         Input('mobility-slider', 'value'),
-         Input('vaccine-slider', 'value'),   
+         ddp.Input("region-dropdown", "value"),
+         ddp.Input("subregion-dropdown", "value"),
+         ddp.Input("date-range", "start_date"),
+         ddp.Input("date-range", "end_date"),
+         ddp.Input("forecast-start-date", "date"),
+         ddp.Input('forecast-slider', 'value'),
+         ddp.Input('facemask-slider', 'value'),
+         ddp.Input('mobility-slider', 'value'),
+         ddp.Input('vaccine-slider', 'value'),   
      ],
  )
 def update_rtcurve_charts(province_name, region, start_date, end_date, day_to_start_forecast, days_to_forecast, facemask, xMob, vac):
@@ -1293,12 +1295,12 @@ def update_rtcurve_charts(province_name, region, start_date, end_date, day_to_st
     return rtcurve_fig
 
 @app.callback(
-    Output("cumulativedeaths-chart", "figure"),
+    ddp.Output("cumulativedeaths-chart", "figure"),
     [
-        Input("region-dropdown", "value"),
-        Input("subregion-dropdown", "value"),
-        Input("date-range", "start_date"),
-        Input("date-range", "end_date"),
+        ddp.Input("region-dropdown", "value"),
+        ddp.Input("subregion-dropdown", "value"),
+        ddp.Input("date-range", "start_date"),
+        ddp.Input("date-range", "end_date"),
     ],
 )
 def update_cumulativedeaths_charts(province_name, region, start_date, end_date):
