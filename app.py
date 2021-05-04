@@ -2267,7 +2267,6 @@ def past_rt_equation(province_name, region_name):
     for date in date_generated:
         date_range = date.strftime("%Y-%m-%d")
         D14 = get_total_deaths_2_weeks_prior(province_name, region_name, days_prior, date_range)
-        #D14 = get_total_cases_2_weeks_prior(province_name, region_name, days_prior, date_range)
         D14_values.append(D14)	
         
         #print('deaths from a time t:' + str(D14) + ' date:' + str(date_range))
@@ -2281,7 +2280,6 @@ def past_rt_equation(province_name, region_name):
     for date in date_generated:
         date_range = date.strftime("%Y-%m-%d")
         D14_t5 = get_total_deaths_2_weeks_prior(province_name, region_name, days_prior, date_range)
-        #D14_t5 = get_total_cases_2_weeks_prior(province_name, region_name, days_prior, date_range)
         D14_t5_values.append(D14_t5)
         
         #print('deaths from a time t five days ago:' + str(D14_t5) + ' date:' + str(date_range)
