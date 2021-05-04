@@ -428,6 +428,11 @@ canadian_dashboard = html.Div(
                                                 dbc.Spinner(html.H5(id="sparsity-card",className="card-title"), size="sm")
                                             ]
                                         ),
+                                        dbc.Tooltip(
+                                            "Population Sparsity "
+                                            "definition goes HERE!",
+                                            target="sparsity-card",
+                                    ),
                                     ],
                                     color="warning",
                                     inverse=True
@@ -450,13 +455,18 @@ canadian_dashboard = html.Div(
                             dbc.Col(
                                 dbc.Card(
                                     [
-                                        # dbc.CardHeader("Population Weighted Population Density"),
-                                        dbc.CardHeader(html.A("Population Weighted Population Density", href="/faq", target="_blank", style={"color": "white", "size":"14px"})),
+                                        dbc.CardHeader("Population Weighted Population Density"),
+                                        #dbc.CardHeader(html.A("Population Weighted Population Density", href="/faq", target="_blank", style={"color": "white", "size":"14px"})),
                                         dbc.CardBody(
                                             [
                                                 dbc.Spinner(html.H5(id="pwpd-card",className="card-title"), size="sm")
                                             ]
                                         ),
+                                        dbc.Tooltip(
+                                            "PWPD definition goes "
+                                            "HERE!",
+                                            target="pwpd-card",
+                                    ),
                                     ],
                                     color="primary",
                                     inverse=True
