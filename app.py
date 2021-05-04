@@ -390,12 +390,19 @@ canadian_dashboard = html.Div(
                                             ]
                                         ),
                                     ), className='input-space'),
-                                    dbc.Row(dbc.Col(
-                                        html.Div(
-                                            dbc.Button("Rerun", id='rerun-btn', n_clicks=0, color="dark", className="mr-1"),
-                                            # html.Button('Rerun', id='rerun-btn', n_clicks=0),
-                                        ),
-                                    ), className='input-space'),
+                                    dbc.Row([
+                                        # dbc.Col(
+                                        #     html.Div(
+                                        #         dbc.Button("Run", id='run-btn', n_clicks=0, color="success", className="mr-1"),
+                                        #         # html.Button('Rerun', id='rerun-btn', n_clicks=0),
+                                        #     ),
+                                        # ),
+                                        dbc.Col(
+                                            html.Div(
+                                                dbc.Button("Rerun", id='rerun-btn', n_clicks=0, color="warning", className="mr-1"),
+                                                # html.Button('Rerun', id='rerun-btn', n_clicks=0),
+                                            ),
+                                    )], className='input-space'),
                                 ]),
                             ], color="dark", outline=True),
                     ), className="mb-4"),
@@ -1007,26 +1014,18 @@ def update_weather_chart(province_name, region, start_date, end_date, forecasted
     print("forecasted_dates weather: " + str(forecasted_dates))
     province_name = update_province_name(province_name)
     
-    # current_start_date = datetime.datetime(2020, 1, 1)
-    # current_start_date = current_start_date.strftime('%Y-%m-%d')
-
+    current_start_date = datetime.datetime(2020, 1, 1)
+    current_start_date = current_start_date.strftime('%Y-%m-%d')
     current_end_date = datetime.datetime.now()
     current_end_date = current_end_date.strftime('%Y-%m-%d')
-
     past_start_date = datetime.datetime(2015, 1, 1)
     past_start_date = past_start_date.strftime('%Y-%m-%d')
     
     past_end_date = datetime.datetime(2020, 12, 31)
     past_end_date = past_end_date.strftime('%Y-%m-%d')
-
     current_temp_files = get_current_temp_files(province_name, region, start_date, current_end_date)
     past_temp_files = get_past_temp_files(province_name, region, past_start_date, past_end_date)
-    
-    begin_year = datetime.date(2015, 12, 31)
-    end_year = datetime.date(2016, 12, 31)
-
     new_dates = predicted_dates(province_name, region, start_date, end_date, forecasted_dates)
-
     current_weather_data = {'Date':  get_current_temp_dates(current_temp_files),
                             'Mean_Temperature': get_temp_vals(current_temp_files)}
     past_weather_data = {'Date': get_past_temp_dates(past_temp_files),
@@ -1034,7 +1033,7 @@ def update_weather_chart(province_name, region, start_date, end_date, forecasted
     
     df_current_weather = pd.DataFrame(current_weather_data, columns = ['Date','Mean_Temperature'])
     past_temp_vals = df_current_weather['Mean_Temperature'].rolling(window=14).mean()
-    new_temp_vals = avg_temp_data(begin_year, end_year, past_weather_data, forecasted_dates * 30)
+    new_temp_vals = avg_temp_data(past_weather_data, forecasted_dates * 30)
     
     global all_temp_vals
     all_temp_vals = []
@@ -1046,7 +1045,6 @@ def update_weather_chart(province_name, region, start_date, end_date, forecasted
         else:
             last_known_val = t
         all_temp_vals.append(t)
-
     for t in new_temp_vals:
         if (math.isnan(t)):
             t = last_known_val
@@ -1054,20 +1052,103 @@ def update_weather_chart(province_name, region, start_date, end_date, forecasted
             last_known_val = t
         all_temp_vals.append(t)
 
+    # print("printing all temp vals!")
 
-    weather_fig = px.line(df_current_weather, x = df_current_weather['Date'], y = past_temp_vals)	
+    # for t in all_temp_vals:
+    #     print(str(t) + ", ", end='')
+    
+    df_current_weather = pd.DataFrame(current_weather_data, columns = ['Date','Mean_Temperature'])
+    
+    weather_fig = px.line(df_current_weather, x = df_current_weather['Date'], y = past_temp_vals)
     
     weather_fig.update_layout(xaxis_title='Date',	
-                   yaxis_title='Mean Temperature',
-                   showlegend=False,)	
-
-    weather_fig.add_trace(go.Scatter(	
-            x=new_dates,	
-            y=new_temp_vals,	
-            name='Historical Average',	
+                   yaxis_title='Mean Temperature (14-day Rolling Avg)')	
+    
+    #print(new_dates)
+    #print(avg_temp_data(begin_year, end_year, past_weather_data, 255))
+    
+    weather_fig.add_trace(go.Scatter(
+            x=new_dates,
+            y=new_temp_vals,
+            name='Historical Average',
         ))
+    # delete_me = avg_temp_data_1_year(data)
+    # weather_fig = px.line(df_mort, x = temp_dates, y = temp_vals)
+    # weather_fig.update_layout(xaxis_title='Date',
+    #                yaxis_title='Mean Temperature')
+    # weather_fig.add_trace(go.Scatter(
+    #         x=new_dates,
+    #         y=avg_temp_data(date_now, date_now + forecasted, data),
+    #         name='Average Temp in Last 5 Years',
+    #     ))
     
     return weather_fig
+# def update_weather_chart(province_name, region, start_date, end_date, forecasted_dates):
+#     print("forecasted_dates weather: " + str(forecasted_dates))
+#     province_name = update_province_name(province_name)
+    
+#     # current_start_date = datetime.datetime(2020, 1, 1)
+#     # current_start_date = current_start_date.strftime('%Y-%m-%d')
+
+#     current_end_date = datetime.datetime.now()
+#     current_end_date = current_end_date.strftime('%Y-%m-%d')
+
+#     past_start_date = datetime.datetime(2015, 1, 1)
+#     past_start_date = past_start_date.strftime('%Y-%m-%d')
+    
+#     past_end_date = datetime.datetime(2020, 12, 31)
+#     past_end_date = past_end_date.strftime('%Y-%m-%d')
+
+#     current_temp_files = get_current_temp_files(province_name, region, start_date, current_end_date)
+#     past_temp_files = get_past_temp_files(province_name, region, past_start_date, past_end_date)
+    
+#     begin_year = datetime.date(2015, 12, 31)
+#     end_year = datetime.date(2016, 12, 31)
+
+#     new_dates = predicted_dates(province_name, region, start_date, end_date, forecasted_dates)
+
+#     current_weather_data = {'Date':  get_current_temp_dates(current_temp_files),
+#                             'Mean_Temperature': get_temp_vals(current_temp_files)}
+#     past_weather_data = {'Date': get_past_temp_dates(past_temp_files),
+#                          'Mean_Temperature': get_temp_vals(past_temp_files)}
+    
+#     df_current_weather = pd.DataFrame(current_weather_data, columns = ['Date','Mean_Temperature'])
+#     past_temp_vals = df_current_weather['Mean_Temperature'].rolling(window=14).mean()
+#     new_temp_vals = avg_temp_data(begin_year, end_year, past_weather_data, forecasted_dates * 30)
+#     print("size of new vals: " + str(len(new_temp_vals)))
+    
+#     # global all_temp_vals
+#     # all_temp_vals = []
+#     # last_known_val = 0.0
+#     # for t in past_temp_vals:
+#     #     if (math.isnan(t)):
+#     #         t = last_known_val
+#     #         # past_temp_vals[t] = last_known_val
+#     #     else:
+#     #         last_known_val = t
+#     #     all_temp_vals.append(t)
+
+#     # for t in new_temp_vals:
+#     #     if (math.isnan(t)):
+#     #         t = last_known_val
+#     #     else:
+#     #         last_known_val = t
+#     #     all_temp_vals.append(t)
+
+
+#     weather_fig = px.line(df_current_weather, x = df_current_weather['Date'], y = past_temp_vals)	
+    
+#     weather_fig.update_layout(xaxis_title='Date',	
+#                    yaxis_title='Mean Temperature',
+#                    showlegend=False,)	
+
+#     weather_fig.add_trace(go.Scatter(	
+#             x=new_dates,	
+#             y=new_temp_vals,	
+#             name='Historical Average',	
+#         ))
+    
+#     return weather_fig
 
 @app.callback(
     Output("mobility-chart", "figure"),
@@ -1390,8 +1471,12 @@ def predicted_deaths(c_num, province_name, region_name, start_date, end_date, da
     deaths_today = last_mort
     [total_deaths_2_months_prior, two_months_death] = get_total_deaths_2_months_prior(province_name, region_name, end_date)
 
+    ppp = False
     if (c_num == 4):
         print("==== \ntotal_deaths_2_months_prior: " + str(total_deaths_2_months_prior))
+        # ppp = True
+    if (c_num == 0):
+        ppp = True
 
     for i in range(len(add_dates)):
         date_in_forecast = datetime.datetime.strptime(end_date, '%Y-%m-%d') + datetime.timedelta(days=i)
@@ -1401,7 +1486,7 @@ def predicted_deaths(c_num, province_name, region_name, start_date, end_date, da
             xTrends1 = get_trends_on_day(province_name, region_name, date_in_forecast, facemask_val) # todo: Google Trends for face mask
             xMob1 = get_mob_on_day(date_in_forecast, xMob_slider, 14)
             xMob2 = get_mob_on_day(date_in_forecast, xMob_slider, 28)
-            xTemp = get_past_temp(province_name, region_name, start_date, date_in_forecast)
+            xTemp = get_past_temp(province_name, region_name, start_date, date_in_forecast, ppp)
             vaxP1 = get_vac_on_day(date_in_forecast, vac_val, total_population, df_vac, 14, False, last_vac)
             vaxP2 = get_vac_on_day(date_in_forecast, vac_val, total_population, df_vac, 28, False, last_vac)
 
@@ -1459,38 +1544,6 @@ def predicted_deaths(c_num, province_name, region_name, start_date, end_date, da
             # lambda_values.append(0)
             deaths_tomorrow = math.exp(lambda_) * deaths_today
             yVals.append(deaths_tomorrow)
-
-            # if (c_num == 2): # and (i >= 150 and i < 153)):
-            #     print("date: " + str(date_in_forecast))
-            #     print("i == " + str(i))
-            #     print("total_deaths: " + str(total_deaths))
-            #     print("deaths_2_weeks: " + str(deaths_2_weeks))
-            #     if (i > 60):
-            #         print("deaths_2_months: " + str(deaths_2_months))
-            #     else:
-            #         print("total_deaths_2_months_prior: " + str(total_deaths_2_months_prior))
-
-            #     # print("annDeath: " + str(annDeath))
-            #     print("xHerd: " + str(xHerd))
-            #     print("xHerd2: " + str(xHerd2))
-            #     print("xMob1: " + str(xMob1))
-            #     print("xMob2: " + str(xMob2))
-            #     print("xTrends1: " + str(xTrends1))
-            #     print("xLogPWPD: " + str(xLogPWPD))
-            #     print("xBeta: " + str(xBeta))
-            #     print("xAnnual: " + str(xAnnual))
-            #     print("xHouse: " + str(xHouse))
-            #     print("vaxP1: " + str(vaxP1))
-            #     print("vaxP2: " + str(vaxP2))
-            #     print("delta: " + str(delta))
-            #     print("exp_: " + str(exp_))
-            #     print("lambda_: " + str(lambda_))
-            #     print("deaths_tomorrow: " + str(deaths_tomorrow))
-                # print("deaths_today: " + str(deaths_today))
-
-                # if (xTemp != 0.0):
-                #     print("xTemp: " + str(xTemp))
-                # print("\n")
                 
             deaths_today = deaths_tomorrow
             total_deaths += deaths_today
@@ -1905,43 +1958,89 @@ def provinceid(province_name, region_name):
     weat_info_province = static_data[static_data.province_name == province_name]
     return weat_info_province.prov_id[weat_info_province.health_region == region_name].item()
 
-def avg_temp_data(begin_year, end_year, data, forecasted_dates):
-    
+def avg_temp_data(data, forecasted_dates):
     df_past_weather = pd.DataFrame(data, columns = ['Date','Mean_Temperature'])
     df_past_weather['Mean_Temperature'] = df_past_weather['Mean_Temperature'].astype(float)
     one_day = datetime.timedelta(days=1)
     
-    date_now = datetime.date(2021, 4, 20) - datetime.timedelta(days=13)  # datetime.datetime.now() - datetime.timedelta(days=13)
+    #print(df_past_weather)
+    date_now = datetime.datetime(2021, 4, 25) - datetime.timedelta(days=13) # datetime.datetime.now() - datetime.timedelta(days=13)
     date_now = date_now.strftime('%m-%d')
     
-    forecasted = datetime.date(2021, 4, 20) + datetime.timedelta(days=forecasted_dates)     # datetime.datetime.now() + datetime.timedelta(days=forecasted_dates)
-    forecasted = forecasted.strftime('%m-%d')
+    forecasted = datetime.datetime.now() + datetime.timedelta(days=forecasted_dates)
     
-    # print(forecasted)
-    
-    next_day = begin_year
-    for day in range(366):  # Includes leap year
-        if next_day > end_year:
-            break
-        # Adds a day to the current date
-        next_day += one_day
-        date_range = next_day.strftime('%m-%d')
+    if forecasted > datetime.datetime(2021, 12, 31):
         
-        filtered_avg_temp = df_past_weather.loc[df_past_weather['Date'].between(date_now, forecasted)]
-        avg_temp_5_years = filtered_avg_temp.groupby('Date')['Mean_Temperature'].mean()
+        days_from_end_of_year = abs(datetime.datetime(2021, 12, 31) - forecasted)
+        days_from_end_of_year = days_from_end_of_year.days
         
-        avg_temp_5_years = avg_temp_5_years.rolling(window=14).mean()
-
-    # print(" df_weat_date: " + str(df_weat_date))
-    # print("size of df_weat_date: " + str(len(df_weat_date)))
-    # for val in df_weat_date:
-    #     global avg_temp_vals
-    #     avg_temp_vals.append(val)
-        # print("VAL_: " + str(val))
-
-    # print("!!!size of avg_temp_vals: " + str(len(avg_temp_vals)))
+        #print(days_from_end_of_year)
+        
+        forecasted_1 = datetime.datetime(2021, 1, 1) + datetime.timedelta(days=days_from_end_of_year)
+        forecasted = forecasted.strftime('%m-%d')
+        forecasted_1 = forecasted_1.strftime('%m-%d')
+        #print(forecasted_1)
+        
+        filtered_avg_temp = df_past_weather.loc[df_past_weather['Date'].between(date_now, '12-31')]
+        into_new_year = df_past_weather.loc[df_past_weather['Date'].between('01-01', forecasted_1)] 
+        avg_temp_5_years1 = filtered_avg_temp.groupby('Date')['Mean_Temperature'].mean()
+        avg_temp_5_years2 = into_new_year.groupby('Date')['Mean_Temperature'].mean()
+        
+        # print(filtered_avg_temp)
+        # print(into_new_year)
+        
+        #print(avg_temp_5_years1)
+        #print(avg_temp_5_years2)
+        
+        #print(avg_temp_5_years1)
+        
+        averaged_temps = pd.concat([avg_temp_5_years1, avg_temp_5_years2])
     
-    return avg_temp_5_years.dropna()
+    #print(forecasted)
+    else:
+    
+        filtered_avg_temp = df_past_weather.loc[df_past_weather['Date'].between(date_now, '12-31')]
+        averaged_temps = filtered_avg_temp.groupby('Date')['Mean_Temperature'].mean()
+        
+        #avg_temp_5_years = avg_temp_5_years #.rolling(window=14).mean()
+    return averaged_temps.rolling(window=14).mean().dropna()
+# def avg_temp_data(begin_year, end_year, data, forecasted_dates):
+    
+#     df_past_weather = pd.DataFrame(data, columns = ['Date','Mean_Temperature'])
+#     df_past_weather['Mean_Temperature'] = df_past_weather['Mean_Temperature'].astype(float)
+#     one_day = datetime.timedelta(days=1)
+    
+#     date_now = datetime.date(2021, 4, 20) - datetime.timedelta(days=13)  # datetime.datetime.now() - datetime.timedelta(days=13)
+#     date_now = date_now.strftime('%m-%d')
+    
+#     forecasted = datetime.date(2021, 4, 20) + datetime.timedelta(days=forecasted_dates)     # datetime.datetime.now() + datetime.timedelta(days=forecasted_dates)
+#     forecasted = forecasted.strftime('%m-%d')
+    
+#     # print(forecasted)
+    
+#     next_day = begin_year
+#     for day in range(366):  # Includes leap year
+#         if next_day > end_year:
+#             break
+#         # Adds a day to the current date
+#         next_day += one_day
+#         date_range = next_day.strftime('%m-%d')
+        
+#         filtered_avg_temp = df_past_weather.loc[df_past_weather['Date'].between(date_now, forecasted)]
+#         avg_temp_5_years = filtered_avg_temp.groupby('Date')['Mean_Temperature'].mean()
+        
+#         avg_temp_5_years = avg_temp_5_years.rolling(window=14).mean()
+
+#     # print(" df_weat_date: " + str(df_weat_date))
+#     # print("size of df_weat_date: " + str(len(df_weat_date)))
+#     # for val in df_weat_date:
+#     #     global avg_temp_vals
+#     #     avg_temp_vals.append(val)
+#         # print("VAL_: " + str(val))
+
+#     # print("!!!size of avg_temp_vals: " + str(len(avg_temp_vals)))
+    
+#     return avg_temp_5_years.dropna()
 
 def avg_temp_data_1_year(data):
     df_weat = pd.DataFrame(data, columns = ['Date','Mean_Temperature'])
@@ -1955,14 +2054,25 @@ def avg_temp_data_1_year(data):
     
     return df_weat_date.rolling(window=14).mean()
 
-def get_past_temp(province_name, region_name, start_date, date_in_forecast):
+def get_past_temp(province_name, region_name, start_date, date_in_forecast, ppp):
     all_temp_vals_len = len(all_temp_vals)
     day_as_date = date_in_forecast.date()
     first_date = datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
     days_since_first_day = day_as_date - first_date
     delta = days_since_first_day.days
+
+    date_in_forecast_str = date_in_forecast.strftime("%Y-%m-%d")
+    year = date_in_forecast_str.split("-")[0]
+    start_date_this_year = year + "-01-01"
+    jan_1 = datetime.datetime.strptime(start_date_this_year, "%Y-%m-%d").date()
+    days_since_jan_1_dt = day_as_date - jan_1
+    days_since_jan_1 = days_since_jan_1_dt.days
+
+
     if (delta < all_temp_vals_len and delta >= 0):
         temp = all_temp_vals[delta]
+    elif (len(initial_temp_vals) == 366 and days_since_jan_1 >= 0 and days_since_jan_1 <= 365):
+        temp = initial_temp_vals[days_since_jan_1]
     else:
         temp = default_temp
 
