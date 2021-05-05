@@ -737,6 +737,7 @@ def toggle_collapse(q1, q2, q3, q4, q5, q6, q7, q8, q9, q10, q11, q12, q13, q14,
     questions = [q1, q2, q3, q4, q5, q6, q7, q8, q9, q10, q11, q12, q13, q14, q15]
     states = [is_open1, is_open2, is_open3, is_open4, is_open5, is_open6, is_open7, is_open8, is_open9, is_open10, is_open11, is_open12, is_open13, is_open14, is_open15]
     #===BPH-FIXME Should not have global variables here
+    #             Not fixing it now because it's not a vital element.
     global prev_states
 
     for i in range(15):
@@ -1462,8 +1463,6 @@ def predicted_deaths(c_num, province_name, region_name, start_date, end_date, da
     add_dates = [base + datetime.timedelta(days=x) for x in range(days_to_forecast * 30)]
     yVals = []
     lambda_values = [] 
-    # global total_deaths
-
 
     yes_print2 = False
     if (c_num == 4):
@@ -1691,19 +1690,10 @@ def r_avg(province_name, region_name, start_date, end_date): # todo: dates are i
     rolling_avgs = df_province.deaths[df_province.health_region == region_name].rolling(window=7).mean()
     # deaths = df_province.deaths[df_province.health_region == region_name]
 
-    # global total_deaths1
-    # total_deaths1 = 0 # reset total deaths
-
-    # for d in deaths:
-    #     total_deaths1 += d
-
     vals1 = []
     for key in rolling_avgs:
         vals1.append(key)
 
-    # global last_mort
-    # last_mort = vals1[-1]
-    
     return vals1
 
 def get_total_deaths_2_months_prior(province_name, region_name, end_date):
@@ -1821,8 +1811,6 @@ def ravg_cases(province_name, region_name, start_date, end_date): # todo: d-m-y
     cases = []
     for key in rolling_avgs:
         cases.append(key)
-    # global last_cases
-    # last_cases = cases[-1]
 
     return cases
 
@@ -2050,15 +2038,6 @@ def avg_temp_data(begin_year, end_year, data, forecasted_dates):
         
         avg_temp_5_years = avg_temp_5_years.rolling(window=14).mean()
 
-    # print(" df_weat_date: " + str(df_weat_date))
-    # print("size of df_weat_date: " + str(len(df_weat_date)))
-    # for val in df_weat_date:
-    #     global avg_temp_vals
-    #     avg_temp_vals.append(val)
-        # print("VAL_: " + str(val))
-
-    # print("!!!size of avg_temp_vals: " + str(len(avg_temp_vals)))
-    
     return avg_temp_5_years.dropna()
 
 def avg_temp_data_1_year(data):
