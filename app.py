@@ -953,7 +953,8 @@ def update_mortality_chart(province_name, region, start_date, end_date, day_to_s
 
     #===BPH To avoid creating a global array for all_temp_vals, it is calculated here
     #
-    #===BPH-FIXME Weather should be calculated outside of app and static
+    #===BPH-FIXME Weather should be calculated outside of app
+    #             and static dataframe should be created for reading
     past_temp_vals, new_temp_vals, df_current_weather = \
         get_past_new_temp_vals(province_name, region, start_date, end_date, days_to_forecast)
     all_temp_vals = get_all_temp_vals(past_temp_vals, new_temp_vals)
@@ -1087,7 +1088,6 @@ def update_weather_chart(province_name, region, start_date, end_date, forecasted
 
 def get_past_new_temp_vals(province_name, region, start_date, end_date, forecasted_dates):
 
-    print("getting past_new temp vals")
     #===BPH New function to be used in update_weather_chart() and
     #       predicted_deaths() to avoid use of global all_temp_vals
     
@@ -1108,10 +1108,21 @@ def get_past_new_temp_vals(province_name, region, start_date, end_date, forecast
     begin_year = datetime.date(2015, 12, 31)
     end_year = datetime.date(2016, 12, 31)
 
-    current_weather_data = {'Date':  get_current_temp_dates(current_temp_files),
-                            'Mean_Temperature': get_temp_vals(current_temp_files)}
-    past_weather_data = {'Date': get_past_temp_dates(past_temp_files),
-                         'Mean_Temperature': get_temp_vals(past_temp_files)}
+    #===BPH combined the calls to get dates and vals to reduce the
+    #       number of downloads
+    print("weather: getting current weather data...")
+    [d, v] = get_current_temp_dates_vals(current_temp_files)
+    #current_weather_data = {'Date':  get_current_temp_dates(current_temp_files),
+    #                        'Mean_Temperature': get_temp_vals(current_temp_files)}
+    current_weather_data = {'Date': d, 'Mean_Temperature': v}
+    #===BPH combined the calls to get dates and vals to reduce the
+    #       number of downloads
+    print("weather: getting past weather data...")    
+    [d, v] = get_past_temp_dates_vals(past_temp_files)
+    #past_weather_data = {'Date': get_past_temp_dates(past_temp_files),
+    #                     'Mean_Temperature': get_temp_vals(past_temp_files)}
+    past_weather_data = {'Date': d, 'Mean_Temperature': v}
+    print("weather: finished getting current and past weather data")
     
     df_current_weather = pd.DataFrame(current_weather_data, columns = ['Date','Mean_Temperature'])
     past_temp_vals = df_current_weather['Mean_Temperature'].rolling(window=14).mean()
@@ -1119,14 +1130,12 @@ def get_past_new_temp_vals(province_name, region, start_date, end_date, forecast
 
     past_temp_vals = df_current_weather['Mean_Temperature'].rolling(window=14).mean()
     new_temp_vals = avg_temp_data(begin_year, end_year, past_weather_data, forecasted_dates * 30)
-    print("returning past_new temp vals")
     return past_temp_vals, new_temp_vals, df_current_weather
 
 def get_all_temp_vals(past_temp_vals, new_temp_vals):
     #===BPH New function to be used instead of the global all_temp_vals
     all_temp_vals = []
     last_known_val = 0.0
-    print("getting all temp vals...")
     for t in past_temp_vals:
         if (math.isnan(t)):
             t = last_known_val
@@ -1141,7 +1150,6 @@ def get_all_temp_vals(past_temp_vals, new_temp_vals):
         else:
             last_known_val = t
         all_temp_vals.append(t)
-    print("returning all temp vals...")    
     return all_temp_vals
 
 @app.callback(
@@ -1900,34 +1908,54 @@ def get_mob(province_name, region_name):
 
 # -------------- WEATHER HELPER FUNCTIONS --------------
 
-def get_past_temp_dates(temp_files):
+#def get_current_temp_dates(temp_files):
+#    dates = []
+#    for file in temp_files:
+#        weat_data =  pd.read_csv(file, encoding='Latin-1')
+#        temp_dates = weat_data['Date/Time'].values
+#        dates.extend(temp_dates)
+#    return dates
+#def get_temp_vals(temp_files):
+#    temps = []
+#    # temps = np.arange(10)
+#    for file in temp_files:
+#        weat_data =  pd.read_csv(file, encoding='Latin-1')
+#        temp_dates = weat_data['Mean Temp (°C)'].values
+#        temps.extend(temp_dates)
+#    return temps
+#def get_past_temp_dates(temp_files):
+#    dates = []
+#    for file in temp_files:
+#        weat_data = pd.read_csv(file, encoding='Latin-1')
+#        weat_data['Date/Time'] = pd.to_datetime(weat_data['Date/Time'], errors='coerce')
+#        formatted_dates = weat_data['Date/Time'].dt.strftime('%m-%d')
+#        temp_dates = formatted_dates.values
+#        dates.extend(temp_dates)
+#    return dates
+
+def get_current_temp_dates_vals(temp_files):
     dates = []
+    temps = []
+    for file in temp_files:
+        weat_data =  pd.read_csv(file, encoding='Latin-1')
+        temp_dates = weat_data['Date/Time'].values
+        dates.extend(temp_dates)
+        temp_dates = weat_data['Mean Temp (°C)'].values
+        temps.extend(temp_dates)
+    return dates, temps
+
+def get_past_temp_dates_vals(temp_files):
+    dates = []
+    temps = []
     for file in temp_files:
         weat_data = pd.read_csv(file, encoding='Latin-1')
         weat_data['Date/Time'] = pd.to_datetime(weat_data['Date/Time'], errors='coerce')
         formatted_dates = weat_data['Date/Time'].dt.strftime('%m-%d')
         temp_dates = formatted_dates.values
         dates.extend(temp_dates)
-
-    return dates
-
-def get_current_temp_dates(temp_files):
-    dates = []
-    for file in temp_files:
-        weat_data =  pd.read_csv(file, encoding='Latin-1')
-        temp_dates = weat_data['Date/Time'].values
-        dates.extend(temp_dates)
-
-    return dates
-
-def get_temp_vals(temp_files):
-    temps = []
-    # temps = np.arange(10)
-    for file in temp_files:
-        weat_data =  pd.read_csv(file, encoding='Latin-1')
         temp_dates = weat_data['Mean Temp (°C)'].values
         temps.extend(temp_dates)
-    return temps
+    return dates, temps
 
 def get_current_temp_files(province_name, region, start_date, end_date):
     date_now_str = datetime.datetime.now().strftime('%Y-%m')
