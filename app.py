@@ -216,7 +216,7 @@ footer2 = html.Footer(html.Div([
 
 site_backbone = html.Div([
     dcc.Location(id='url', refresh=False),
-    #html.Div(navbar2),
+    html.Div(navbar2),
     html.Div(id='page-content', className="page border"),
     footer2,
 ])
@@ -275,6 +275,12 @@ canadian_dashboard = html.Div(
                                                     end_date=df_mort.date_death_report.max().date(), #"2021-03-31"
                                                 ),
                                             ]
+                                        ),
+                                    ), className='input-space'),
+                                    dbc.Row(dbc.Col(
+                                        html.Div(
+                                            dbc.Button("Rerun", id='rerun-btn1', n_clicks=0,
+                                                       color="dark", className="mr-1")
                                         ),
                                     ), className='input-space'),
                                 ]),
@@ -398,8 +404,8 @@ canadian_dashboard = html.Div(
                                     ), className='input-space'),
                                     dbc.Row(dbc.Col(
                                         html.Div(
-                                            dbc.Button("Rerun", id='rerun-btn', n_clicks=0, color="dark", className="mr-1"),
-                                            # html.Button('Rerun', id='rerun-btn', n_clicks=0),
+                                            dbc.Button("Rerun", id='rerun-btn2', n_clicks=0,
+                                                       color="dark", className="mr-1")
                                         ),
                                     ), className='input-space'),
                                 ]),
@@ -695,6 +701,10 @@ canadian_dashboard = html.Div(
     ],
 )
 
+# function to return current timestamp
+def nowtime():
+    return datetime.datetime.now().time()
+
 @app.callback(
     ddp.Output('page-content', 'children'),
     [ddp.Input('url', 'pathname')]
@@ -710,6 +720,7 @@ def display_page(pathname):
     elif (pathname == "/intro"):
         return introduction_page
     
+    print("START-END --- display_page \t", nowtime())
     return canadian_dashboard
 
 # FAQ Page
@@ -745,6 +756,8 @@ def toggle_collapse(q1, q2, q3, q4, q5, q6, q7, q8, q9, q10, q11, q12, q13, q14,
         if q and q != prev_states[i]:
             states[i] = not states[i]
             prev_states[i] = questions[i]
+
+    print("START-END --- toggle_collapse \t", nowtime())
         
     return states
 
@@ -757,12 +770,19 @@ def toggle_collapse(q1, q2, q3, q4, q5, q6, q7, q8, q9, q10, q11, q12, q13, q14,
         ddp.Output("forecast-slider", "value"),
     ],
     [
-        ddp.Input('region-dropdown', 'value'), 
-        ddp.Input('subregion-dropdown', 'value'), 
-        ddp.Input("forecast-start-date", "date"),
+        #===BPH Changed all but sub-region to State
+        #       Only activates on change of sub-region.
+        ddp.Input('subregion-dropdown', 'value')
+    ],
+    [  
+        ddp.State('region-dropdown', 'value'), 
+        ddp.State("forecast-start-date", "date"),
     ]
 )
-def init_slider_vals(province_name, region_name, date_str):
+def init_slider_vals(region_name, province_name, date_str):
+
+    print("START --- init_slider_vals \t\t", nowtime())
+    
     #===BPH Should not be changing a global variable. If df_mobility
     #       is being used for sharing data between callbacks, then 
     #       something else could be tried, see:
@@ -773,6 +793,10 @@ def init_slider_vals(province_name, region_name, date_str):
     #       just have the function get_mob return a local variable.
     #
     #global df_mobility
+
+    #===BPH this was missing:
+    province_name = update_province_name(province_name)
+
     df_mobility = get_mob(province_name, region_name)
     date = datetime.datetime.strptime(date_str, '%Y-%m-%d')
 
@@ -780,13 +804,11 @@ def init_slider_vals(province_name, region_name, date_str):
     #       For now, just use *only* the initial_load behavior
     #global initial_load
 
-    #===BPH-FIXME I'm eliminating the non-initial_load behavior below
-    #             because I thought that the sliders should just be
-    #             set to the current values.  If this is not
-    #             desirable, then something else should be
-    #             implemented
+    #===BPH-FIXME I think the sliders should be set to current
+    #             values independent of when the forecast begins.
+    #             I can't tell if that is happening here
     initial_load = False
-    
+
     # vac_dates = get_vaccination_dates(province_name, region_name)
     df_vac = vaccination_data(province_name, region_name)
     last_vac = get_last_vac(province_name, region_name)
@@ -807,6 +829,8 @@ def init_slider_vals(province_name, region_name, date_str):
         total_pop = get_total_pop(province_name, region_name)
         vac = get_vac_on_day(date, 0, total_pop, df_vac, 0, False, last_vac)
 
+    print("END   --- init_slider_vals \t\t", nowtime())
+    
     #initial_load = False
     return trends, mob, 3, num_days_to_forecast # todo: change 0 -> vac
 
@@ -825,24 +849,36 @@ def init_slider_vals(province_name, region_name, date_str):
         ddp.Output("vac-header", "children"),
         ddp.Output("trends-header", "children"),
         ddp.Output("rtcurve-header", "children"),
-        ddp.Output("cumulativedeaths-header", "children"),        
+        ddp.Output("cumulativedeaths-header", "children")
     ],
-    [ddp.Input('region-dropdown', 'value'), ddp.Input('subregion-dropdown', 'value'),]
+    [
+        ddp.Input('rerun-btn1', 'n_clicks'),
+        ddp.Input('rerun-btn2', 'n_clicks')
+    ],
+    [
+        ddp.State('region-dropdown', 'value'),
+        ddp.State('subregion-dropdown', 'value')
+    ]
 )
-def update_region_names(province_name, region_name):
+def update_region_names(n_clicks1, n_clicks2, province_name, region_name):
+
+    print("START --- update_region_names \t\t", nowtime())
+    
     #===BPH Should not be changing a global variable.
-    #       So, just get a local value of this variable
+    #       So, just get this locally when needed
     #
     # global df_vac2
-    df_vac2 = vaccination_data(province_name, region_name) #df_vaccinations(province_name, region_name)
-
+    #df_vac2 = vaccination_data(province_name, region_name) #df_vaccinations(province_name, region_name)
+    
+    #===BPH this was missing:
+    province_name = update_province_name(province_name)
+    
     # need df_mobility for get_last_mob() below
     df_mobility = get_mob(province_name, region_name)
-    
     # Card Values
     total_pop = round(get_total_pop(province_name, region_name), 0)
-    sparsity = round(get_pop_sparsity(province_name, region_name), 3)	
-    pop_80 = round(get_frac_pop_over_80(province_name, region_name), 3)	
+    sparsity = round(get_pop_sparsity(province_name, region_name), 3)
+    pop_80 = round(get_frac_pop_over_80(province_name, region_name), 3)
     pwpd = round(get_pwpd(province_name, region_name), 0)
     mob = str(0 - get_last_mob(df_mobility)) + "%"
 
@@ -859,6 +895,9 @@ def update_region_names(province_name, region_name):
     trends_label = 'Google Searches for Face Masks in ' + region_name + ', ' + province_name
     rtcurve_label = 'Future Effective Reproduction Number R(t) Curves in ' + region_name + ', ' + province_name
     cumulativedeaths_label = 'Cumulative Deaths in ' + region_name + ', ' + province_name
+
+    print("END   --- update_region_names \t\t", nowtime())
+    
     return total_pop, sparsity, pop_80, pwpd, avg_house, mob, deaths_label, cases_label, mob_label, temp_label, vac_label, trends_label, rtcurve_label, cumulativedeaths_label
 
 @app.callback(
@@ -868,13 +907,21 @@ def update_region_names(province_name, region_name):
         ddp.Output('covid-deaths2-card', 'children'),
     ],
     [
-        ddp.Input('region-dropdown', 'value'),
-        ddp.Input('subregion-dropdown', 'value'),
-        ddp.Input("date-range", "start_date"),
-        ddp.Input("date-range", "end_date"),
+        #===BPH Only re-run button triggers
+        ddp.Input('rerun-btn1', 'n_clicks'),        
+        ddp.Input('rerun-btn2', 'n_clicks')        
+    ],
+    [
+        ddp.State('region-dropdown', 'value'),
+        ddp.State('subregion-dropdown', 'value'),
+        ddp.State("date-range", "start_date"),
+        ddp.State("date-range", "end_date"),
     ]
 )
-def update_dynamic_cards(province_name, region_name, start_date, end_date):
+def update_dynamic_cards(n_clicks1, n_clicks2, province_name, region_name, start_date, end_date):
+
+    print("START --- update_dynamic_cards \t\t", nowtime())
+
     total_covid_deaths = get_total_deaths(province_name, region_name, start_date, end_date, False)
     total_population = get_total_pop(province_name, region_name)
 
@@ -889,13 +936,18 @@ def update_dynamic_cards(province_name, region_name, start_date, end_date):
     total_cases = get_total_cases(province_name, region_name, start_date, end_date)
     cases_per_pop = str(round(total_cases / total_population * 100.0, 3)) + "%"
 
+    print("END   --- update_dynamic_cards \t\t", nowtime())
+
     return deaths_per_pop, cases_per_pop, deaths_ann
 
 @app.callback(
     ddp.Output('subregion-dropdown', 'options'),
-    [ddp.Input('region-dropdown', 'value')]
+    ddp.Input('region-dropdown', 'value')
 )
-def update_date_dropdown(name):
+def update_subregion_dropdown(name):
+    #===BPH re-named this function from "update_date_dropdown"
+    print("START --- update_subregion_dropdown \t", nowtime())
+    print("END   --- update_subregion_dropdown \t", nowtime())    
     return [{'label': i, 'value': i} for i in fnameDict[name]]
 
 
@@ -924,19 +976,28 @@ def update_province_name(province_name):
 @app.callback(
     ddp.Output("simulation-chart", "figure"),
     [
-        ddp.Input("region-dropdown", "value"),
-        ddp.Input("subregion-dropdown", "value"),
-        ddp.Input("date-range", "start_date"),
-        ddp.Input("date-range", "end_date"),
-        ddp.Input("forecast-start-date", "date"),
-        ddp.Input('forecast-slider', 'value'),
-        ddp.Input('facemask-slider', 'value'),
-        ddp.Input('mobility-slider', 'value'),
-        ddp.Input('vaccine-slider', 'value'),
-        ddp.Input('rerun-btn', 'n_clicks')
+        ddp.Input('rerun-btn1', 'n_clicks'),
+        ddp.Input('rerun-btn2', 'n_clicks')        
+    ],
+    [
+        #===BPH Changed all to State from Input
+        #       Also added rerun-btn as Input
+        ddp.State("region-dropdown", "value"),
+        ddp.State("subregion-dropdown", "value"),
+        ddp.State("date-range", "start_date"),
+        ddp.State("date-range", "end_date"),
+        ddp.State("forecast-start-date", "date"),
+        ddp.State('forecast-slider', 'value'),
+        ddp.State('facemask-slider', 'value'),
+        ddp.State('mobility-slider', 'value'),
+        ddp.State('vaccine-slider', 'value'),
     ],
 )
-def update_mortality_chart(province_name, region, start_date, end_date, day_to_start_forecast, days_to_forecast, facemask, xMob, vac, n_clicks):    
+def update_mortality_chart(n_clicks1, n_clicks2, province_name, region, start_date, end_date,
+                           day_to_start_forecast, days_to_forecast, facemask, xMob, vac):    
+
+    print("START --- update_mortality_chart \t", nowtime())
+    
     province_name = update_province_name(province_name)
     xMob = -xMob
     facemask = facemask * 70 / 100
@@ -956,9 +1017,11 @@ def update_mortality_chart(province_name, region, start_date, end_date, day_to_s
     #
     #===BPH-FIXME Weather should be calculated outside of app
     #             and static dataframe should be created for reading
+    print("      --- update_mortality_chart \t", nowtime(), " --- started getting weather")
     past_temp_vals, new_temp_vals, df_current_weather = \
         get_past_new_temp_vals(province_name, region, start_date, end_date, days_to_forecast)
     all_temp_vals = get_all_temp_vals(past_temp_vals, new_temp_vals)
+    print("      --- update_mortality_chart \t", nowtime(), " --- finished getting weather")    
     
     # fig.update_xaxes(type="log", range=[0,5])
     time.sleep(2)
@@ -966,7 +1029,8 @@ def update_mortality_chart(province_name, region, start_date, end_date, day_to_s
         if (i < 2):
             time.sleep(3)
 
-        print("===== CURVE: " + str(i) + " ========")
+        print("      --- update_mortality_chart \t", nowtime(), " --- D(t) CURVE: " + str(i))
+        #print("===== DEATH CURVE: " + str(i) + " ========")
         dates = predicted_dates(province_name, region, start_date, day_to_start_forecast, days_to_forecast)
         deaths = predicted_deaths(i, province_name, region, start_date, day_to_start_forecast, days_to_forecast, df_mobility, xMob, facemask, vac, df_vac, all_temp_vals)[0]
         # if (i > 1):
@@ -987,23 +1051,28 @@ def update_mortality_chart(province_name, region, start_date, end_date, day_to_s
                    yaxis_title='Daily Mortality (7-day Rolling Avg)',
                    updatemenus=updatemenus)
 
+    print("END   --- update_mortality_chart \t", nowtime())
+    
     return pred_fig
 
 @app.callback(
     ddp.Output("cases-chart", "figure"), # ddp.Output("map1", "figure"), ddp.Output("map2", "figure")],
     [
-        ddp.Input("region-dropdown", "value"),
-        ddp.Input("subregion-dropdown", "value"),
-        ddp.Input("date-range", "start_date"),
-        ddp.Input("date-range", "end_date"),
-        # ddp.Input("forecast-start-date", "date"),
-        # ddp.Input('forecast-slider', 'value'),
-        # ddp.Input('facemask-slider', 'value'),
-        # ddp.Input('mobility-slider', 'value'),
-        # ddp.Input('vaccine-slider', 'value'),
+        ddp.Input('rerun-btn1', 'n_clicks'),
+        ddp.Input('rerun-btn2', 'n_clicks')                
+    ],
+    [
+        #===BPH Changed all to State from Input
+        #       Added rerun-btn Input
+        ddp.State("region-dropdown", "value"),
+        ddp.State("subregion-dropdown", "value"),
+        ddp.State("date-range", "start_date"),
+        ddp.State("date-range", "end_date"),
     ],
 )
-def update_cases_charts(province_name, region, start_date, end_date): # , facemask, xMob, vac):
+def update_cases_charts(n_clicks1, n_clicks2, province_name, region, start_date, end_date):
+    print("START --- update_cases_chart \t\t", nowtime())
+    
     province_name = update_province_name(province_name)
     # xMob = -xMob
     # facemask = facemask * 70 / 100
@@ -1037,20 +1106,31 @@ def update_cases_charts(province_name, region, start_date, end_date): # , facema
                    yaxis_title='Daily Cases (7-day Rolling Avg)',
                    updatemenus=updatemenus)
 
+    print("END   --- update_cases_chart \t\t", nowtime())    
+
     return cases_fig
 
 @app.callback(
     ddp.Output("weather-chart", "figure"),
     [
-        ddp.Input("region-dropdown", "value"),
-        ddp.Input("subregion-dropdown", "value"),
-        ddp.Input("date-range", "start_date"),
-        ddp.Input("date-range", "end_date"),
-        ddp.Input('forecast-slider', 'value'), # todo: this isn't really needed to improve performance
+        ddp.Input('rerun-btn1', 'n_clicks'),
+        ddp.Input('rerun-btn2', 'n_clicks')        
+    ],
+    [
+        #===BPH Changed all to State from Input
+        #       Added rerun-btn as Input
+        ddp.State("region-dropdown", "value"),
+        ddp.State("subregion-dropdown", "value"),
+        ddp.State("date-range", "start_date"),
+        ddp.State("date-range", "end_date"),
+        ddp.State('forecast-slider', 'value'),
     ],
 )
-def update_weather_chart(province_name, region, start_date, end_date, forecasted_dates):
-    print("forecasted_dates weather: " + str(forecasted_dates))
+def update_weather_chart(n_clicks1, n_clicks2, province_name, region, start_date, end_date,
+                         forecasted_dates,):
+    print("START --- update_weather_chart \t\t", nowtime())
+    
+    #print("forecasted_dates weather: " + str(forecasted_dates))
     province_name = update_province_name(province_name)
     
     past_temp_vals, new_temp_vals, df_current_weather = \
@@ -1085,6 +1165,8 @@ def update_weather_chart(province_name, region, start_date, end_date, forecasted
             name='Historical Average',	
         ))
     
+    print("END   --- update_weather_chart \t\t", nowtime())
+    
     return weather_fig
 
 def get_past_new_temp_vals(province_name, region, start_date, end_date, forecasted_dates):
@@ -1111,19 +1193,19 @@ def get_past_new_temp_vals(province_name, region, start_date, end_date, forecast
 
     #===BPH combined the calls to get dates and vals to reduce the
     #       number of downloads
-    print("weather: getting current weather data...")
+    #print("weather: getting current weather data...")
     [d, v] = get_current_temp_dates_vals(current_temp_files)
     #current_weather_data = {'Date':  get_current_temp_dates(current_temp_files),
     #                        'Mean_Temperature': get_temp_vals(current_temp_files)}
     current_weather_data = {'Date': d, 'Mean_Temperature': v}
     #===BPH combined the calls to get dates and vals to reduce the
     #       number of downloads
-    print("weather: getting past weather data...")    
+    #print("weather: getting past weather data...")    
     [d, v] = get_past_temp_dates_vals(past_temp_files)
     #past_weather_data = {'Date': get_past_temp_dates(past_temp_files),
     #                     'Mean_Temperature': get_temp_vals(past_temp_files)}
     past_weather_data = {'Date': d, 'Mean_Temperature': v}
-    print("weather: finished getting current and past weather data")
+    #print("weather: finished getting current and past weather data")
     
     df_current_weather = pd.DataFrame(current_weather_data, columns = ['Date','Mean_Temperature'])
     past_temp_vals = df_current_weather['Mean_Temperature'].rolling(window=14).mean()
@@ -1156,15 +1238,28 @@ def get_all_temp_vals(past_temp_vals, new_temp_vals):
 @app.callback(
     ddp.Output("mobility-chart", "figure"),
     [
-        ddp.Input("region-dropdown", "value"),
-        ddp.Input("subregion-dropdown", "value"),
-        ddp.Input("date-range", "start_date"),
-        ddp.Input("date-range", "end_date"),
-        ddp.Input('forecast-slider', 'value'),
-        ddp.Input('mobility-slider', 'value'),
+        ddp.Input('rerun-btn1', 'n_clicks'),
+        ddp.Input('rerun-btn2', 'n_clicks')         
+    ],        
+    [
+        #===BPH Changed all to State from Input
+        #       Added rerun-btn as Input
+        ddp.State("region-dropdown", "value"),
+        ddp.State("subregion-dropdown", "value"),
+        ddp.State("date-range", "start_date"),
+        ddp.State("date-range", "end_date"),
+        ddp.State('forecast-slider', 'value'),
+        ddp.State('mobility-slider', 'value'),
     ],
+    #===BPH-FIXME Picking up wrong values on initial call, so prevent
+    prevent_initial_call=True
 )
-def update_mob_charts(province_name, region, start_date, end_date, forecasted_dates, xMob):
+def update_mob_charts(n_clicks1, n_clicks2, province_name, region, start_date, end_date,
+                      forecasted_dates, xMob):
+    print("START --- update_mob_charts \t\t", nowtime())
+    print("      --- update_mob_charts \t\t", nowtime(), " --- xMob=" + str(xMob))
+
+    
     province_name = update_province_name(province_name)
     xMob = -xMob
     dates = predicted_dates(province_name, region, start_date, end_date, forecasted_dates)
@@ -1183,20 +1278,33 @@ def update_mob_charts(province_name, region, start_date, end_date, forecasted_da
             name='Simulated Mobility',
         ))
     
+    print("END   --- update_mob_charts \t\t", nowtime())
+    
     return mobility_fig
 
 @app.callback(
     ddp.Output("vac-chart", "figure"),
     [
-        ddp.Input("region-dropdown", "value"),
-        ddp.Input("subregion-dropdown", "value"),
-        ddp.Input("date-range", "start_date"),
-        ddp.Input("date-range", "end_date"),
-        ddp.Input('forecast-slider', 'value'),
-        ddp.Input('vaccine-slider', 'value'),
+        ddp.Input('rerun-btn1', 'n_clicks'),
+        ddp.Input('rerun-btn2', 'n_clicks')         
     ],
+    [
+        #===BPH Changed all to State from Input
+        #       Added rerun-btn as Input
+        ddp.State("region-dropdown", "value"),
+        ddp.State("subregion-dropdown", "value"),
+        ddp.State("date-range", "start_date"),
+        ddp.State("date-range", "end_date"),
+        ddp.State('forecast-slider', 'value'),
+        ddp.State('vaccine-slider', 'value'),
+    ],
+    #===BPH-FIXME Picking up wrong values on initial call, so prevent
+    prevent_initial_call=True
 )
-def update_vaccination_charts(province_name, region, start_date, end_date, forecasted_dates, vac_slider_val):
+def update_vaccination_charts(n_clicks1, n_clicks2, province_name, region, start_date, end_date,
+                              forecasted_dates, vac_slider_val):
+    print("START --- update_vaccination_chart \t", nowtime())
+    
     #===BPH This commented-stuff will no longer work because the
     #       global variable df_vac2 was removed.
     # while (df_vac2.empty):
@@ -1218,8 +1326,8 @@ def update_vaccination_charts(province_name, region, start_date, end_date, forec
     for i in range(len(dates)):
         date_in_forecast = datetime.datetime.strptime(end_date, '%Y-%m-%d') + datetime.timedelta(days=i)
         printpls = False
-        if (i < 10):
-            printpls = True
+        #if (i < 10):
+        #    printpls = True
         curr_vac = get_vac_on_day(date_in_forecast, vac_slider_val, total_pop, df_vac, 0, printpls, last_vac)
         # if (i < 10):
             # print("VAC DATE: " + str(date_in_forecast))
@@ -1250,20 +1358,33 @@ def update_vaccination_charts(province_name, region, start_date, end_date, forec
             name='Simulated Vaccinations',
         ))
 
+    print("END   --- update_vaccination_chart \t", nowtime())
+    
     return vaccination_fig
 
 @app.callback(
     ddp.Output("trends-chart", "figure"), # ddp.Output("trends-calibration-chart", "figure") ],
     [
-        ddp.Input("region-dropdown", "value"),
-        ddp.Input("subregion-dropdown", "value"),
-        ddp.Input("date-range", "start_date"),
-        ddp.Input("date-range", "end_date"),
-        ddp.Input('forecast-slider', 'value'),
-        ddp.Input('facemask-slider', 'value'),
+        ddp.Input('rerun-btn1', 'n_clicks'),
+        ddp.Input('rerun-btn2', 'n_clicks')        
     ],
+    [
+        #===BPH Changed all to State from Input
+        #       Added rerun-btn as a Input
+        ddp.State("region-dropdown", "value"),
+        ddp.State("subregion-dropdown", "value"),
+        ddp.State("date-range", "start_date"),
+        ddp.State("date-range", "end_date"),
+        ddp.State('forecast-slider', 'value'),
+        ddp.State('facemask-slider', 'value'),
+    ],
+    #===BPH-FIXME Picking up wrong values on initial call, so prevent
+    prevent_initial_call=True    
 )
-def update_trends_charts(province_name, region, start_date, end_date, forecasted_dates, mask_slider_val):
+def update_trends_charts(n_clicks1, n_clicks2, province_name, region, start_date, end_date,
+                         forecasted_dates, mask_slider_val):
+    print("START --- update_trends_chart \t\t", nowtime())
+    
     province_name = update_province_name(province_name)
 
     dates = predicted_dates(province_name, region, start_date, end_date, forecasted_dates)
@@ -1292,9 +1413,9 @@ def update_trends_charts(province_name, region, start_date, end_date, forecasted
     days_since_first_day = first_date - mid_april
     delta = days_since_first_day.days
 
-    print("FIRST DATE: " + str(first_date))
-    print("mid_april: " + str(mid_april))
-    print("delta: " + str(delta))
+    #print("FIRST DATE: " + str(first_date))
+    #print("mid_april: " + str(mid_april))
+    #print("delta: " + str(delta))
 
     facemask_vals = []
     for i in range(len(trends_past_vals)):
@@ -1306,23 +1427,34 @@ def update_trends_charts(province_name, region, start_date, end_date, forecasted
     facemask_fig.update_layout(xaxis_title='Date',
                    yaxis_title='7-day Average Facemask')
 
+    print("END   --- update_trends_chart \t\t", nowtime())
+
     return trends_fig #, facemask_fig
 
 @app.callback(
     ddp.Output("rtcurve-chart", "figure"),
-     [
-         ddp.Input("region-dropdown", "value"),
-         ddp.Input("subregion-dropdown", "value"),
-         ddp.Input("date-range", "start_date"),
-         ddp.Input("date-range", "end_date"),
-         ddp.Input("forecast-start-date", "date"),
-         ddp.Input('forecast-slider', 'value'),
-         ddp.Input('facemask-slider', 'value'),
-         ddp.Input('mobility-slider', 'value'),
-         ddp.Input('vaccine-slider', 'value'),   
-     ],
- )
-def update_rtcurve_charts(province_name, region, start_date, end_date, day_to_start_forecast, days_to_forecast, facemask, xMob, vac):
+    [
+        ddp.Input('rerun-btn1', 'n_clicks'),
+        ddp.Input('rerun-btn2', 'n_clicks')        
+    ],
+    [
+        #===BPH Changed all to State from Input
+        #       Added rerun-btn as Input
+        ddp.State("region-dropdown", "value"),
+        ddp.State("subregion-dropdown", "value"),
+        ddp.State("date-range", "start_date"),
+        ddp.State("date-range", "end_date"),
+        ddp.State("forecast-start-date", "date"),
+        ddp.State('forecast-slider', 'value'),
+        ddp.State('facemask-slider', 'value'),
+        ddp.State('mobility-slider', 'value'),
+        ddp.State('vaccine-slider', 'value'),   
+    ],
+)
+def update_rtcurve_charts(n_clicks1, n_clicks2, province_name, region, start_date, end_date,
+                          day_to_start_forecast, days_to_forecast, facemask, xMob, vac):
+    print("START --- update_rtcurve_charts \t", nowtime())
+    
     province_name = update_province_name(province_name)
     xMob = -xMob
     facemask = facemask * 70 / 100
@@ -1336,14 +1468,19 @@ def update_rtcurve_charts(province_name, region, start_date, end_date, day_to_st
     #===BPH To avoid creating a global array for all_temp_vals, it is calculated here
     #
     #===BPH-FIXME Weather should be calculated outside of app and static
+    print("      --- update_rtcurve_charts \t", nowtime(), " --- started getting weather")
     past_temp_vals, new_temp_vals, df_current_weather = \
         get_past_new_temp_vals(province_name, region, start_date, end_date, days_to_forecast)
     all_temp_vals = get_all_temp_vals(past_temp_vals, new_temp_vals)
+    print("      --- update_rtcurve_charts \t", nowtime(), " --- finished getting weather")
     
     rtcurve_fig = go.Figure()
 
     # ============== R(T) CURVE GRAPH ==============
-    for i in range(10):    
+    for i in range(10):
+        print("      --- update_rtcurve_charts \t", nowtime(), " --- R(t) CURVE: " + str(i))
+        #print("===== R(t) CURVE: " + str(i) + " ========")
+        
         rtcurve_fig.add_trace(go.Scatter(
             x=predicted_dates(province_name, region, start_date, day_to_start_forecast, days_to_forecast),
             y=predicted_deaths(0, province_name, region, start_date, day_to_start_forecast, days_to_forecast, df_mobility, xMob, facemask, vac, df_vac, all_temp_vals)[1],
@@ -1384,18 +1521,27 @@ def update_rtcurve_charts(province_name, region, start_date, end_date, day_to_st
                    yaxis_title='R(t) Curve Based On Mortality',
                    updatemenus=updatemenus)
 
+    print("END   --- update_rtcurve_charts \t", nowtime())
+
     return rtcurve_fig
 
 @app.callback(
     ddp.Output("cumulativedeaths-chart", "figure"),
     [
-        ddp.Input("region-dropdown", "value"),
-        ddp.Input("subregion-dropdown", "value"),
-        ddp.Input("date-range", "start_date"),
-        ddp.Input("date-range", "end_date"),
+        ddp.Input('rerun-btn1', 'n_clicks'),
+        ddp.Input('rerun-btn2', 'n_clicks')
+    ],
+    [
+        ddp.State("region-dropdown", "value"),
+        ddp.State("subregion-dropdown", "value"),
+        ddp.State("date-range", "start_date"),
+        ddp.State("date-range", "end_date"),
     ],
 )
-def update_cumulativedeaths_charts(province_name, region, start_date, end_date):
+def update_cumulativedeaths_charts(n_clicks1, n_clicks2, province_name, region,
+                                   start_date, end_date):
+    print("START --- update_cumulativedeath_chart \t", nowtime())
+    
     province_name = update_province_name(province_name)
     dates = date(province_name, region, start_date, end_date)
     cumulativedeaths = cumulative_deaths(province_name, region, start_date, end_date)
@@ -1411,6 +1557,7 @@ def update_cumulativedeaths_charts(province_name, region, start_date, end_date):
     
     cumulativedeaths_fig.update_layout(xaxis_title='Date',
                    yaxis_title='Number of Deaths')
+    print("START --- update_cumulativedeath_chart \t", nowtime())
     
     return cumulativedeaths_fig
 
@@ -1465,8 +1612,8 @@ def predicted_deaths(c_num, province_name, region_name, start_date, end_date, da
     lambda_values = [] 
 
     yes_print2 = False
-    if (c_num == 4):
-        yes_print2 = True
+    #if (c_num == 4):
+    #    yes_print2 = True
     total_deaths = get_total_deaths(province_name, region_name, start_date, end_date, yes_print2)
     last_mort = get_last_mort(province_name, region_name, start_date, end_date)
     last_vac = get_last_vac(province_name, region_name)
@@ -1483,8 +1630,8 @@ def predicted_deaths(c_num, province_name, region_name, start_date, end_date, da
     deaths_today = last_mort
     [total_deaths_2_months_prior, two_months_death] = get_total_deaths_2_months_prior(province_name, region_name, end_date)
 
-    if (c_num == 4):
-        print("==== \ntotal_deaths_2_months_prior: " + str(total_deaths_2_months_prior))
+    #if (c_num == 4):
+    #    print("==== \ntotal_deaths_2_months_prior: " + str(total_deaths_2_months_prior))
 
     for i in range(len(add_dates)):
         date_in_forecast = datetime.datetime.strptime(end_date, '%Y-%m-%d') + datetime.timedelta(days=i)
