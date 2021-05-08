@@ -1,15 +1,44 @@
+import os
 import math
 import numpy as np
 import pandas as pd
 import datetime as dt
 import urllib
 
-#=== Get 4-year average for these dates
-#      (use average as actual when calculating
-#       average for future dates)
-date_avg_start = "2010-01-01"
-date_avg_end = "2023-01-01"
-#date_avg_end = "2023-01-01"
+
+#============================================================#
+#              run mode and run mode options                 #
+#============================================================#
+# runmode choices:
+#
+#     download_raw_all, download_raw_one_province,
+#     download_raw_one_hr,
+#
+#     create_actual_avg_all, create_actual_avg_one_province,
+#     create_actual_avg_one_hr,
+#
+#     update_actual_avg_all, update_actual_avg_one_province,
+#     update_actual_avg_one_hr,
+#
+# For:
+#     * downloading the raw data
+#     * creating the interpolated and future-averaged data files
+#     * updating with most recent dates
+#
+runmode = "download_raw_one_hr"
+#=== download mode options
+date_download_raw_start = "2016-01-01"
+date_download_raw_end = "2023-01-01"     # if a future date, will stop at "now"
+download_raw_province_abb = 'SK'         # for runmode=download_raw_province
+download_raw_hruid = 3553                 # for runmode=download_raw_hr
+
+#=== Health region static information file
+#
+#  cols = [province_name, prov_id, health_region, hr_uid, temp_region,
+#          sub_region_2, climate_id, landarea, total_pop, pwpd, pop80,
+#          frac80, house, anndeath, prov_pop, geo_code, pop_sparsity]
+#
+df_hr_static = pd.read_csv(r'../health_regions_static_data.csv', encoding='Latin-1')
 
 #=== solar angle info
 #
@@ -27,6 +56,9 @@ angle_delta = 2.0*math.pi / 365.25
 #
 angle_averaging_halfrange = 20.0/24.0 * angle_delta
 
+#============================================================#
+#              downloading raw temperature data              #
+#============================================================#
 #=== weather download information
 #
 # e.g., for TORONTO CITY, climate_id = 6158355, the weather
@@ -60,26 +92,6 @@ weather_cols = ['lon', 'lat', 'station', 'climate_id', 'date', 'year',
                 'snow_on_ground_cm', 'snow_on_ground_flag',
                 'dir_max_gust', 'dir_max_gust_flag',
                 'speed_max_gust', 'speed_max_gust_flag']
-#=== Health region information file
-#
-#  cols = [province_name, prov_id, health_region, hr_uid, temp_region,
-#          sub_region_2, climate_id, landarea, total_pop, pwpd, pop80,
-#          frac80, house, anndeath, prov_pop, geo_code, pop_sparsity]
-#
-df_hr = pd.read_csv(r'../health_regions_static_data.csv', encoding='Latin-1')
-
-############# Main Code ################
-
-#=== prep dates for looping over all months in range
-startdate = dt.datetime.strptime(date_avg_start, "%Y-%m-%d")
-enddate = dt.datetime.strptime(date_avg_end, "%Y-%m-%d")
-nowdate = dt.datetime.now()
-if (nowdate < enddate):
-    enddate = nowdate
-year_start = startdate.year
-year_end = enddate.year
-month_start = startdate.month
-month_end = enddate.month
 
 #=== dealing with missing days
 nmissing_tol = 5  # number of missing days to tolerate (accept such a file)
@@ -99,36 +111,91 @@ def fall_back_to_best(missing, saved_dfs, saved_urls):
 class DataMissingException(Exception):
     pass
 
-#=== Loop over the health regions
-for index, row in df_hr.iterrows():
-    prov_id = row.prov_id
-    climate_ids = [row.climate_id, row.climate_id_alt, row.climate_id_alt2]
-    stations = [row.temp_region, row.temp_region_alt, row.temp_region_alt2]
-    region = row.health_region
-    hr_uid = row.hr_uid
-    print("====== " + prov_id + " --- " + region + " (" + str(hr_uid) +  ") ======")
+#=== setting dates for downloads and download directories
+def prep_for_download(date_start, date_end):
+    # Set up dates for downloading
+    nowdate, year_start, year_end, month_start, month_end = \
+        prep_dates_for_downloading(date_start, date_end)
+    # Prepare outfile directory
+    outdir = base_outdir + f"{year_start:d}-{month_start:02d}_{year_end:d}-{month_end:02d}"
+    # Check to see if it exists and create new (possibly unique) directory if not
+    outdir = create_outdir(outdir, nowdate)
+    return nowdate, year_start, year_end, month_start, month_end, outdir
+
+def prep_dates_for_downloading(date_start, date_end):
+    startdate = dt.datetime.strptime(date_start, "%Y-%m-%d")
+    enddate = dt.datetime.strptime(date_end, "%Y-%m-%d")
+    nowdate = dt.datetime.now()
+    if (nowdate < enddate):
+        enddate = nowdate
+    year_start = startdate.year
+    year_end = enddate.year
+    month_start = startdate.month
+    month_end = enddate.month
+    return nowdate, year_start, year_end, month_start, month_end
+
+#=== Directory for storing downloaded raw data
+base_outdir = "all_health_regions_raw_temperature_files/"
+prompt_user_to_overwrite_directory_data = False
+noprompt_overwrite_directory_data = True  # otherwise create unique name
+
+def make_new_unique_outdir(outdir, nowdate):
+    nowtime_str = nowdate.strftime("%Y-%m-%d_%H-%M")
+    outdir = outdir + '_' + nowtime_str + '/'
+    os.mkdir(outdir)
+    return outdir
+
+def create_outdir(outdir, nowdate):
+    # check if directory exists
+    if os.path.isdir(outdir):
+        if prompt_user_to_overwrite_directory_data:
+            while True:
+                response = input("The directory:\n\t" + outdir
+                                 + "\nalready exists.  Do you want to overwrite these files? (y/n)\n")
+                if (response.capitalize() == 'Y'):
+                    outdir = outdir + '/'
+                    break
+                elif (response.capitalize() == 'N'):
+                    # if user doesn't want to overwrite, make a new unique outdir
+                    outdir = make_new_unique_outdir(outdir, nowdate)                    
+                    break
+                else:
+                    print("You must input y/n.")
+        else:
+            if noprompt_overwrite_directory_data:
+                outdir = outdir + '/'
+            else:
+                outdir = make_new_unique_outdir(outdir, nowdate)
+    else:
+        # if directory does not exist, make the outfile directory
+        outdir = outdir + '/'
+        os.mkdir(outdir)
+    return outdir
+
+#=== main download function for one health region over many dates
+def download_monthly_data_and_write_to_file(year_start, year_end,
+                                            month_start, month_end,
+                                            prov_id, climate_ids, stations,
+                                            region, hr_uid, outdir):
+    # Print out all stations for this health region
     for i in range(3):
         if (not pd.isnull(climate_ids[i])):
             print("\t", i, stations[i] + " (" + str(climate_ids[i]) + ")")
-    #=== create an empty list-of-dataframes to pd.concat(...)
+    # Create an empty list-of-dataframes to pd.concat(...)
     dfs = []
     startindex = 0
     for y in range(year_start, year_end + 1):
         for m in range(1,13):
             if (
-                    #(prov_id == "YT") &
-                    #(hr_uid == 4831) &                    
-                    #True &                    
-                    (
-                        ( (year_start == year_end) & (m >= month_start) & (m <= month_end) )
-                        | ( (year_start != year_end) &
-                            ( (y == year_start) & (m >= month_start) )
-                            | ( (y == year_end) & (m <= month_end) )
-                            | (y not in [year_start, year_end]) )
-                    )
+                    ( (year_start == year_end)
+                      & (m >= month_start) & (m <= month_end) )
+                    | ( (year_start != year_end) &
+                        ( (y == year_start) & (m >= month_start) )
+                        | ( (y == year_end) & (m <= month_end) )
+                        | (y not in [year_start, year_end]) )
             ):
                 gotit = False
-                #=== Try up to three weather stations to get data for YYYY-mm
+                # Try up to three weather stations to get data for YYYY-mm
                 missing = [40,40,40]
                 saved_dfs = []
                 saved_urls = []                
@@ -163,7 +230,7 @@ for index, row in df_hr.iterrows():
                         saved_urls.append("")
                         print("\tFile not found for" , station,
                               "(" + str(id) + ")", f"in {y:d}-{m:02d}")
-                        # last chance: if there is a file with some data... use it                        
+                        # last chance: if there is a file with some data... use it
                         if (i == 2):
                             [df, gotit] = fall_back_to_best(missing, saved_dfs, saved_urls)
                     except(DataMissingException):
@@ -192,7 +259,92 @@ for index, row in df_hr.iterrows():
     if dfs:
         # if list not empty
         df = pd.concat(dfs, ignore_index=True)
-        outfile = "health_region_temperature/" \
-            + prov_id + '_' + str(hr_uid) + ".csv"
+        outfile = outdir + prov_id + '_' + str(hr_uid) + ".csv"
         df.to_csv(outfile, index=False)
+        
+#=== Downloading data for one health region in a date range
+def download_raw_data_one_hr(my_hr_uid, df_hr, date_start, date_end):
+    # Prep the dates and outdir for downloading
+    nowdate, year_start, year_end, month_start, month_end, outdir = \
+        prep_for_download(date_start, date_end)
+    # Loop over all health regions, selecting only this health region
+    for index, row in df_hr.iterrows():
+        hr_uid = row.hr_uid        
+        if (hr_uid == my_hr_uid):
+            prov_id = row.prov_id
+            climate_ids = [row.climate_id, row.climate_id_alt, row.climate_id_alt2]
+            stations = [row.temp_region, row.temp_region_alt, row.temp_region_alt2]
+            region = row.health_region
+            print("====== " + prov_id + " --- " + region + " (" + str(hr_uid) +  ") ======")
+            download_monthly_data_and_write_to_file(year_start, year_end,
+                                                    month_start, month_end,
+                                                    prov_id, climate_ids, stations,
+                                                    region, hr_uid, outdir)
 
+#=== Downloading data for one province in a date range
+def download_raw_data_one_province(my_prov_id, df_hr, date_start, date_end):
+    # Prep the dates and outdir for downloading
+    nowdate, year_start, year_end, month_start, month_end, outdir = \
+        prep_for_download(date_start, date_end)
+    # Loop over all health regions, selecting only those in this province
+    for index, row in df_hr.iterrows():
+        prov_id = row.prov_id
+        if (prov_id == my_prov_id):
+            climate_ids = [row.climate_id, row.climate_id_alt, row.climate_id_alt2]
+            stations = [row.temp_region, row.temp_region_alt, row.temp_region_alt2]
+            region = row.health_region
+            hr_uid = row.hr_uid
+            print("====== " + prov_id + " --- " + region + " (" + str(hr_uid) +  ") ======")
+            download_monthly_data_and_write_to_file(year_start, year_end,
+                                                    month_start, month_end,
+                                                    prov_id, climate_ids, stations,
+                                                    region, hr_uid, outdir)
+
+#=== Downloading data for all health regions in a date range
+def download_all_raw_data(df_hr, date_start, date_end):
+    # Prep the dates and outdir for downloading
+    nowdate, year_start, year_end, month_start, month_end, outdir = \
+        prep_for_download(date_start, date_end)
+    # Loop over all health regions
+    for index, row in df_hr.iterrows():
+        prov_id = row.prov_id
+        climate_ids = [row.climate_id, row.climate_id_alt, row.climate_id_alt2]
+        stations = [row.temp_region, row.temp_region_alt, row.temp_region_alt2]
+        region = row.health_region
+        hr_uid = row.hr_uid
+        print("====== " + prov_id + " --- " + region + " (" + str(hr_uid) +  ") ======")
+        download_monthly_data_and_write_to_file(year_start, year_end,
+                                                month_start, month_end,
+                                                prov_id, climate_ids, stations,
+                                                region, hr_uid, outdir)
+
+############# Main Code ##############
+if (runmode == "download_raw_all"):
+    #=== Download all raw data
+    download_all_raw_data(df_hr_static, date_download_raw_start, date_download_raw_end)
+elif (runmode == "download_raw_one_province"):
+    #=== Download raw data for one province
+    download_raw_data_one_province(download_raw_province_abb, df_hr_static,
+                                   date_download_raw_start, date_download_raw_end)
+elif (runmode == "download_raw_one_hr"):
+    #=== Download raw data for health region    
+    download_raw_data_one_hr(download_raw_hruid, df_hr_static,
+                             date_download_raw_start, date_download_raw_end)
+elif (runmode == "create_actual_avg_all"):
+    #=== Create the actual_avg temperature files for all health regions
+    pass
+elif (runmode == "create_actual_avg_one_province"):
+    #=== Create the actual_avg temperature files for one province
+    pass
+elif (runmode == "create_actual_avg_all_one_hr"):
+    #=== Create the actual_avg temperature files for one health regions
+    pass
+elif (runmode == "update_actual_avg_all"):
+    #=== Update the actual_avg temperature files for all health regions
+    pass
+elif (runmode == "update_actual_avg_one_province"):
+    #=== Update the actual_avg temperature files for one province
+    pass
+elif (runmode == "update_actual_avg_all_one_hr"):
+    #=== Update the actual_avg temperature files for one health regions
+    pass
