@@ -904,6 +904,9 @@ def update_dynamic_cards(n_clicks1, n_clicks2, province_name, region_name, start
 
     print("START --- update_dynamic_cards \t\t", nowtime())
 
+    #===BPH this was missing:
+    province_name = update_province_name(province_name)
+    
     total_covid_deaths = get_total_deaths(province_name, region_name, start_date, end_date, False)
     total_population = get_total_pop(province_name, region_name)
 
