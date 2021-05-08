@@ -168,23 +168,6 @@ navbar2 = dbc.Navbar([
             ),
         ], color="dark", dark=True, fixed="top")
 
-footer = dbc.Navbar(
-    [
-        html.A(
-            # Use row and col to control vertical alignment of logo / brand
-            dbc.Row(
-                [
-                    dbc.Col(dbc.NavbarBrand("Footer", className="ml-2")),
-                ],
-                align="center",
-                no_gutters=True,
-            ),
-        ),
-    ],
-    color="dark",
-    dark=True,
-    sticky="bottom"
-)
 
 updatemenus = [
         dict(
@@ -710,7 +693,6 @@ def nowtime():
     [ddp.Input('url', 'pathname')]
 )
 def display_page(pathname):
-    # print("URL IS: " + pathname)
     if (pathname == "/"):
         return canadian_dashboard
     elif (pathname == "/about"):
@@ -922,6 +904,9 @@ def update_dynamic_cards(n_clicks1, n_clicks2, province_name, region_name, start
 
     print("START --- update_dynamic_cards \t\t", nowtime())
 
+    #===BPH this was missing:
+    province_name = update_province_name(province_name)
+    
     total_covid_deaths = get_total_deaths(province_name, region_name, start_date, end_date, False)
     total_population = get_total_pop(province_name, region_name)
 
@@ -1252,7 +1237,7 @@ def get_all_temp_vals(past_temp_vals, new_temp_vals):
         ddp.State('mobility-slider', 'value'),
     ],
     #===BPH-FIXME Picking up wrong values on initial call, so prevent
-    prevent_initial_call=True
+    # prevent_initial_call=True
 )
 def update_mob_charts(n_clicks1, n_clicks2, province_name, region, start_date, end_date,
                       forecasted_dates, xMob):
@@ -1299,7 +1284,7 @@ def update_mob_charts(n_clicks1, n_clicks2, province_name, region, start_date, e
         ddp.State('vaccine-slider', 'value'),
     ],
     #===BPH-FIXME Picking up wrong values on initial call, so prevent
-    prevent_initial_call=True
+    # prevent_initial_call=True
 )
 def update_vaccination_charts(n_clicks1, n_clicks2, province_name, region, start_date, end_date,
                               forecasted_dates, vac_slider_val):
@@ -1326,12 +1311,7 @@ def update_vaccination_charts(n_clicks1, n_clicks2, province_name, region, start
     for i in range(len(dates)):
         date_in_forecast = datetime.datetime.strptime(end_date, '%Y-%m-%d') + datetime.timedelta(days=i)
         printpls = False
-        #if (i < 10):
-        #    printpls = True
         curr_vac = get_vac_on_day(date_in_forecast, vac_slider_val, total_pop, df_vac, 0, printpls, last_vac)
-        # if (i < 10):
-            # print("VAC DATE: " + str(date_in_forecast))
-            # print("VAC val: " + str(curr_vac))
         vac_forecasted_values.append(curr_vac)
 
     vac_dates = []
@@ -1379,7 +1359,7 @@ def update_vaccination_charts(n_clicks1, n_clicks2, province_name, region, start
         ddp.State('facemask-slider', 'value'),
     ],
     #===BPH-FIXME Picking up wrong values on initial call, so prevent
-    prevent_initial_call=True    
+    # prevent_initial_call=True    
 )
 def update_trends_charts(n_clicks1, n_clicks2, province_name, region, start_date, end_date,
                          forecasted_dates, mask_slider_val):
@@ -1658,17 +1638,10 @@ def predicted_deaths(c_num, province_name, region_name, start_date, end_date, da
                 deaths_2_months = total_deaths_2_months_prior
                 prior = i - 60
                 prior_2_months = yVals[0:prior]
-                # if (c_num == 2):
-                #     print("len(prior_2_months) = " + str(len(prior_2_months)))
+
                 for j in range(len(prior_2_months)):
                     deaths_2_months += prior_2_months[j]
-                    # if (c_num == 2 and (i >= 150 and i < 153)):
-                    #     print("yvals[" + str(j) +"] = " + str(prior_2_months[j]))
-                    # if (c_num == 4 and (i > 350)):
-                        # print("adding " + str(prior_2_months[j]))
-                # if (c_num == 2 and (i >= 150 and i < 153)):
-                #     print("deaths_2_months: " + str(deaths_2_months))
-                #     print("annDeath: " + str(annDeath))
+
                 xHerd2 = deaths_2_months / annDeath
             if (i < 14):
                 prior = 14 - i
@@ -1701,37 +1674,6 @@ def predicted_deaths(c_num, province_name, region_name, start_date, end_date, da
             deaths_tomorrow = math.exp(lambda_) * deaths_today
             yVals.append(deaths_tomorrow)
 
-            # if (c_num == 2): # and (i >= 150 and i < 153)):
-            #     print("date: " + str(date_in_forecast))
-            #     print("i == " + str(i))
-            #     print("total_deaths: " + str(total_deaths))
-            #     print("deaths_2_weeks: " + str(deaths_2_weeks))
-            #     if (i > 60):
-            #         print("deaths_2_months: " + str(deaths_2_months))
-            #     else:
-            #         print("total_deaths_2_months_prior: " + str(total_deaths_2_months_prior))
-
-            #     # print("annDeath: " + str(annDeath))
-            #     print("xHerd: " + str(xHerd))
-            #     print("xHerd2: " + str(xHerd2))
-            #     print("xMob1: " + str(xMob1))
-            #     print("xMob2: " + str(xMob2))
-            #     print("xTrends1: " + str(xTrends1))
-            #     print("xLogPWPD: " + str(xLogPWPD))
-            #     print("xBeta: " + str(xBeta))
-            #     print("xAnnual: " + str(xAnnual))
-            #     print("xHouse: " + str(xHouse))
-            #     print("vaxP1: " + str(vaxP1))
-            #     print("vaxP2: " + str(vaxP2))
-            #     print("delta: " + str(delta))
-            #     print("exp_: " + str(exp_))
-            #     print("lambda_: " + str(lambda_))
-            #     print("deaths_tomorrow: " + str(deaths_tomorrow))
-                # print("deaths_today: " + str(deaths_today))
-
-                # if (xTemp != 0.0):
-                #     print("xTemp: " + str(xTemp))
-                # print("\n")
                 
             deaths_today = deaths_tomorrow
             total_deaths += deaths_today
@@ -1769,14 +1711,6 @@ def get_total_deaths(province_name, region_name, start_date, end_date, yes_print
     deaths = df_province.deaths[df_province.health_region == region_name]
 
     total_deaths_local = 0 # reset total deaths
-
-    # if (yes_print == True):
-    #     print("GET TOTAL DEATHSSSS")
-    #     print("length: " + str(len(deaths)))
-        # print("start_date: " + str(start_date))
-        # print("end_date: " + str(end_date))
-        # print("start_date_str: " + str(start_date_str))
-        # print("end_date_str: " + str(end_date_str))
 
     for d in deaths:
         total_deaths_local += d
@@ -2023,7 +1957,7 @@ def get_mob_on_day(df_mobility, day, xMob, days_prior):
         mob = df_mobility['workplaces_percent_change_from_baseline'].iloc[delta]
     else:
         mob = xMob
-    # print("RETURNING MOB: " + str(mob) + " for day:" + str(day) + " with days prior= " + str(days_prior)) 
+
     return mob
 
 def get_last_mob(df_mobility):
@@ -2031,7 +1965,7 @@ def get_last_mob(df_mobility):
     total_mob_records = len(df_mobility) - 1
     today_mob = df_mobility['workplaces_percent_change_from_baseline'].iloc[total_mob_records]
     last_mob = -today_mob
-    # print("returning mob.... " + str(last_mob))
+
     return last_mob
 
 def get_mob(province_name, region_name):
@@ -2169,9 +2103,7 @@ def avg_temp_data(begin_year, end_year, data, forecasted_dates):
     
     forecasted = datetime.date(2021, 4, 20) + datetime.timedelta(days=forecasted_dates)     # datetime.datetime.now() + datetime.timedelta(days=forecasted_dates)
     forecasted = forecasted.strftime('%m-%d')
-    
-    # print(forecasted)
-    
+        
     next_day = begin_year
     for day in range(366):  # Includes leap year
         if next_day > end_year:
@@ -2262,20 +2194,13 @@ def get_vac_on_day(date_in_forecast, vac_val, total_population, df_vac, days_pri
 
     first_day_vac_date = datetime.datetime.strptime(first_day_vac_str, '%Y-%m-%d')
     last_vac_date = datetime.datetime.strptime(last_vac_date_str, '%Y-%m-%d')
-    # print("last_vac_date_str: " + str(last_vac_date))
     days_since_first_day = date_in_forecast.date() - first_day_vac_date.date() - datetime.timedelta(days=days_prior)
     delta = days_since_first_day.days
 
     days_since_last_day = (date_in_forecast.date() - last_vac_date.date()).days
-    # print("days since last day: " + str(days_since_last_day))
 
-    # if (yes_print == True):
-    #     print("lenth of vac vals: " + str(len(vac_vals)))
     if (delta < len(vac_vals) and delta >= 0):
         vac = vac_vals[delta] / total_population
-        if (yes_print == True):
-            print("vac_vals = " + str(vac_vals[delta]) + " total_population: " + str(total_population))
-            print("returning vac on " + str(date_in_forecast) + " == " + str(vac) + " delta is: " + str(delta))
     elif (delta < 0):
         vac = 0.0
     else:
@@ -2283,7 +2208,6 @@ def get_vac_on_day(date_in_forecast, vac_val, total_population, df_vac, days_pri
         vac = last_vac + temp
         vac = vac / total_population
         vac = min(vac, 1.0)
-    # print("returning vac on " + str(date_in_forecast) + " == " + str(vac) + " delta is: " + str(delta))
     
     return vac
 
@@ -2380,7 +2304,6 @@ def get_trends_on_day(province_name, region_name, day, trends):
 
 def get_last_trends(province_name, region_name):
     df_dates = df_trends[str(get_geocode(province_name, region_name))]
-    # print("returning trends: " + str(df_dates[len(df_trends.index) - 1]))
     return df_dates[len(df_trends.index) - 1]
 
 
@@ -2432,7 +2355,6 @@ def past_rt_equation(province_name, region_name):
         #D14 = get_total_cases_2_weeks_prior(province_name, region_name, days_prior, date_range)
         D14_values.append(D14)	
         
-        #print('deaths from a time t:' + str(D14) + ' date:' + str(date_range))
     
     # Shifted the start date by 5 days
     start = datetime.datetime.strptime("2020-03-04", "%Y-%m-%d")
@@ -2446,10 +2368,6 @@ def past_rt_equation(province_name, region_name):
         #D14_t5 = get_total_cases_2_weeks_prior(province_name, region_name, days_prior, date_range)
         D14_t5_values.append(D14_t5)
         
-        #print('deaths from a time t five days ago:' + str(D14_t5) + ' date:' + str(date_range))
-   
-    #print(D14_values)
-    #print(D14_t5_values)
     
     D14_values = [x+0.5 for x in D14_values]
     D14_t5_values = [x+0.5 for x in D14_t5_values]    
@@ -2457,7 +2375,6 @@ def past_rt_equation(province_name, region_name):
     past_data = [x / y if y != 0 else 0.0 for x, y in zip(D14_values, D14_t5_values)]
     
     past_data = np.clip(past_data, -3, 10)
-    #print(past_data)
         
     return moving_avg(past_data, 14)
 
