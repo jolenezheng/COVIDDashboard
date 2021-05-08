@@ -1,0 +1,13 @@
+
+https://stackoverflow.com/questions/53824071/how-to-bulk-download-historical-weather-data-from-canadian-government-website-us
+
+Where I got "Station Inventory EN.csv"
+
+https://drive.google.com/drive/folders/1WJCDEU34c60IfOnG4rv5EPZ4IhhW9vZH
+https://drive.google.com/uc?authuser=0&id=1egfzGgzUb0RFu_EE5AYFZtsyXPfZ11y2&export=download
+
+
+Look for stations that have DAILY data available in the desired span of years:
+
+[DLY First Year, DLY Last Year]
+
