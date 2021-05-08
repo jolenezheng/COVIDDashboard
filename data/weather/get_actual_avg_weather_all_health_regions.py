@@ -81,6 +81,24 @@ year_end = enddate.year
 month_start = startdate.month
 month_end = enddate.month
 
+#=== dealing with missing days
+nmissing_tol = 5  # number of missing days to tolerate (accept such a file)
+nmissing_accept = 20 # number of missing day to accept (if no other choice)
+def fall_back_to_best(missing, saved_dfs, saved_urls):
+    val, idx = min((val,idx) for (idx, val) in enumerate(missing))
+    if (val <= nmissing_accept):
+        df = saved_dfs[idx]
+        df.columns = weather_cols
+        print(idx, saved_urls[idx])
+        gotit = True
+    else:
+        df = {}
+        gotit = False
+    return df, gotit
+
+class DataMissingException(Exception):
+    pass
+
 #=== Loop over the health regions
 for index, row in df_hr.iterrows():
     prov_id = row.prov_id
@@ -99,7 +117,7 @@ for index, row in df_hr.iterrows():
         for m in range(1,13):
             if (
                     #(prov_id == "YT") &
-                    (hr_uid == 2407) &                    
+                    #(hr_uid == 4831) &                    
                     #True &                    
                     (
                         ( (year_start == year_end) & (m >= month_start) & (m <= month_end) )
@@ -110,7 +128,10 @@ for index, row in df_hr.iterrows():
                     )
             ):
                 gotit = False
-                #for id in [climate_id, climate_id_alt, climate_id_alt2]:
+                #=== Try up to three weather stations to get data for YYYY-mm
+                missing = [40,40,40]
+                saved_dfs = []
+                saved_urls = []                
                 for i in range(3):
                     try:
                         print(i, end=' ')
@@ -119,20 +140,40 @@ for index, row in df_hr.iterrows():
                         if (str(id) == "6105978"):
                             # for Outaouis, QC allow Ottawa weather station
                             url = get_weather_file_url('ON', id, y, m)
+                        elif (str(id) == "7056616"):
+                            # for Edmundston, NB, allow this QC weather station
+                            url = get_weather_file_url('QC', id, y, m)
                         else:
                             url = get_weather_file_url(prov_id, id, y, m)                        
                         # Read in file
                         df = pd.read_csv(url, encoding='Latin-1')
-                        gotit=True
-                        outfile = "climate_id/" + prov_id + '_' + str(id) + ".csv"
+                        saved_dfs.append(df)
+                        saved_urls.append(url)
+                        df.columns = weather_cols
+                        nmissing = len(df) - df['temp_mean'].count()
+                        missing[i] = nmissing
+                        if (nmissing > nmissing_tol):
+                            raise DataMissingException()
+                        gotit=True                        
                         print(url)
                         break
                     except(urllib.error.HTTPError):
-                        #print("\tData not found in " + station + " (" + str(id) + ")")
-                        pass
+                        # append an empty dataframe and blank url
+                        saved_dfs.append(pd.DataFrame({'A' : []}))
+                        saved_urls.append("")
+                        print("\tFile not found for" , station,
+                              "(" + str(id) + ")", f"in {y:d}-{m:02d}")
+                        # last chance: if there is a file with some data... use it                        
+                        if (i == 2):
+                            [df, gotit] = fall_back_to_best(missing, saved_dfs, saved_urls)
+                    except(DataMissingException):
+                        print(f"\tMissing {nmissing:d} entries for temp_mean at", station,
+                              "(" + str(id) + ")", f"in {y:d}-{m:02d}")
+                        # last chance: if there is a file with some data... use it
+                        if (i == 2):
+                            [df, gotit] = fall_back_to_best(missing, saved_dfs, saved_urls)
                 if gotit:
                     # Rename columns and get a YYYY-mm-dd date string
-                    df.columns = weather_cols
                     df['monthstr'] = df['month'].astype(str).str.zfill(2)
                     df['daystr'] = df['day'].astype(str).str.zfill(2)                
                     df['datestr'] = \
@@ -144,6 +185,14 @@ for index, row in df_hr.iterrows():
                     # Append to list of dataframes
                     dfs.append(df)
                 else:
+                    # Only display error if data not found for that YYYY-mm
                     print("\n**** ERROR ****  Data not found for ",
                           prov_id, region, str(y) + '-' + str(m) + "\n")
+    # Merge all dates for this health region and output
+    if dfs:
+        # if list not empty
+        df = pd.concat(dfs, ignore_index=True)
+        outfile = "health_region_temperature/" \
+            + prov_id + '_' + str(hr_uid) + ".csv"
+        df.to_csv(outfile, index=False)
 
