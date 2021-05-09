@@ -1257,9 +1257,10 @@ def update_trends_charts(province_name, region, start_date, end_date, forecasted
          Input('facemask-slider', 'value'),
          Input('mobility-slider', 'value'),
          Input('vaccine-slider', 'value'),   
+         Input('rerun-btn', 'n_clicks')
      ],
  )
-def update_rtcurve_charts(province_name, region, start_date, end_date, day_to_start_forecast, days_to_forecast, facemask, xMob, vac):
+def update_rtcurve_charts(province_name, region, start_date, end_date, day_to_start_forecast, days_to_forecast, facemask, xMob, vac, n_clicks):
     province_name = update_province_name(province_name)
     xMob = -xMob
     facemask = facemask * 70 / 100
@@ -1327,9 +1328,10 @@ def update_rtcurve_charts(province_name, region, start_date, end_date, day_to_st
         Input('facemask-slider', 'value'),
         Input('mobility-slider', 'value'),
         Input('vaccine-slider', 'value'),
+        Input('rerun-btn', 'n_clicks')        
     ],
 )
-def update_cumulativedeaths_charts(province_name, region, start_date, end_date, day_to_start_forecast, days_to_forecast, facemask, xMob, vac):
+def update_cumulativedeaths_charts(province_name, region, start_date, end_date, day_to_start_forecast, days_to_forecast, facemask, xMob, vac, n_clicks):
     province_name = update_province_name(province_name)
     xMob = -xMob
     facemask = facemask * 70 / 100
@@ -1358,14 +1360,17 @@ def update_cumulativedeaths_charts(province_name, region, start_date, end_date, 
     cumulativedeaths_fig.update_layout(xaxis_title='Date',
                    yaxis_title='Number of Deaths')
     
-    for i in range(10):    
+    for i in range(10):
+        dates = predicted_dates(province_name, region, start_date, day_to_start_forecast, days_to_forecast)
+        cumulativedeaths = predicted_cumulative_deaths(province_name, region, start_date, days_to_forecast, day_to_start_forecast, df_mobility, xMob, facemask, vac, df_vac)
+        
         cumulativedeaths_fig.add_trace(go.Scatter(
-            x=predicted_dates(province_name, region, start_date, day_to_start_forecast, days_to_forecast),
-            y=predicted_cumulative_deaths(province_name, region, start_date, end_date, days_to_forecast, day_to_start_forecast, df_mobility, xMob, facemask, vac, df_vac),
+            x=dates,
+            y=cumulativedeaths,
         name = 'Predicted Cumulative Deaths'
     ))
         
-    print(last_deaths(province_name, region, start_date, end_date, day_to_start_forecast))   
+    # print(last_deaths(province_name, region, start_date, end_date, day_to_start_forecast))   
     return cumulativedeaths_fig
 
 # -------------- STATIC DATA HELPER FUNCTIONS --------------
@@ -1556,7 +1561,9 @@ def predicted_deaths(c_num, province_name, region_name, start_date, end_date, da
         #   math.log(tau))) - 1/tau + house2*(xHouse - 2.75) + Anl*(xAnnual - 3.65) - v2*Vax2 # y = lambda
         # cases_today = 
         # yVals.append(y)
-
+    
+    # print("predicted deaths: " + str(yVals))
+    
     return yVals, moving_avg(lambda_values, 14)
 
 def predicted_cases(province_name, region_name, start_date, end_date, days_to_forecast, df_mobility, xMob_slider, facemask_val, vac_val):
@@ -1739,12 +1746,13 @@ def cumulative_deaths(province_name, region_name, start_date, end_date): # todo:
     deaths = df_province.cumulative_deaths[df_province.health_region == region_name] #.rolling(window=7).mean()  
     return deaths
 
-def last_deaths(province_name, region_name, start_date, end_date, day_to_start_forecast):
+def last_deaths(province_name, region_name, day_to_start_forecast):
     
     df_province = df_mort[df_mort.province == province_name]
     df_region = df_province[df_province.health_region == region_name]
     deaths = df_region.cumulative_deaths[df_mort.date_death_report == day_to_start_forecast].item()
     
+    # print(deaths)
     return deaths
 
 def cumulative(lists):
@@ -1753,15 +1761,17 @@ def cumulative(lists):
     cu_list = [sum(lists[0:x:1]) for x in range(0, length+1)]
     return cu_list[1:]
 
-def predicted_cumulative_deaths(province_name, region_name, start_date, end_date, days_to_forecast, day_to_start_forecast, df_mobility, xMob_slider, facemask_val, vac_val, df_vac):
+def predicted_cumulative_deaths(province_name, region_name, start_date, days_to_forecast, day_to_start_forecast, df_mobility, xMob_slider, facemask_val, vac_val, df_vac):
     
-    cumulative_deaths = []
-    cumulative_deaths.append(last_deaths(province_name, region_name, start_date, end_date, day_to_start_forecast))
-    deaths = cumulative_deaths + predicted_deaths(0, province_name, region_name, start_date, end_date, days_to_forecast, df_mobility, xMob_slider, facemask_val, vac_val, df_vac)[0]
+    cumulative_deaths = last_deaths(province_name, region_name, day_to_start_forecast)
+    pred_deaths = predicted_deaths(5, province_name, region_name, start_date, day_to_start_forecast, days_to_forecast, df_mobility, xMob_slider, facemask_val, vac_val, df_vac)[0]
     
-    #print(deaths)
+    #print("predicted deaths: " + str(pred_deaths))
+    pred_deaths.insert(0,cumulative_deaths)
     
-    return cumulative(deaths)
+    # deaths = cumulative_deaths + pred_deaths
+    
+    return cumulative(pred_deaths)
     
 # -------------- CASES HELPER FUNCTIONS --------------
 
