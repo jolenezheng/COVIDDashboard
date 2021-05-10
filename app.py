@@ -1699,7 +1699,7 @@ def predicted_deaths(c_num, province_name, region_name, start_date, end_date, da
                         (2.0 * math.log(8.0 * 10.0**(-xLogPWPD) * (2.0 - 0.5 * xBeta))) / (4.0 - xBeta)))
                     
             lambda_ = -0.0398673 + exp_ - 0.202278 * (vaxP1 - vaxP2) - 0.00654545 * (-3.65 + xAnnual) + 0.0201251 * (-2.7 + xHouse)
-            delta = random.gauss(0.0, sigma)
+            delta = random.gauss(0.0, sigma) #*1/math.sqrt(14)
 
             lambda_ += delta # Sqrt[0.092/(14 + Death in Past two weeks)
 
