@@ -1,10 +1,14 @@
 import os
+import sys
 import math
 import numpy as np
 import pandas as pd
 import datetime as dt
 import urllib
 
+commandline = True  # if False, specify runmode options below
+
+# also, must specify start/end dates within the code (see below)
 
 #============================================================#
 #              run mode and run mode options                 #
@@ -14,19 +18,71 @@ import urllib
 #     download_raw_all, download_raw_one_province,
 #     download_raw_one_hr,
 #
-#     create_actual_avg_all, create_actual_avg_one_province,
-#     create_actual_avg_one_hr,
+#     create_actual_avg_all, create_actual_avg_one_hr,
 #
-#     update_raw_data
+#     update_raw_data_two_months
 #
 # For:
 #     * downloading the raw data
 #     * creating the interpolated and future-averaged data files
 #     * updating with most recent dates
 #
-runmode = "create_actual_avg_all"
-selected_province_abb = 'SK'          # for runmode=download_raw/create_province
-selected_hruid = 592                 # for runmode=download_raw/create_hr
+def print_help_and_exit():
+    print("\nCommandline options are:\n\n"
+          + "\t <scriptname> download_raw_all\n"
+          + "\t <scriptname> create_actual_avg_all\n"
+          + "\t <scriptname> update_raw_data_two_months\n"
+          + "\t <scriptname> download_raw_one_province <prov_abb>\n"
+          + "\t <scriptname> download_raw_one_hr <hr_uid>\n"
+          + "\t <scriptname> create_actual_avg_one_hr <hr_uid>\n\n"
+          + "The start and end dates for raw data collection and "
+          + "final output are set within the script.\n")
+    exit(0)
+if commandline:
+    #=== Parse the command-line options
+    if (len(sys.argv) == 1):
+        print_help_and_exit()
+    elif (len(sys.argv) == 2):
+        if sys.argv in ['h', '-h', 'help', '--help']:
+            print_help_and_exit()
+        runmode = sys.argv[1]
+        if runmode not in [download_raw_all, create_actual_avg_all,
+                           update_raw_data_two_months]:
+            print("\n***Error: Unless doing \"all\", you must specify the"
+                  + " province abbrev or hr_uid as a second argument\n")
+            exit(0)
+    else:
+        runmode = sys.argv[1]
+        par = sys.argv[2]
+        try:
+            selected_hruid = int(par)
+            if runmode not in ['download_raw_one_hr',
+                               'create_actual_avg_one_hr']:
+                print("\n***Error: hr_uid is to be used with either "
+                      + "\'download_raw_one_hr\' or \'create_actual_avg_one_hr\'\n")
+                sys.exit(1)
+            print(f"***Warning: assuming {selected_hruid:d} is the hr_uid.")
+        except SystemExit:
+            sys.exit(2)
+        except:
+            selected_province_abb = par.upper()
+            if selected_province_abb \
+               not in ['AB', 'BC', 'MB', 'NB', 'NL', 'NS',
+                       'NU', 'NT', 'ON', 'PE', 'QC', 'SK', 'YT']:
+                print("\n***Error: Province abbreviation not recognized.\n")
+                exit(0)
+            elif (runmode != "download_raw_one_province"):
+                print("\n***Error: Province abbreviation is to be used with "
+                      + "\'download_raw_one_province\'\n")
+                exit(0)
+            print(f"***Warning: assuming " + par + " is a province abbreviation "
+                  + "for running \'download_raw_one_province\'\n")
+else:
+    #=== Not assuming commandline options, just specify manually here
+    runmode = "create_actual_avg_all"
+    selected_province_abb = 'SK'          # for runmode=download_raw/create_province
+    selected_hruid = 592                 # for runmode=download_raw/create_hr
+
 #=== download mode options
 #
 # Dates to download raw data
@@ -43,7 +99,7 @@ download_raw_date_end = "2023-01-01"     # if a future date, will stop at "now"
 #       need data from 4-y prior to create_date_start)
 create_date_start = "2020-01-01"
 create_date_end = "2023-01-01"
-create_no_averaging = False            # just make an interpolated file of actual data
+create_no_averaging = False    # if True, just make an interpolated file of actual data
 
 #=== Health region static information file
 #
@@ -504,7 +560,13 @@ def create_actual_avg_temperature_file_one_hr(my_hr_uid, df_hr,
     df = df[df.date.between(date_start, date_end)]
     outfile = outdir + prov_id + '_' + str(my_hr_uid) + '.csv'
     df.to_csv(outfile, index=False)
-            
+
+def prevmonth(month):
+    if month == 1:
+        return 12
+    else:
+        return month-1
+
 ############# Main Code ##############
 if (runmode == "download_raw_all"):
     #=== Download all raw data
@@ -528,15 +590,16 @@ elif (runmode == "create_actual_avg_all"):
               + " =============")
         create_actual_avg_temperature_file_one_hr(hr_uid, df_hr_static,
                                                   create_date_start, create_date_end)
-elif (runmode == "create_actual_avg_one_province"):
-    #=== Create the actual_avg temperature files for one province
-    pass
 elif (runmode == "create_actual_avg_one_hr"):
     #=== Create the actual_avg temperature files for one health regions
     create_actual_avg_temperature_file_one_hr(selected_hruid, df_hr_static,
                                               create_date_start, create_date_end)
-elif (runmode == "update_raw_data"):
-    #=== Download just this month and last month's data for each health region
-    pass
+elif (runmode == "update_raw_data_two_months"):
+    #=== Download all raw data for this month and last month
+    nowdate = dt.datetime.now()
+    startdate = f"{nowdate.year:d}-{prevmonth(nowdate.month):d}-01"
+    enddate = f"{nowdate.year:d}-{nowdate.month:d}-" \
+        + f"{get_endofmonth(nowdate.year,nowdate.month):d}"
+    download_all_raw_data(df_hr_static, startdate, enddate)
 else:
     print("***Error: runmode not recognized.")
