@@ -56,7 +56,7 @@ mobility_info["sub_region_2"] = mobility_info["sub_region_2"]
 df_trends = pd.read_csv(r'data/google_trends_face_mask_canada.csv')
 
 #===BPH added this as variable (set to 10, unless testing)
-number_of_simulations = 5
+number_of_simulations = 10
 
 prov_id = "ON"
 climate_id = 0
