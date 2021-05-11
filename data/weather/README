@@ -1,0 +1,66 @@
+
+BPH 2021-05-07
+
+I wrote the python script
+
+  get_actual_avg_weather_all_health_regions.py
+
+to download and average weather data ahead of time for the dashboard.
+I found that multiple weather stations were needed to guarantee data
+availability in the 2016-2021 timeframe.  So, I updated the static
+data file:
+
+../health_regions_static_data.csv
+
+to include three stations [climate_id, climate_id_alt,
+climate_id_alt2] whenever there was a problem finding data for the
+original station (file was not on the server) or the data was very
+sparse from a particular station (more than 5 missing data points in a
+month).
+
+The file:
+
+all-canadian-weather-stations.csv
+
+which I found here (as "Station Inventory EN.csv"):
+
+https://drive.google.com/drive/folders/1WJCDEU34c60IfOnG4rv5EPZ4IhhW9vZH
+
+and its filtered version that only includes stations with daily data
+up to 2016:
+
+all-canadian-weather-stations_dly-through-2016.csv
+
+was very useful to find stations near the original one (found by
+Shafika).  I sorted by [province, lat, lon] to make finding these
+stations easier.  I tried to select only stations that had daily data
+available in the desired timeframe (see the "DLY First Year" and "DLY
+Last Year" columns).
+
+Also useful are the maps of health regions:
+
+https://www150.statcan.gc.ca/n1/pub/82-402-x/2013003/map-cart-eng.htm
+
+*******************************
+At this point the stations in the static file can get successfully
+get all data for all health regions for 2016-2021. See:
+
+weather-data-availability_health-regions_2016-2021.txt
+*******************************
+
+There are a few places where the coverage within the month fell below
+my arbitrary tolerance of 5 missing data points.  For these, if
+niether of the other two stations could produce anything better, I let
+the code accept the least-bad option (fewest missing data points), as
+long as there were still about 10 data points in that month.  I will
+do an interpolation on the whole file to fill all missing data points.
+
+I also ran the script for 2010-present and there are plenty of places
+missing data until, e.g., 2012.  See:
+
+weather-data-availability_health-regions_2010-2021.txt
+
+So if I wanted to get earlier data for some reason I'd need to use
+that file to identify the missing places, and adjust the stations to
+get better coverage.
+
