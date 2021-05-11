@@ -46,8 +46,8 @@ if commandline:
         if sys.argv in ['h', '-h', 'help', '--help']:
             print_help_and_exit()
         runmode = sys.argv[1]
-        if runmode not in [download_raw_all, create_actual_avg_all,
-                           update_raw_data_two_months]:
+        if runmode not in ["download_raw_all", "create_actual_avg_all",
+                           "update_raw_data_two_months"]:
             print("\n***Error: Unless doing \"all\", you must specify the"
                   + " province abbrev or hr_uid as a second argument\n")
             exit(0)
@@ -263,9 +263,9 @@ def download_monthly_data_and_write_to_file(year_start, year_end,
                     ( (year_start == year_end)
                       & (m >= month_start) & (m <= month_end) )
                     | ( (year_start != year_end) &
-                        ( (y == year_start) & (m >= month_start) )
-                        | ( (y == year_end) & (m <= month_end) )
-                        | (y not in [year_start, year_end]) )
+                        ( ( (y == year_start) & (m >= month_start) )
+                          | ( (y == year_end) & (m <= month_end) )
+                          | (y not in [year_start, year_end]) ) )
             ):
                 gotit = False
                 # Try up to three weather stations to get data for YYYY-mm
@@ -390,6 +390,7 @@ def download_all_raw_data(df_hr, date_start, date_end):
     # Prep the dates and outdir for downloading
     nowdate, year_start, year_end, month_start, month_end, outdir = \
         prep_for_download(date_start, date_end)
+    print(year_start, month_start, year_end, month_end)
     # Loop over all health regions
     for index, row in df_hr.iterrows():
         prov_id = row.prov_id
@@ -597,9 +598,11 @@ elif (runmode == "create_actual_avg_one_hr"):
 elif (runmode == "update_raw_data_two_months"):
     #=== Download all raw data for this month and last month
     nowdate = dt.datetime.now()
-    startdate = f"{nowdate.year:d}-{prevmonth(nowdate.month):d}-01"
-    enddate = f"{nowdate.year:d}-{nowdate.month:d}-" \
-        + f"{get_endofmonth(nowdate.year,nowdate.month):d}"
+    startdate = f"{nowdate.year:d}-{prevmonth(nowdate.month):02d}-01"
+    enddate = f"{nowdate.year:d}-{nowdate.month:02d}-" \
+        + f"{get_endofmonth(nowdate.year,nowdate.month):02d}"
+    print(startdate, enddate)
     download_all_raw_data(df_hr_static, startdate, enddate)
+    
 else:
     print("***Error: runmode not recognized.")
