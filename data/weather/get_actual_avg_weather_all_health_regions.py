@@ -400,6 +400,7 @@ def download_all_raw_data(df_hr, date_start, date_end):
     # Prep the dates and outdir for downloading
     nowdate, year_start, year_end, month_start, month_end, outdir = \
         prep_for_download(date_start, date_end)
+    print(year_start, month_start, year_end, month_end)
     # Loop over all health regions
     for index, row in df_hr.iterrows():
         prov_id = row.prov_id
