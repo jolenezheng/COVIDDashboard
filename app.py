@@ -59,7 +59,7 @@ mobility_info["sub_region_2"] = mobility_info["sub_region_2"]
 df_trends = pd.read_csv(r'data/google_trends_face_mask_canada.csv')
 
 #===BPH added this as variable (set to 10, unless testing)
-number_of_simulations = 2
+number_of_simulations = 10
 
 #===BPH added this max date for date range and x-axis range
 first_possible_date=datetime.datetime.strptime("2020-01-01", "%Y-%m-%d")
