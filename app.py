@@ -18,6 +18,9 @@ import dash_html_components as html
 import dash.dependencies as ddp
 import plotly.express as px
 import plotly.graph_objects as go
+import plotly.io as pio
+
+plotly_template = pio.templates["plotly_dark"]
 
 from textwrap import dedent
 from dateutil.relativedelta import relativedelta
@@ -56,7 +59,17 @@ mobility_info["sub_region_2"] = mobility_info["sub_region_2"]
 df_trends = pd.read_csv(r'data/google_trends_face_mask_canada.csv')
 
 #===BPH added this as variable (set to 10, unless testing)
-number_of_simulations = 10
+number_of_simulations = 2
+
+#===BPH added this max date for date range and x-axis range
+first_possible_date=datetime.datetime.strptime("2020-01-01", "%Y-%m-%d")
+last_possible_date=datetime.datetime.strptime("2023-01-01", "%Y-%m-%d")
+
+#===BPH For initial forecast (show a 12-month forecast starting 10-months ago)
+nowdate = datetime.datetime.now()
+forecast_initial_length = 12
+forecast_initial_start_date = \
+    (nowdate - datetime.timedelta(days=10*30)).strftime("%Y-%m-%d")
 
 prov_id = "ON"
 climate_id = 0
@@ -165,24 +178,33 @@ navbar2 = dbc.Navbar([
             ),
         ], color="dark", dark=True, fixed="top")
 
+graph_background_color = "LightSteelBlue" # None "LightSteelBlue"
+graph_plot_color = "#e5ecf6" # None "lightgrey" "#e5ecf6"
+graph_margins = dict(l=80, r=20, t=20, b=20)
 
-updatemenus = [
+buttons_annotations = [
+    dict(text="Vertical Axis Scale:", x=0.87, xref="paper", y=1.15, yref="paper",
+         align="right", showarrow=False),
+    ]
+
+buttons_updatemenus = [
         dict(
             type="buttons",
             xanchor="right",
-            yanchor="bottom",
-            direction="left",
-            x=0.1,
-            y=1.1,
+            yanchor="top",
+            direction="right",
+            pad={"r": 1, "t": 1},
+            x=1,
+            y=1.18,
             buttons=list([
                 dict(
                     args=[{'yaxis.type': 'linear'}],
-                    label="Linear Scale",
+                    label="Linear",
                     method="relayout"
                 ),
                 dict(
                     args=[{'yaxis.type': 'log'}],
-                    label="Log Scale",
+                    label="Log",
                     method="relayout"
                 )
             ])
@@ -250,7 +272,8 @@ canadian_dashboard = html.Div(
                                                 dcc.DatePickerRange(
                                                     id="date-range",
                                                     min_date_allowed=df_mort.date_death_report.min().date(),
-                                                    max_date_allowed=df_mort.date_death_report.max().date(),
+                                                    max_date_allowed=last_possible_date,
+                                                    #max_date_allowed=df_mort.date_death_report.max().date(),
                                                     initial_visible_month=df_mort.date_death_report.max().date(),
                                                     start_date=df_mort.date_death_report.min().date(), # "2020-03-13"
                                                     end_date=df_mort.date_death_report.max().date(), #"2021-03-31"
@@ -354,11 +377,13 @@ canadian_dashboard = html.Div(
                                                     ),
                                                 dcc.DatePickerSingle(
                                                     id="forecast-start-date",
-                                                    min_date_allowed=df_mort.date_death_report.min().date(),
-                                                    max_date_allowed= df_mort.date_death_report.max().date(), # df_mort.date_death_report.max().date(),
-                                                    initial_visible_month=df_mort.date_death_report.max().date(),
-                                                    date= "2020-05-01", #"2021-04-01", # df_mort.date_death_report.max().date(), # "2020-11-01"
-                                                    # end_date=df_mort.date_death_report.max().date(), #"2021-03-31"
+                                                    min_date_allowed=\
+                                                    df_mort.date_death_report.min().date(),
+                                                    max_date_allowed=\
+                                                    df_mort.date_death_report.max().date(),
+                                                    initial_visible_month=\
+                                                    df_mort.date_death_report.max().date(),
+                                                    date=forecast_initial_start_date
                                                 ),
                                             ]
                                         ),
@@ -375,7 +400,7 @@ canadian_dashboard = html.Div(
                                                     min=0,
                                                     max=12,
                                                     step=1,
-                                                    value=12, # todo: change back to 3
+                                                    value=forecast_initial_length, 
                                                     marks={ 0: '0 mo', 2: '2 mo', 4: '4 mo',
                                                         6: '6 mo', 8: '8 mo', 10: '10 mo', 12: '1 yr'
                                                     },
@@ -546,7 +571,8 @@ canadian_dashboard = html.Div(
                                     dbc.CardBody(
                                          dcc.Loading(
                                             children=[html.Div(dcc.Graph(
-                                                id="simulation-chart", config={"displayModeBar": False}))],
+                                                id="simulation-chart",
+                                                config={"displayModeBar": False}))],
                                             type="default"
                                     )),
                                     # dbc.CardBody(
@@ -564,7 +590,8 @@ canadian_dashboard = html.Div(
                                         dbc.CardBody(
                                             dcc.Loading(
                                                 children=[html.Div(dcc.Graph(
-                                                    id="cumulativedeaths-chart", config={"displayModeBar": False}))],
+                                                    id="cumulativedeaths-chart",
+                                                    config={"displayModeBar": False}))],
                                                 type="default"
                                             )),
                                         # dbc.CardBody(
@@ -934,22 +961,7 @@ def update_subregion_dropdown(name):
     return [{'label': i, 'value': i} for i in fnameDict[name]]
 
 
- # ============== SLIDER CALLBACK ==============
-
-
-# Update names to abbreviated form
-def update_province_name(province_name):
-    if (province_name == "Newfoundland and Labrador"):
-        province_name = "NL"
-    elif (province_name == "British Columbia"):
-        province_name = "BC"
-    elif (province_name == "Prince Edward Island"):
-        province_name == "PEI"
-    elif (province_name == "Northwest Territories"):
-        province_name == "NWT"
-
-    return province_name
-
+ # ============== SLIDER CALLBACK ==============    
 @app.callback(
     ddp.Output("simulation-chart", "figure"),
     [
@@ -974,6 +986,8 @@ def update_mortality_chart(n_clicks1, n_clicks2, province_name, region, start_da
                            day_to_start_forecast, days_to_forecast, facemask, xMob, vac):    
     #===BPH-FIXME forbid predictions prior to March 2020
     
+    daterange = get_daterange(start_date, end_date, day_to_start_forecast, days_to_forecast)
+
     print("START --- update_mortality_chart \t", nowtime())
     
     province_name = update_province_name(province_name)
@@ -995,11 +1009,10 @@ def update_mortality_chart(n_clicks1, n_clicks2, province_name, region, start_da
     print("      --- update_mortality_chart \t", nowtime(), " --- finished getting weather")    
     
     # fig.update_xaxes(type="log", range=[0,5])
-    time.sleep(2)
+    #time.sleep(2)
     for i in range(number_of_simulations):
-        if (i < 2):
-            time.sleep(3)
-
+        #if (i < 2):
+        #   time.sleep(3)
         print("      --- update_mortality_chart \t", nowtime(), " --- D(t) CURVE: " + str(i))
         #print("===== DEATH CURVE: " + str(i) + " ========")
         dates = predicted_dates(province_name, region, start_date, day_to_start_forecast, days_to_forecast)
@@ -1019,9 +1032,15 @@ def update_mortality_chart(n_clicks1, n_clicks2, province_name, region, start_da
     ))
 
     pred_fig.update_layout(xaxis_title='Date',
-                   yaxis_title='Daily Mortality (7-day Rolling Avg)',
-                   showlegend=False,                           
-                   updatemenus=updatemenus)
+                           yaxis_title='Daily Mortality (7-day Rolling Avg)',
+                           paper_bgcolor = graph_background_color,
+                           plot_bgcolor = graph_plot_color,                           
+                           margin = graph_margins,
+                           xaxis_range = daterange,
+                           showlegend=False,                           
+                           annotations=buttons_annotations,
+                           updatemenus=buttons_updatemenus,
+                           )
 
     print("END   --- update_mortality_chart \t", nowtime())
     
@@ -1040,10 +1059,15 @@ def update_mortality_chart(n_clicks1, n_clicks2, province_name, region, start_da
         ddp.State("subregion-dropdown", "value"),
         ddp.State("date-range", "start_date"),
         ddp.State("date-range", "end_date"),
+        ddp.State("forecast-start-date", "date"),
+        ddp.State('forecast-slider', 'value'),        
     ],
 )
-def update_cases_charts(n_clicks1, n_clicks2, province_name, region, start_date, end_date):
+def update_cases_charts(n_clicks1, n_clicks2, province_name, region, start_date, end_date,
+                        day_to_start_forecast, days_to_forecast):
     print("START --- update_cases_chart \t\t", nowtime())
+
+    daterange = get_daterange(start_date, end_date, day_to_start_forecast, days_to_forecast)
     
     province_name = update_province_name(province_name)
     # xMob = -xMob
@@ -1075,9 +1099,16 @@ def update_cases_charts(n_clicks1, n_clicks2, province_name, region, start_date,
     ))
 
     cases_fig.update_layout(xaxis_title='Date',
-                   yaxis_title='Daily Cases (7-day Rolling Avg)',
-                   updatemenus=updatemenus)
-
+                            yaxis_title='Daily Cases (7-day Rolling Avg)',
+                            paper_bgcolor = graph_background_color,
+                            plot_bgcolor = graph_plot_color,                           
+                            margin = graph_margins,
+                            xaxis_range = daterange,
+                            showlegend=False,                           
+                            annotations=buttons_annotations,
+                            updatemenus=buttons_updatemenus,
+                            )
+    
     print("END   --- update_cases_chart \t\t", nowtime())    
 
     return cases_fig
@@ -1095,12 +1126,15 @@ def update_cases_charts(n_clicks1, n_clicks2, province_name, region, start_date,
         ddp.State("subregion-dropdown", "value"),
         ddp.State("date-range", "start_date"),
         ddp.State("date-range", "end_date"),
+        ddp.State("forecast-start-date", "date"),
         ddp.State('forecast-slider', 'value'),
     ],
 )
 def update_weather_chart(n_clicks1, n_clicks2, province_name, region, start_date, end_date,
-                         forecasted_dates,):
+                         day_to_start_forecast, days_to_forecast,):
     print("START --- update_weather_chart \t\t", nowtime())
+
+    daterange = get_daterange(start_date, end_date, day_to_start_forecast, days_to_forecast)
 
     province_name = update_province_name(province_name)
 
@@ -1108,23 +1142,28 @@ def update_weather_chart(n_clicks1, n_clicks2, province_name, region, start_date
     df_weather = get_weather_dataframe(province_name, region)
     # select out current and future data
     today = datetime.datetime.today()
-    df_weather = df_weather[df_weather.date.between(start_date, end_date)]
+    df_weather = df_weather[df_weather.date.between(daterange[0], daterange[1])]
     df_weather_current = df_weather[df_weather.date < today]
     df_weather_future = df_weather[df_weather.date >= today]    
 
     weather_fig = px.line(df_weather_current, x = 'date', y = 'temp_mean')
-    
-    weather_fig.update_layout(xaxis_title='Date',	
-                   yaxis_title='Mean Temperature',
-                   showlegend=False,)	
 
     weather_fig.add_trace(go.Scatter(	
         x = df_weather_future['date'],
         y = df_weather_future['temp_mean'],
         mode = 'lines',
         name='Historical Average',	
-        ))
+    ))
     
+    weather_fig.update_layout(xaxis_title='Date',	
+                              yaxis_title='Mean Temperature',
+                              paper_bgcolor = graph_background_color,
+                              plot_bgcolor = graph_plot_color,                           
+                              margin = graph_margins,
+                              xaxis_range = daterange,
+                              showlegend=False,                           
+                              )
+
     print("END   --- update_weather_chart \t\t", nowtime())
     
     return weather_fig
@@ -1142,6 +1181,7 @@ def update_weather_chart(n_clicks1, n_clicks2, province_name, region, start_date
         ddp.State("subregion-dropdown", "value"),
         ddp.State("date-range", "start_date"),
         ddp.State("date-range", "end_date"),
+        ddp.State("forecast-start-date", "date"),
         ddp.State('forecast-slider', 'value'),
         ddp.State('mobility-slider', 'value'),
     ],
@@ -1149,29 +1189,37 @@ def update_weather_chart(n_clicks1, n_clicks2, province_name, region, start_date
     # prevent_initial_call=True
 )
 def update_mob_charts(n_clicks1, n_clicks2, province_name, region, start_date, end_date,
-                      forecasted_dates, xMob):
+                      day_to_start_forecast, days_to_forecast, xMob):
     print("START --- update_mob_charts \t\t", nowtime())
-    print("      --- update_mob_charts \t\t", nowtime(), " --- xMob=" + str(xMob))
+    #print("      --- update_mob_charts \t\t", nowtime(), " --- xMob=" + str(xMob))
 
+    daterange = get_daterange(start_date, end_date, day_to_start_forecast, days_to_forecast)
     
     province_name = update_province_name(province_name)
     xMob = -xMob
-    dates = predicted_dates(province_name, region, start_date, end_date, forecasted_dates)
+    dates = predicted_dates(province_name, region, start_date, end_date, days_to_forecast)
     mob_values = []
     for i in range(len(dates)):
         mob_values.append(xMob)
     
      # ============== MOBILITY GRAPH ==============
     mobility_fig = px.line(df_mort, x = date_mob(province_name, region, start_date, end_date), y = mobility(province_name, region, start_date, end_date))
-    mobility_fig.update_layout(xaxis_title='Date',
-                   yaxis_title='Workplace Social Mobility',
-                   showlegend=False,)
+
     mobility_fig.add_trace(go.Scatter(
             x=dates,
             y=mob_values,
             name='Simulated Mobility',
         ))
     
+    mobility_fig.update_layout(xaxis_title='Date',
+                               yaxis_title='Workplace Social Mobility',
+                               paper_bgcolor = graph_background_color,
+                               plot_bgcolor = graph_plot_color,                           
+                               margin = graph_margins,
+                               xaxis_range = daterange,
+                               showlegend=False,                           
+                               )
+
     print("END   --- update_mob_charts \t\t", nowtime())
     
     return mobility_fig
@@ -1189,6 +1237,7 @@ def update_mob_charts(n_clicks1, n_clicks2, province_name, region, start_date, e
         ddp.State("subregion-dropdown", "value"),
         ddp.State("date-range", "start_date"),
         ddp.State("date-range", "end_date"),
+        ddp.State("forecast-start-date", "date"),
         ddp.State('forecast-slider', 'value'),
         ddp.State('vaccine-slider', 'value'),
     ],
@@ -1196,18 +1245,12 @@ def update_mob_charts(n_clicks1, n_clicks2, province_name, region, start_date, e
     # prevent_initial_call=True
 )
 def update_vaccination_charts(n_clicks1, n_clicks2, province_name, region, start_date, end_date,
-                              forecasted_dates, vac_slider_val):
-    print("START --- update_vaccination_chart \t", nowtime())
-    
-    #===BPH This commented-stuff will no longer work because the
-    #       global variable df_vac2 was removed.
-    # while (df_vac2.empty):
-    #     time.sleep(1)
-    #     print("SLEEPING!!!!!")
+                              day_to_start_forecast, days_to_forecast, vac_slider_val):
 
-    # if (not df_vac2.empty):
-    #     print(df_vac2)
-    # print("df_vac2.empty: " + str(df_vac2.empty))
+    print("START --- update_vaccination_chart \t", nowtime())
+
+    daterange = get_daterange(start_date, end_date, day_to_start_forecast, days_to_forecast)
+
     province_name = update_province_name(province_name)
     df_vac = vaccination_data(province_name, region)
     regional_population = get_total_pop(province_name, region)
@@ -1215,7 +1258,7 @@ def update_vaccination_charts(n_clicks1, n_clicks2, province_name, region, start
     total_pop = get_total_pop(province_name, region)
     last_vac = get_last_vac(province_name, region)
     vac_slider_val = vac_slider_val / 100.0
-    dates = predicted_dates(province_name, region, start_date, end_date, forecasted_dates)
+    dates = predicted_dates(province_name, region, start_date, end_date, days_to_forecast)
     vac_forecasted_values = []
     for i in range(len(dates)):
         date_in_forecast = datetime.datetime.strptime(end_date, '%Y-%m-%d') + datetime.timedelta(days=i)
@@ -1239,14 +1282,22 @@ def update_vaccination_charts(n_clicks1, n_clicks2, province_name, region, start
         
 
     vaccination_fig = px.line(vac_vals, x = vac_dates, y = vac_vals)
-    vaccination_fig.update_layout(xaxis_title='Date',
-                   yaxis_title='Total Vaccinations/Population of Region', showlegend=False)
+
     vaccination_fig.add_trace(go.Scatter(
             x=dates,
             y=vac_forecasted_values,
             name='Simulated Vaccinations',
         ))
-
+    
+    vaccination_fig.update_layout(xaxis_title='Date',
+                                  yaxis_title='Total Vaccinations/Population of Region',
+                                  paper_bgcolor = graph_background_color,
+                                  plot_bgcolor = graph_plot_color,                           
+                                  margin = graph_margins,
+                                  xaxis_range = daterange,
+                                  showlegend=False,                           
+                                  )
+    
     print("END   --- update_vaccination_chart \t", nowtime())
     
     return vaccination_fig
@@ -1264,6 +1315,7 @@ def update_vaccination_charts(n_clicks1, n_clicks2, province_name, region, start
         ddp.State("subregion-dropdown", "value"),
         ddp.State("date-range", "start_date"),
         ddp.State("date-range", "end_date"),
+        ddp.State("forecast-start-date", "date"),
         ddp.State('forecast-slider', 'value'),
         ddp.State('facemask-slider', 'value'),
     ],
@@ -1271,31 +1323,39 @@ def update_vaccination_charts(n_clicks1, n_clicks2, province_name, region, start
     # prevent_initial_call=True    
 )
 def update_trends_charts(n_clicks1, n_clicks2, province_name, region, start_date, end_date,
-                         forecasted_dates, mask_slider_val):
+                         day_to_start_forecast, days_to_forecast, mask_slider_val):
     print("START --- update_trends_chart \t\t", nowtime())
+
+    daterange = get_daterange(start_date, end_date, day_to_start_forecast, days_to_forecast)
     
     province_name = update_province_name(province_name)
-
-    dates = predicted_dates(province_name, region, start_date, end_date, forecasted_dates)
+    
+    dates = predicted_dates(province_name, region, start_date, end_date, days_to_forecast)
     trends_vals = []
     for i in range(len(dates)):
         trends_vals.append(mask_slider_val)
-
+        
     df_trends = df_trends_data(province_name, region)
     trends_past_dates = df_trends['date']
     trends_past_vals = df_trends[str(get_geocode(province_name, region))]
+
     trends_fig = px.line(df_trends, x = trends_past_dates, y = trends_past_vals)
-    trends_fig.update_layout(
-        xaxis_title='Date',
-        yaxis_title='Number of Google Searches for Face Masks',
-        showlegend=False,
-    )
+
     trends_fig.add_trace(go.Scatter(
             x=dates,
             y=trends_vals,
             name='Simulated Facemask Use',
         ))
 
+    trends_fig.update_layout(xaxis_title='Date',
+                             yaxis_title='Number of Google Searches for Face Masks',
+                             paper_bgcolor = graph_background_color,
+                             plot_bgcolor = graph_plot_color,                           
+                             margin = graph_margins,
+                             xaxis_range = daterange,
+                             showlegend=False,                           
+                             )
+    
     first_date = datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
     mid_april = datetime.datetime.strptime("2021-04-15", "%Y-%m-%d").date()
     
@@ -1314,7 +1374,13 @@ def update_trends_charts(n_clicks1, n_clicks2, province_name, region, start_date
 
     facemask_fig = px.line(df_trends, x = trends_past_dates, y = facemask_vals)
     facemask_fig.update_layout(xaxis_title='Date',
-                   yaxis_title='7-day Average Facemask')
+                               yaxis_title='7-day Average Facemask',
+                               paper_bgcolor = graph_background_color,
+                               plot_bgcolor = graph_plot_color,                           
+                               margin = graph_margins,
+                               xaxis_range = daterange,
+                               showlegend=False,                           
+                               )
 
     print("END   --- update_trends_chart \t\t", nowtime())
 
@@ -1343,6 +1409,8 @@ def update_trends_charts(n_clicks1, n_clicks2, province_name, region, start_date
 def update_rtcurve_charts(n_clicks1, n_clicks2, province_name, region, start_date, end_date,
                           day_to_start_forecast, days_to_forecast, facemask, xMob, vac):
     print("START --- update_rtcurve_charts \t", nowtime())
+
+    daterange = get_daterange(start_date, end_date, day_to_start_forecast, days_to_forecast)    
     
     province_name = update_province_name(province_name)
     xMob = -xMob
@@ -1378,32 +1446,14 @@ def update_rtcurve_charts(n_clicks1, n_clicks2, province_name, region, start_dat
             line=dict(color='black', width=2),
     ))
 
-    updatemenus = [
-        dict(
-            type="buttons",
-            xanchor="right",
-            yanchor="bottom",
-            direction="left",
-            x=0.1,
-            y=1.1,
-            buttons=list([
-                dict(
-                    args=[{'yaxis.type': 'linear'}],
-                    label="Linear Scale",
-                    method="relayout"
-                ),
-                dict(
-                    args=[{'yaxis.type': 'log'}],
-                    label="Log Scale",
-                    method="relayout"
-                )
-            ])
-        ),
-    ]    
-
     rtcurve_fig.update_layout(xaxis_title='Date',
-                   yaxis_title='R(t) Curve Based On Mortality',
-                   updatemenus=updatemenus)
+                              yaxis_title='R(t) Curve Based On Mortality',
+                              paper_bgcolor = graph_background_color,
+                              plot_bgcolor = graph_plot_color,                           
+                              margin = graph_margins,
+                              xaxis_range = daterange,
+                              showlegend=False,                           
+                              )
 
     print("END   --- update_rtcurve_charts \t", nowtime())
 
@@ -1420,12 +1470,17 @@ def update_rtcurve_charts(n_clicks1, n_clicks2, province_name, region, start_dat
         ddp.State("subregion-dropdown", "value"),
         ddp.State("date-range", "start_date"),
         ddp.State("date-range", "end_date"),
+        ddp.State("forecast-start-date", "date"),
+        ddp.State('forecast-slider', 'value'),
     ],
 )
 def update_cumulativedeaths_charts(n_clicks1, n_clicks2, province_name, region,
-                                   start_date, end_date):
+                                   start_date, end_date,
+                                   day_to_start_forecast, days_to_forecast):
     print("START --- update_cumulativedeath_chart \t", nowtime())
     
+    daterange = get_daterange(start_date, end_date, day_to_start_forecast, days_to_forecast)    
+
     province_name = update_province_name(province_name)
     dates = date(province_name, region, start_date, end_date)
     cumulativedeaths = cumulative_deaths(province_name, region, start_date, end_date)
@@ -1440,11 +1495,48 @@ def update_cumulativedeaths_charts(n_clicks1, n_clicks2, province_name, region,
         ))
     
     cumulativedeaths_fig.update_layout(xaxis_title='Date',
-                   yaxis_title='Number of Deaths')
+                                       yaxis_title='Number of Deaths',
+                                       xaxis_range = daterange,
+                                       paper_bgcolor = graph_background_color,
+                                       plot_bgcolor = graph_plot_color,                           
+                                       margin = graph_margins,
+                                       showlegend=False,                           
+                                       annotations=buttons_annotations,
+                                       updatemenus=buttons_updatemenus,
+                                       )
+
     print("START --- update_cumulativedeath_chart \t", nowtime())
     
     return cumulativedeaths_fig
 
+
+# -------------- GENERAL HELPER FUNCTIONS --------------
+
+# Update names to abbreviated form
+def update_province_name(province_name):
+    if (province_name == "Newfoundland and Labrador"):
+        province_name = "NL"
+    elif (province_name == "British Columbia"):
+        province_name = "BC"
+    elif (province_name == "Prince Edward Island"):
+        province_name == "PEI"
+    elif (province_name == "Northwest Territories"):
+        province_name == "NWT"
+
+    return province_name
+
+def get_daterange(daterange_min, daterange_max, forecast_startdate, forecast_length_months):
+    dr_min = datetime.datetime.strptime(daterange_min, "%Y-%m-%d")
+    dr_max = datetime.datetime.strptime(daterange_max, "%Y-%m-%d")
+    fc_start = datetime.datetime.strptime(forecast_startdate, "%Y-%m-%d")
+    fc_length = datetime.timedelta(days=forecast_length_months*30)
+    mindate = min(dr_min, fc_start)
+    maxdate = max(dr_max, fc_start + fc_length)
+    if (mindate < first_possible_date):
+        mindate = first_possible_date
+    if (maxdate > last_possible_date):
+        maxdate = last_possible_date
+    return [mindate.strftime("%Y-%m-%d"), maxdate.strftime("%Y-%m-%d")]
 
 # -------------- STATIC DATA HELPER FUNCTIONS --------------
 
