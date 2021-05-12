@@ -219,7 +219,7 @@ footer2 = html.Footer(html.Div([
 site_backbone = html.Div([
     dcc.Location(id='url', refresh=False),
     #===BPH-FIXME Temporarily hidden navbar to see errors
-    #html.Div(navbar2),
+    html.Div(navbar2),
     html.Div(id='page-content', className="page border"),
     footer2,
 ])
