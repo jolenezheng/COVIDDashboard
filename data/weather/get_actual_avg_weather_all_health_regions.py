@@ -341,12 +341,15 @@ def download_monthly_data_and_write_to_file(year_start, year_end,
         # if list not empty
         df = pd.concat(dfs, ignore_index=True)
         # Fill in any missing dates (e.g., at the end of the month)
+        #    (I think you have to convert date to datetime object to do this)
         df['date'] = pd.to_datetime(df['date'])
         firstday = f"{year_start:d}-{month_start:02d}-01"
         lastday = df['date'].to_list()[-1]
         daterng = pd.date_range(firstday, lastday)
         df = df.set_index('date').reindex(daterng).reset_index()
         df.columns = raw_data_columns
+        # convert date back to string
+        df['date'] = df['date'].dt.strftime('%Y-%m-%d')
         # write file
         if write_to_file:
             outfile = outdir + prov_id + '_' + str(hr_uid) + ".csv"
@@ -574,6 +577,49 @@ def prevmonth(month):
     else:
         return month-1
 
+#============================================================#
+#        updating raw data files with most recent data       #
+#============================================================#
+def update_raw_data_for_last_two_months(df_hr, download_date_start,
+                                        download_date_end):
+    #
+    # get today's date (for month/year)
+    nowdate = dt.datetime.now()
+    # find beginning of previous month and the end of this month
+    year_start = nowdate.year
+    year_end = nowdate.year
+    month_end = nowdate.month
+    month_start = prevmonth(month_end)
+    startdate = f"{year_start:d}-{month_start:02d}-01"
+    enddate = f"{year_start:d}-{month_end:02d}-" \
+        + f"{get_endofmonth(year_start,month_end):02d}"
+    # grab the outdir for "download_raw_all"
+    nonedate, ys, ye, ms, me, outdir = \
+        prep_for_download(download_date_start, download_date_end)
+    # loop over all health regions
+    for index, row in df_hr.iterrows():
+        prov_id = row.prov_id
+        climate_ids = [row.climate_id, row.climate_id_alt, row.climate_id_alt2]
+        stations = [row.temp_region, row.temp_region_alt, row.temp_region_alt2]
+        region = row.health_region
+        hr_uid = row.hr_uid
+        # load the saved data
+        filename = prov_id + "_" + str(hr_uid) + ".csv"
+        df = pd.read_csv(outdir + filename)
+        # delete this month and the previous one
+        df = df[~df['date'].between(startdate, enddate)]
+        # Get new data only for this and last month
+        print("====== " + prov_id + " --- " + region + " (" + str(hr_uid) +  ") ======")
+        newdf = download_monthly_data_and_write_to_file(year_start, year_end,
+                                                        month_start, month_end,
+                                                        prov_id, climate_ids, stations,
+                                                        region, hr_uid, outdir,
+                                                        write_to_file = False)
+        # append new data to old
+        df = df.append(newdf)
+        # write back to the file
+        df.to_csv(outdir + filename, index=False)
+
 ############# Main Code ##############
 if (runmode == "download_raw_all"):
     #=== Download all raw data
@@ -603,42 +649,7 @@ elif (runmode == "create_actual_avg_one_hr"):
                                               create_date_start, create_date_end)
 elif (runmode == "update_raw_data_two_months"):
     #=== Download all raw data for this month and last month
-    #
-    # get today's date (for month/year)
-    nowdate = dt.datetime.now()
-    # find beginning of previous month and the end of this month
-    year_start = nowdate.year
-    year_end = nowdate.year
-    month_end = nowdate.month
-    month_start = prevmonth(month_end)
-    startdate = f"{year_start:d}-{month_start:02d}-01"
-    enddate = f"{year_start:d}-{month_end:02d}-" \
-        + f"{get_endofmonth(year_start,month_end):02d}"
-    # grab the outdir for "download_raw_all"
-    nonedate, ys, ye, ms, me, outdir = \
-        prep_for_download(download_raw_date_start, download_raw_date_end)
-    # loop over all health regions
-    for index, row in df_hr_static.iterrows():
-        prov_id = row.prov_id
-        climate_ids = [row.climate_id, row.climate_id_alt, row.climate_id_alt2]
-        stations = [row.temp_region, row.temp_region_alt, row.temp_region_alt2]
-        region = row.health_region
-        hr_uid = row.hr_uid
-        # load the saved data
-        filename = prov_id + "_" + str(hr_uid) + ".csv"
-        df = pd.read_csv(outdir + filename)
-        # delete this month and the previous one
-        df = df[~df['date'].between(startdate, enddate)]
-        # Get new data only for this and last month
-        print("====== " + prov_id + " --- " + region + " (" + str(hr_uid) +  ") ======")
-        newdf = download_monthly_data_and_write_to_file(year_start, year_end,
-                                                        month_start, month_end,
-                                                        prov_id, climate_ids, stations,
-                                                        region, hr_uid, outdir,
-                                                        write_to_file = False)
-        # append new data to old
-        df = df.append(newdf)
-        # write back to the file
-        df.to_csv(outdir + filename, index=False)
+    update_raw_data_for_last_two_months(df_hr_static, download_raw_date_start,
+                                        download_raw_date_end)
 else:
     print("***Error: runmode not recognized.")
