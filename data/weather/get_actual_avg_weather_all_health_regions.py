@@ -169,11 +169,11 @@ class DataMissingException(Exception):
 #=== setting dates for downloads and download directories
 def prep_for_download(date_start, date_end, no_create_outdir=False):
     # Set up dates for downloading
-    nowdate, year_start, year_end, month_start, month_end = \
-        prep_dates_for_downloading(date_start, date_end)
+    nowdate, year_start, year_end, month_start, month_end, year_end_file, month_end_file = \
+            prep_dates_for_downloading(date_start, date_end)
     # Prepare outfile directory
     outdir = base_raw_outdir \
-        + f"{year_start:d}-{month_start:02d}_{year_end:d}-{month_end:02d}"
+        + f"{year_start:d}-{month_start:02d}_{year_end_file:d}-{month_end_file:02d}"
     if no_create_outdir:
         outdir = outdir + '/'
     else:
@@ -184,6 +184,9 @@ def prep_for_download(date_start, date_end, no_create_outdir=False):
 def prep_dates_for_downloading(date_start, date_end):
     startdate = dt.datetime.strptime(date_start, "%Y-%m-%d")
     enddate = dt.datetime.strptime(date_end, "%Y-%m-%d")
+    # let the directory name be matched to the requested date range
+    year_end_file = enddate.year
+    month_end_file = enddate.month
     nowdate = dt.datetime.now()
     if (nowdate < enddate):
         enddate = nowdate
@@ -191,7 +194,7 @@ def prep_dates_for_downloading(date_start, date_end):
     year_end = enddate.year
     month_start = startdate.month
     month_end = enddate.month
-    return nowdate, year_start, year_end, month_start, month_end
+    return nowdate, year_start, year_end, month_start, month_end, year_end_file, month_end_file
 
 #=== Directory for storing downloaded raw data
 base_raw_outdir = "all_health_regions_raw_temperature_files/"
@@ -249,7 +252,8 @@ def get_endofmonth(year, month):
 def download_monthly_data_and_write_to_file(year_start, year_end,
                                             month_start, month_end,
                                             prov_id, climate_ids, stations,
-                                            region, hr_uid, outdir):
+                                            region, hr_uid, outdir,
+                                            write_to_file=True):
     # Print out all stations for this health region
     for i in range(3):
         if (not pd.isnull(climate_ids[i])):
@@ -337,15 +341,21 @@ def download_monthly_data_and_write_to_file(year_start, year_end,
         # if list not empty
         df = pd.concat(dfs, ignore_index=True)
         # Fill in any missing dates (e.g., at the end of the month)
+        #    (I think you have to convert date to datetime object to do this)
         df['date'] = pd.to_datetime(df['date'])
         firstday = f"{year_start:d}-{month_start:02d}-01"
         lastday = df['date'].to_list()[-1]
         daterng = pd.date_range(firstday, lastday)
         df = df.set_index('date').reindex(daterng).reset_index()
         df.columns = raw_data_columns
+        # convert date back to string
+        df['date'] = df['date'].dt.strftime('%Y-%m-%d')
         # write file
-        outfile = outdir + prov_id + '_' + str(hr_uid) + ".csv"
-        df.to_csv(outfile, index=False)
+        if write_to_file:
+            outfile = outdir + prov_id + '_' + str(hr_uid) + ".csv"
+            df.to_csv(outfile, index=False)
+        else:
+            return df
         
 #=== Downloading data for one health region in a date range
 def download_raw_data_one_hr(my_hr_uid, df_hr, date_start, date_end):
@@ -568,6 +578,49 @@ def prevmonth(month):
     else:
         return month-1
 
+#============================================================#
+#        updating raw data files with most recent data       #
+#============================================================#
+def update_raw_data_for_last_two_months(df_hr, download_date_start,
+                                        download_date_end):
+    #
+    # get today's date (for month/year)
+    nowdate = dt.datetime.now()
+    # find beginning of previous month and the end of this month
+    year_start = nowdate.year
+    year_end = nowdate.year
+    month_end = nowdate.month
+    month_start = prevmonth(month_end)
+    startdate = f"{year_start:d}-{month_start:02d}-01"
+    enddate = f"{year_start:d}-{month_end:02d}-" \
+        + f"{get_endofmonth(year_start,month_end):02d}"
+    # grab the outdir for "download_raw_all"
+    nonedate, ys, ye, ms, me, outdir = \
+        prep_for_download(download_date_start, download_date_end)
+    # loop over all health regions
+    for index, row in df_hr.iterrows():
+        prov_id = row.prov_id
+        climate_ids = [row.climate_id, row.climate_id_alt, row.climate_id_alt2]
+        stations = [row.temp_region, row.temp_region_alt, row.temp_region_alt2]
+        region = row.health_region
+        hr_uid = row.hr_uid
+        # load the saved data
+        filename = prov_id + "_" + str(hr_uid) + ".csv"
+        df = pd.read_csv(outdir + filename)
+        # delete this month and the previous one
+        df = df[~df['date'].between(startdate, enddate)]
+        # Get new data only for this and last month
+        print("====== " + prov_id + " --- " + region + " (" + str(hr_uid) +  ") ======")
+        newdf = download_monthly_data_and_write_to_file(year_start, year_end,
+                                                        month_start, month_end,
+                                                        prov_id, climate_ids, stations,
+                                                        region, hr_uid, outdir,
+                                                        write_to_file = False)
+        # append new data to old
+        df = df.append(newdf)
+        # write back to the file
+        df.to_csv(outdir + filename, index=False)
+
 ############# Main Code ##############
 if (runmode == "download_raw_all"):
     #=== Download all raw data
@@ -597,12 +650,7 @@ elif (runmode == "create_actual_avg_one_hr"):
                                               create_date_start, create_date_end)
 elif (runmode == "update_raw_data_two_months"):
     #=== Download all raw data for this month and last month
-    nowdate = dt.datetime.now()
-    startdate = f"{nowdate.year:d}-{prevmonth(nowdate.month):02d}-01"
-    enddate = f"{nowdate.year:d}-{nowdate.month:02d}-" \
-        + f"{get_endofmonth(nowdate.year,nowdate.month):02d}"
-    print(startdate, enddate)
-    download_all_raw_data(df_hr_static, startdate, enddate)
-    
+    update_raw_data_for_last_two_months(df_hr_static, download_raw_date_start,
+                                        download_raw_date_end)
 else:
     print("***Error: runmode not recognized.")
