@@ -89,10 +89,10 @@ static_data = pd.read_csv(r'data/health_regions_static_data.csv', encoding='Lati
 pd.set_option('display.max_rows', None)
 
 #=== Number of D(t) and R(t) simulations (Set to 10, unless testing)
-number_of_simulations = 2
+number_of_simulations = 10
 
 #== Turn the navbar on/off
-navbar_on = False
+navbar_on = True
 
 #=== Plot the temperature as a rolling average (or raw)
 plot_weather_14d_rolling = True
@@ -145,9 +145,10 @@ first_possible_date=datetime.datetime.strptime("2020-01-01", "%Y-%m-%d")
 last_possible_date = datetime.datetime.strptime("2023-01-01", "%Y-%m-%d")
 #=== Set initial slider values to negative, so that initial
 #    runs of graphs will get updated values for the region
-initial_facemask_slider = -1
-initial_mobility_slider = -1
-initial_vaccine_slider = -1
+initial_nonvalue = -9999
+initial_facemask_slider = initial_nonvalue
+initial_mobility_slider = initial_nonvalue
+initial_vaccine_slider = initial_nonvalue
 
 #===========================================================
 #=========  Plotly Graph Options (all graphs)  =============
@@ -473,8 +474,8 @@ canadian_dashboard = html.Div(
                                                     max=12,
                                                     step=0.5,
                                                     value=forecast_initial_length, 
-                                                    marks={ 0: '0 mo', 2: '2 mo', 4: '4 mo',
-                                                        6: '6 mo', 8: '8 mo', 10: '10 mo', 12: '1 yr'
+                                                    marks={ 0: '0', 2: '2', 4: '4',
+                                                        6: '6', 8: '8', 10: '10', 12: '12'
                                                     },
                                                 ),
                                             ]
@@ -987,12 +988,13 @@ def update_headers(region_name, province_name):
 
     # Graph Titles
     deaths_label = 'Daily Deaths in ' + region_name + ', ' + province_name 
-    cases_label = 'Daily Reported Cases in ' + region_name + ', ' + province_name
+    cases_label = 'Daily Reported Cases in ' + region_name + ', ' + province_name \
+        + " (not used for forecasting)"
     mob_label = 'Workplace Social Mobility in ' + region_name + ', ' + province_name
     temp_label = 'Daily Reported Temperature in ' + region_name + ', ' + province_name
-    vac_label = 'Fraction of the Population Vaccinated in ' + region_name + ', ' + province_name
+    vac_label = 'Vaccination of Population in ' + region_name + ', ' + province_name
     trends_label = 'Google Searches for Face Masks in ' + region_name + ', ' + province_name
-    rtcurve_label = 'Effective Reproduction Number R(t) Curves in ' + region_name + ', ' \
+    rtcurve_label = 'Effective Reproduction Number R(t) Curves for ' + region_name + ', ' \
         + province_name + " (black = actual, colors = predicted)"
     cumulativedeaths_label = 'Cumulative Deaths in ' + region_name + ', ' + province_name
 
@@ -1130,16 +1132,21 @@ def update_mortality_chart(n_clicks1, n_clicks2, region_name, province_name,
         do_simulations = True
     else:
         do_simulations = False
-    
+    if ('subregion-dropdown' in changed_id):
+        subregion_changed = True
+    else:
+        subregion_changed = False
     #=== Identify an initial run or an update for the region
     #    and set slider values manually
-    if ( (mob_slider < 0) | (facemask_slider < 0) | (vac_slider < 0)
-         | (~do_simulations) ):
+    if ( (mob_slider == initial_nonvalue)
+         | (facemask_slider == initial_nonvalue)
+         | (vac_slider == initial_nonvalue)
+         | (subregion_changed) ):
         facemask_slider, mob_slider, vac_slider = \
             get_last_trends_mob_vaxrate_for_region(province_name, region_name)
     
     print("      --- update_mortality_chart \t", nowtime(), " --- slider data loaded")
-        
+    
     #=== Set the daterange (same for all graphs).  This is currently:
     #         [first_mortality_date, forecast_startdate + forecast_length]
     daterange = get_daterange(day_to_start_forecast, months_to_forecast)
@@ -1333,16 +1340,16 @@ def update_cumulativedeaths_charts(n_clicks1, n_clicks2, region_name, province_n
         ddp.Input('rerun-btn1', 'n_clicks'),
         ddp.Input('rerun-btn2', 'n_clicks'),
         ddp.Input("subregion-dropdown", "value"),
+        ddp.Input('mobility-slider', 'value'),
     ],        
     [
         ddp.State("region-dropdown", "value"),
         ddp.State("forecast-start-date", "date"),
         ddp.State('forecast-slider', 'value'),
-        ddp.State('mobility-slider', 'value'),
     ],
 )
-def update_mob_charts(n_clicks1, n_clicks2, region_name, province_name, 
-                      day_to_start_forecast, months_to_forecast, mob_slider):
+def update_mob_charts(n_clicks1, n_clicks2, region_name, mob_slider, province_name, 
+                      day_to_start_forecast, months_to_forecast):
     print("START --- update_mob_charts \t\t", nowtime())
     #print("      --- update_mob_charts \t\t", nowtime(), " --- xMob=" + str(xMob))
 
@@ -1350,16 +1357,15 @@ def update_mob_charts(n_clicks1, n_clicks2, region_name, province_name,
     
     province_name = update_province_name(province_name)
 
-    #=== Check to see if button pressed, or subregion changed
+    #=== Check to see if subregion changed
     changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
-    if ( ('rerun-btn1' in changed_id) | ('rerun-btn2' in changed_id) ):
-        button_pressed = True
+    if ('subregion-dropdown' in changed_id):
+        subregion_changed = True
     else:
-        button_pressed = False
-    
+        subregion_changed = False
     #=== Identify an initial run or sub-region change
     #    and set slider values manually
-    if ( (mob_slider < 0) | (~button_pressed) ):
+    if ( (mob_slider == initial_nonvalue) | (subregion_changed) ):
         facemask_slider, mob_slider, vac_slider = \
             get_last_trends_mob_vaxrate_for_region(province_name, region_name)
 
@@ -1439,16 +1445,15 @@ def update_vaccination_charts(n_clicks1, n_clicks2, region_name, vac_slider,
     
     province_name = update_province_name(province_name)
     
-    #=== Check to see if button pressed, or subregion changed    
+    #=== Check to see if subregion changed
     changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
-    if ( ('rerun-btn1' in changed_id) | ('rerun-btn2' in changed_id) ):
-        button_pressed = True
+    if ('subregion-dropdown' in changed_id):
+        subregion_changed = True
     else:
-        button_pressed = False
-
+        subregion_changed = False
     #=== Identify an initial run or a region update
     #    and set slider values manually
-    if ( (vac_slider < 0) | (~button_pressed) ):
+    if ( (vac_slider == initial_nonvalue) | (subregion_changed) ):
         facemask_slider, mob_slider, vac_slider = \
             get_last_trends_mob_vaxrate_for_region(province_name, region_name)
 
@@ -1576,35 +1581,31 @@ def update_weather_chart(n_clicks1, n_clicks2, region_name, province_name,
         ddp.Input('rerun-btn1', 'n_clicks'),
         ddp.Input('rerun-btn2', 'n_clicks'),
         ddp.Input("subregion-dropdown", "value"),
+        ddp.Input('facemask-slider', 'value'),
     ],
     [
         ddp.State("region-dropdown", "value"),
         ddp.State("forecast-start-date", "date"),
         ddp.State('forecast-slider', 'value'),
-        ddp.State('facemask-slider', 'value'),
     ],
 )
-def update_trends_charts(n_clicks1, n_clicks2, region_name, province_name,
-                         day_to_start_forecast, months_to_forecast, facemask_slider):
+def update_trends_charts(n_clicks1, n_clicks2, region_name, facemask_slider,
+                         province_name, day_to_start_forecast, months_to_forecast):
     print("START --- update_trends_chart \t\t", nowtime())
 
     daterange = get_daterange(day_to_start_forecast, months_to_forecast)
     
     province_name = update_province_name(province_name)
 
-    
-    #=== Check to see if a button was clicked (do simulations)
-    #    or if just the region was changed (replot data only)
-    #          https://stackoverflow.com/questions/62671226
+    #=== Check to see if subregion changed
     changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
-    if ( ('rerun-btn1' in changed_id) | ('rerun-btn2' in changed_id) ):
-        button_pressed = True
+    if ('subregion-dropdown' in changed_id):
+        subregion_changed = True
     else:
-        button_pressed = False
-    
+        subregion_changed = False
     #=== Identify an initial run or an update for the region
     #    and set slider values manually
-    if ( (facemask_slider < 0) | (~button_pressed) ):
+    if ( (facemask_slider == initial_nonvalue) | (subregion_changed) ):
         facemask_slider, mob_slider, vac_slider = \
             get_last_trends_mob_vaxrate_for_region(province_name, region_name)
 
@@ -1945,7 +1946,6 @@ def get_forecasted_mortality(province_name, region_name,
             xTrends1 = get_val_on_date('trends', df_trends,
                                        date_in_forecast - fortytwo_days)
             xTrends1 = possibly_replace_w_slider('trends', xTrends1, facemask_slider)
-
             #=== Mobility (two and four weeks ago, or slider value if not found)
             xMob1 = get_val_on_date('mob', df_mobility,
                                     date_in_forecast - two_weeks)
