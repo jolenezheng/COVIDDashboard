@@ -106,7 +106,9 @@ default_number_of_simulations = 5
 #                          (can estimate correct IC for zero values)
 #
 simulation_initial_value_type = 'log_smoothed' # 'log_smoothed' 'use_7day_avg'
-        
+# Apply a poisson randomization to the initial mortality value
+simulation_initial_value_randomized = False
+
 #=== Assumed serial interval (in days) for calculation of
 #    Basic Reproduction Number, R(t)
 Rt_serial_interval = 5.3 # "tau"
@@ -2040,7 +2042,7 @@ def get_forecasted_mortality(province_name, region_name,
     while True:
         if (thetype == 'use_7day_rolling_avg'):
             initial_mortality_on_forecast_startdate = \
-                get_random_mortality_rolling_avg_at_end(df_mort_new, randomize=False)
+                get_mortality_rolling_avg_at_end(df_mort_new)
             break
         elif (thetype == 'log_smoothed'):
             #== get the logsmoothed value of the mortality up to the
@@ -2080,6 +2082,10 @@ def get_forecasted_mortality(province_name, region_name,
     #=== Set the mortality on the start date to be the 7day avg value
     df_mort_new.at[df_mort_new.date == forecast_startdate, 'deaths'] = \
         initial_mortality_on_forecast_startdate
+    #=== Randomize the initial value
+    if simulation_initial_value_randomized:
+        df_mort_new = \
+            randomize_initial_mortality_value(df_mort_new, forecast_startdate_str)
     # get index of the start date
     start_index = \
         df_mort_new.index[df_mort_new.date == forecast_startdate].to_list()[0]
@@ -2266,12 +2272,17 @@ def get_hr_cases_df(province_name, region_name, getall=True, startdate=None, end
             exit(0)
         return dfr[dfr.date_report.between(startdate, enddate)]
 
-def get_random_mortality_rolling_avg_at_end(df, randomize=True):
+def get_mortality_rolling_avg_at_end(df):
     last_rolling_avg = df.deaths.rolling(window=7).mean().to_list()[-1]
-    if randomize:
-        return np.random.poisson(7.0 * last_rolling_avg) / 7.0
-    else:
-        return last_rolling_avg        
+    return last_rolling_avg        
+
+def randomize_initial_mortality_value(df_mort_new, forecast_startdate_str):
+    df = df_mort_new.copy()
+    theindex = \
+        pd.to_numeric(df.index[df.date == forecast_startdate_str])[0]
+    val = df.at[theindex, 'deaths']
+    df.at[theindex, 'deaths'] = np.random.poisson(7.0 * val) / 7.0
+    return df
 
 def get_dates_list(province_name, region_name, start_date, end_date):
     """Used for cumulative_deaths and R(t)"""
