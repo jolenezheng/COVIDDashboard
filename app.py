@@ -117,17 +117,10 @@ Rt_make_D14_nonzero_offset = 0.5/14.0  # avoid divide-by-zero issue
 Rt_smooth_lambda14_first = True
 
 #== Turn the navbar on/off
-navbar_on = False
+navbar_on = True
 
 #=== Plot the temperature as a rolling average (or raw)
 plot_weather_14d_rolling = True
-
-#=== Small mortality value for start of forecast if starting value is zero
-#
-#    Actually a broad interpolation of the mortality data is performed
-#    first to try and get a better value, but if that fails to produce
-#    a nonzero value, then this silly number is used.
-small_starting_mortality_when_zero = 1e-6
 
 #===BPH-FIXME  This global stuff for FAQ should be removed and FAQs fixed
 prev_states = [None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
@@ -1264,52 +1257,10 @@ def update_mortality_chart(n_clicks1, n_clicks2, region_name, province_name,
     print("      --- update_mortality_chart \t", nowtime(), " --- finished plotting deaths")
     print("      --- update_mortality_chart \t", nowtime(), " --- started plotting R(t)")
     
-    #=== Calculate R(t) from mortality data:
-    #
-    #    * for exp growth with fixed serial interval, tau:
-    #
-    #           n(tau) = n0 * R
-    #           n(2*tau) = (n0 * R) * R
-    #           n(N*tau) = n0 R^N
-    #           n(t) = n0 R^(t/tau)
-    #                = n0 exp[t/tau ln(R)]
-    #                = n0 exp[lambda*t]     w/ lambda = ln(R)/tau
-    #
-    #              ---> R = exp(tau*lambda)
-    #
-    #    * Get D_14 = 14-day rolling average of mortality
-    #
-    #    * Assuming
-    #
-    #          D_14(t) = const * exp[ lambda * t ]
-    #
-    #      we have (natural log)
-    #
-    #          lambda(t) = d[log(D_14)]/dt
-    #
-    #      which can be calculated using numpy.gradient
-    #
-    #    * Calculate
-    #
-    #          R(t) = exp[ tau * lambda(t) ] 
-    #   
-    #    * Take 14-day rolling average of the resulting R(t)
-    #
-    df_mort_Rt = df_mort.copy()
-    df_mort_Rt['D14'] = \
-        df_mort_Rt['deaths'].rolling(window=14).mean()  + Rt_make_D14_nonzero_offset
-    df_mort_Rt['log_D14'] = np.log(df_mort_Rt['D14'])
-    if Rt_smooth_lambda14_first:
-        df_mort_Rt['lambda_14'] = np.gradient(df_mort_Rt['log_D14'])
-        df_mort_Rt['lambda_14'] = df_mort_Rt['lambda_14'].rolling(window=14).mean()
-        df_mort_Rt['Rt'] = np.exp( Rt_serial_interval
-                                   * df_mort_Rt['lambda_14'] )
-    else:
-        df_mort_Rt['lambda_14'] = np.gradient(df_mort_Rt['log_D14'])
-        df_mort_Rt['Rt'] = np.exp( Rt_serial_interval
-                                   * df_mort_Rt['lambda_14'] )
-        df_mort_Rt['Rt'] = df_mort_Rt['Rt'].rolling(window=14).mean()
 
+    #=== Calculate R(t) from mortality data
+    df_mort_Rt = calculate_Rt_from_mortality(df_mort)
+    
     #=== Initialize R(t) figure and plot the R(t) from actual mortality data
     rtcurve_fig = go.Figure()
     rtcurve_fig.add_trace(
@@ -1380,10 +1331,12 @@ def update_mortality_chart(n_clicks1, n_clicks2, region_name, province_name,
             #=== Add simulated forecast of R(t) to the R(t) figure
             df_forecast['R(t)'] = \
                 np.exp( Rt_serial_interval * df_forecast['lambda'] )
+            # take moving average
+            df_forecast['R(t)'] = df_forecast['R(t)'].rolling(window=14).mean()            
             rtcurve_fig.add_trace(
                 go.Scatter(
                     x = df_forecast['date'].to_list(),
-                    y = moving_avg(df_forecast['R(t)'].to_list(), 14),
+                    y = df_forecast['R(t)'].to_list(),
                     mode = 'lines',
                     name='Prediction ' + str(i+1),
                 )
@@ -1988,51 +1941,6 @@ def get_hruid(province_name, region_name):
 #=========================================================
 #===========  Helper Functions: Simulations  =============
 #=========================================================
-
-def get_small_starting_mortality_when_zero(the_date, df):
-    """ 
-            the_date = date to get small value
-            df = entire mortality dataframe
-    """
-    # do broader and broader centered averages (adding
-    # 4 weeks at a time) to try to get a nonzero value
-    avg_window = 14 # initial, days
-    add_to_window = 28 # days
-    while (avg_window < len(df)):
-        newdf = df.copy()
-        newdf['deaths'] = \
-            newdf['deaths'].rolling(window=avg_window, center=True).mean()
-        # the rolling sets the first 60 values to nan, so
-        # set the first value to 0
-        first_date = newdf['date_death_report'].min()
-        therowindex = \
-            pd.to_numeric(
-                newdf.index[newdf.date_death_report.between(first_date, first_date)]
-            )[0]
-        newdf.at[therowindex, 'deaths'] = 0.0
-        # and then linear interpolate between zero and first nonzero value
-        newdf['deaths'] = newdf['deaths'].interpolate(method='linear')
-        # get the value at the desired date
-        the_date_ind = \
-            pd.to_numeric(
-                newdf.index[newdf.date_death_report.between(the_date, the_date)]
-            )[0]
-        #print(the_date_ind)
-        #print(newdf)
-        the_val = newdf.at[the_date_ind, 'deaths']
-        if (the_val > 0):
-            print("      --- update_mortality_chart \t"
-                  + "returning the small nonzero value of"
-                  + f" {the_val:.2e}"
-                  + f" at window={avg_window:d}")
-            return the_val
-        avg_window += 14
-    # if not found, return one in a million
-    print("      --- update_mortality_chart \t"
-          + "returning the default small nonzero value of"
-          + f" {small_starting_mortality_when_zero:.2e}")
-    return small_starting_mortality_when_zero
-
 def get_logsmoothed_initial_mortality(the_date, df):
     dfnew = df[['date', 'deaths']].copy()
     # get the 7-day rolling average data
@@ -2561,80 +2469,54 @@ def get_hr_trends_df(province_name, region_name, getall=True,
 #===========  Helper Functions: R(t) graph     ===========
 #=========================================================
 
-# Rt curve: R(t) =exp(lambda(t)*5.3)
-# Rt for past data= D14(t)/D14(t-5)
+def calculate_Rt_from_mortality(df_mort):
+    #=== Calculate R(t) from mortality data:
+    #
+    #    * for exp growth with fixed serial interval, tau:
+    #
+    #           n(tau) = n0 * R
+    #           n(2*tau) = (n0 * R) * R
+    #           n(N*tau) = n0 R^N
+    #           n(t) = n0 R^(t/tau)
+    #                = n0 exp[t/tau ln(R)]
+    #                = n0 exp[lambda*t]     w/ lambda = ln(R)/tau
+    #
+    #              ---> R = exp(tau*lambda)
+    #
+    #    * Get D_14 = 14-day rolling average of mortality
+    #
+    #    * Assuming
+    #
+    #          D_14(t) = const * exp[ lambda * t ]
+    #
+    #      we have (natural log)
+    #
+    #          lambda(t) = d[log(D_14)]/dt
+    #
+    #      which can be calculated using numpy.gradient
+    #
+    #    * Calculate
+    #
+    #          R(t) = exp[ tau * lambda(t) ] 
+    #   
+    #    * Take 14-day rolling average of the resulting R(t)
+    #
+    df_mort_Rt = df_mort.copy()
+    df_mort_Rt['D14'] = \
+        df_mort_Rt['deaths'].rolling(window=14).mean() + Rt_make_D14_nonzero_offset
+    df_mort_Rt['log_D14'] = np.log(df_mort_Rt['D14'])
+    if Rt_smooth_lambda14_first:
+        df_mort_Rt['lambda_14'] = np.gradient(df_mort_Rt['log_D14'])
+        df_mort_Rt['lambda_14'] = df_mort_Rt['lambda_14'].rolling(window=14).mean()
+        df_mort_Rt['Rt'] = np.exp( Rt_serial_interval
+                                   * df_mort_Rt['lambda_14'] )
+    else:
+        df_mort_Rt['lambda_14'] = np.gradient(df_mort_Rt['log_D14'])
+        df_mort_Rt['Rt'] = np.exp( Rt_serial_interval
+                                   * df_mort_Rt['lambda_14'] )
+        df_mort_Rt['Rt'] = df_mort_Rt['Rt'].rolling(window=14).mean()
 
-def rt_equation(lambda_):
-    return math.exp((lambda_*5.3))
-
-def get_total_deaths_2_weeks_prior(province_name, region_name, days_prior, date_up_to_str):
-    """Used in past_rt_equation, below"""
-    date_up_to = datetime.datetime.strptime(date_up_to_str, "%Y-%m-%d")
-    delta = datetime.timedelta(days=days_prior)
-    first_day = date_up_to - delta
-    end_date_2_weeks_ago = date_up_to
-
-    df_2_weeks = df_mort_all[df_mort_all.date_death_report.between(
-        first_day, end_date_2_weeks_ago
-    )]
-    df_province_2_weeks = df_2_weeks[df_2_weeks.province == province_name]
-    deaths_2_weeks = df_province_2_weeks.deaths[df_province_2_weeks.health_region == region_name]
-    total_deaths_2_weeks = 0.0 # reset total deaths
-    for d in deaths_2_weeks:
-        total_deaths_2_weeks += d
-    return total_deaths_2_weeks
-
-def rt_equation(lambda_):
-    return math.exp((lambda_*5.3))
-
-def past_rt_equation(province_name, region_name, start_date, end_date):
-    D14_values = []
-    D14_t5_values = []
-    
-    #date_D14 = datetime.datetime.today()
-    date_D14 = datetime.datetime.strptime(end_date, "%Y-%m-%d")    
-    date_D14_t5 = date_D14 - datetime.timedelta(days=4)
-    days_prior = 14
-    
-    #start = datetime.datetime.strptime("2020-03-08", "%Y-%m-%d")
-    start = datetime.datetime.strptime(start_date, "%Y-%m-%d")    
-    end = date_D14
-    end = end.strftime("%Y-%m-%d")
-    end = datetime.datetime.strptime(str(end), "%Y-%m-%d")
-    date_generated = [start + datetime.timedelta(days=x) for x in range(0, (end-start).days+1)]
-    for date in date_generated:
-        date_range = date.strftime("%Y-%m-%d")
-        D14 = get_total_deaths_2_weeks_prior(province_name, region_name, days_prior, date_range)
-        #D14 = get_total_cases_2_weeks_prior(province_name, region_name, days_prior, date_range)
-        D14_values.append(D14)	
-        
-    
-    # Shifted the start date by 5 days
-    #start = datetime.datetime.strptime("2020-03-04", "%Y-%m-%d")
-    start = datetime.datetime.strptime(start_date, "%Y-%m-%d") - datetime.timedelta(days=4)
-    end = date_D14_t5
-    end = end.strftime("%Y-%m-%d")
-    end = datetime.datetime.strptime(str(end), "%Y-%m-%d")
-    date_generated = [start + datetime.timedelta(days=x) for x in range(0, (end-start).days+1)]
-    for date in date_generated:
-        date_range = date.strftime("%Y-%m-%d")
-        D14_t5 = get_total_deaths_2_weeks_prior(province_name, region_name, days_prior, date_range)
-        #D14_t5 = get_total_cases_2_weeks_prior(province_name, region_name, days_prior, date_range)
-        D14_t5_values.append(D14_t5)
-        
-    
-    D14_values = [x+0.5 for x in D14_values]
-    D14_t5_values = [x+0.5 for x in D14_t5_values]    
-    
-    past_data = [x / y if y != 0 else 0.0 for x, y in zip(D14_values, D14_t5_values)]
-    
-    past_data = np.clip(past_data, -3, 10)
-        
-    return moving_avg(past_data, 14)
-
-def moving_avg(x, n):
-    cumsum = np.cumsum(np.insert(x, 0, 0))
-    return (cumsum[n:] - cumsum[:-n]) / float(n)
+    return df_mort_Rt
 
 # ======================= END OF PROGRAM =======================
 
