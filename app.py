@@ -88,17 +88,41 @@ static_data = pd.read_csv(r'data/health_regions_static_data.csv', encoding='Lati
 
 pd.set_option('display.max_rows', None)
 
+
 #=== Number of D(t) and R(t) simulations (Set to 10, unless testing)
-number_of_simulations = 10
+default_number_of_simulations = 5
+
+#=== Simulation options
+#
+# initial value types:
+#
+#  'use_7day_rollingavg' : 7-day rolling average up to forecast start
+#                          (exactly matches plotted "D7" mortality)
+#                          (zero values lead to zero predicted deaths)
+#
+#         'log_smoothed' : interpolate the log of thd "D7" mortality
+#                          and do a 14d centered smoothing
+#                          (shifts forecast startdate back by a week)
+#                          (can estimate correct IC for zero values)
+#
+simulation_initial_value_type = 'log_smoothed' # 'log_smoothed' 'use_7day_avg'
+# Apply a poisson randomization to the initial mortality value
+simulation_initial_value_randomized = False
+
+#=== Assumed serial interval (in days) for calculation of
+#    Basic Reproduction Number, R(t)
+Rt_serial_interval = 5.3 # "tau"
+Rt_make_D14_nonzero_offset = 0.5/14.0  # avoid divide-by-zero issue
+# Find the 14-day rolling average of the numerical derivative
+# lambda_14 before finding R = exp(tau*lambda), or just
+# exponentiate and then find the 14-day rolling average of R(t).
+Rt_smooth_lambda14_first = True
 
 #== Turn the navbar on/off
 navbar_on = True
 
 #=== Plot the temperature as a rolling average (or raw)
 plot_weather_14d_rolling = True
-
-#=== Small mortality if starting value is zero
-small_starting_mortality_when_zero = 0.05
 
 #===BPH-FIXME  This global stuff for FAQ should be removed and FAQs fixed
 prev_states = [None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
@@ -340,6 +364,25 @@ canadian_dashboard = html.Div(
                                     ), className='input-space'),
                                     dbc.Row(dbc.Col(
                                         html.Div(
+                                            children=[
+                                                html.Div(
+                                                    children="Number of Simulations",
+                                                    className="dropdown-title"
+                                                    ),
+                                                 dcc.Input(
+                                                     id="number-of-simulations",
+                                                     type="number",
+                                                     placeholder="input",
+                                                     value=default_number_of_simulations,
+                                                     min=1,
+                                                     max=10,
+                                                     step='any',
+                                                 ),
+                                            ]
+                                        ),
+                                    ), className='input-space'),
+                                    dbc.Row(dbc.Col(
+                                        html.Div(
                                             dbc.Button("Run Forecast", id='rerun-btn1', n_clicks=0,
                                                        color="dark", className="mr-1")
                                         ),
@@ -391,9 +434,10 @@ canadian_dashboard = html.Div(
                                                     value=initial_mobility_slider,
                                                     marks={
                                                         0: '0%',
-                                                        25: '25%',
-                                                        50: '50%',
-                                                        75: '75%',
+                                                        20: '20%',
+                                                        40: '40%',
+                                                        60: '60%',
+                                                        80: '80%',
                                                         100: '100% (lockdown)'
                                                     },
                                                 ),
@@ -458,6 +502,10 @@ canadian_dashboard = html.Div(
                                                     initial_visible_month=last_mortality_date.date(), 
                                                     date=forecast_initial_start_date
                                                 ),
+                                                html.Div(
+                                                    "start date might be set earlier if data is sparse",
+                                                    style={'color': 'red', 'fontSize':'x-small'}
+                                                    )
                                             ]
                                         ),
                                     ), className='input-space'),
@@ -471,11 +519,11 @@ canadian_dashboard = html.Div(
                                                 dcc.Slider(
                                                     id='forecast-slider',
                                                     min=0,
-                                                    max=12,
-                                                    step=0.5,
+                                                    max=24,
+                                                    step=1.0,
                                                     value=forecast_initial_length, 
-                                                    marks={ 0: '0', 2: '2', 4: '4',
-                                                        6: '6', 8: '8', 10: '10', 12: '12'
+                                                    marks={ 0: '0', 4: '4', 8: '8',
+                                                        12: '12', 16: '16', 20: '20', 24: '24'
                                                     },
                                                 ),
                                             ]
@@ -655,25 +703,6 @@ canadian_dashboard = html.Div(
                                     # ),
                                 ], color="dark", inverse=True),
                         ), className="mb-4"),
-                        dbc.Row(
-                            dbc.Col(
-                                dbc.Card(
-                                    [
-                                        dbc.CardHeader(id="cumulativedeaths-header"),
-                                        dbc.CardBody(
-                                            dcc.Loading(
-                                                children=[html.Div(dcc.Graph(
-                                                    id="cumulativedeaths-chart",
-                                                    config={"displayModeBar": False}))],
-                                                type="default"
-                                            )),
-                                        # dbc.CardBody(
-                                        #     dcc.Graph(
-                                        #         id="cases-chart", config={"displayModeBar": False}, # style={'display': 'inline-block'},
-                                        #     ),
-                                        # ),
-                                    ], color="dark", inverse=True),
-                            ), className="mb-4"),                        
                         dbc.Row([
                             dbc.Col(
                                 dbc.Card(
@@ -764,6 +793,25 @@ canadian_dashboard = html.Div(
                                     ], color="dark", inverse=True),	
                             ),	
                         ], className="mb-4"),
+                        dbc.Row(
+                            dbc.Col(
+                                dbc.Card(
+                                    [
+                                        dbc.CardHeader(id="cumulativedeaths-header"),
+                                        dbc.CardBody(
+                                            dcc.Loading(
+                                                children=[html.Div(dcc.Graph(
+                                                    id="cumulativedeaths-chart",
+                                                    config={"displayModeBar": False}))],
+                                                type="default"
+                                            )),
+                                        # dbc.CardBody(
+                                        #     dcc.Graph(
+                                        #         id="cases-chart", config={"displayModeBar": False}, # style={'display': 'inline-block'},
+                                        #     ),
+                                        # ),
+                                    ], color="dark", inverse=True),
+                            ), className="mb-4"),                        
                         # dbc.Row([	
                         #     dbc.Col(	
                         #         dbc.Card(	
@@ -1058,8 +1106,9 @@ def update_cases_charts(n_clicks1, n_clicks2, region_name, province_name,
 
     df_cases = get_hr_cases_df(province_name, region_name).copy()
     df_cases = df_cases[df_cases.date_report.between(daterange[0], daterange[1])]
+
     df_cases['cases'] = df_cases['cases'].rolling(window=7).mean()
-    
+
 
     #===BPH For some reason this works for weather, but not here.  I get an error:
     #
@@ -1075,7 +1124,6 @@ def update_cases_charts(n_clicks1, n_clicks2, region_name, province_name,
             name='Previous Cases', line=dict(color='black', width=2)
         )
     )
-
     cases_fig.update_layout(xaxis_title='Date',
                             yaxis_title='Daily Cases (7-day rolling avg)',
                             paper_bgcolor = graph_background_color,
@@ -1113,12 +1161,13 @@ def update_cases_charts(n_clicks1, n_clicks2, region_name, province_name,
         ddp.State('mobility-slider', 'value'),
         ddp.State('vaccine-slider', 'value'),
         ddp.State('max-vaccination-percent', 'value'),
+        ddp.State('number-of-simulations', 'value'),
     ],
 )
 def update_mortality_chart(n_clicks1, n_clicks2, region_name, province_name, 
                            day_to_start_forecast, months_to_forecast,
                            facemask_slider, mob_slider,
-                           vac_slider, max_vax_percent):    
+                           vac_slider, max_vax_percent, n_simulations):    
     
     print("START --- update_mortality_chart \t", nowtime())
     
@@ -1161,7 +1210,7 @@ def update_mortality_chart(n_clicks1, n_clicks2, region_name, province_name,
     df_mort = get_hr_mortality_df(province_name, region_name, getall=False,
                                   startdate=daterange[0], enddate=today_str)
     df_mort_plot = df_mort.copy()
-    df_mort_plot['deaths'] = df_mort_plot['deaths'].rolling(window=7).mean()    
+    df_mort_plot['deaths'] = df_mort_plot['deaths'].rolling(window=7).mean()
     
     print("      --- update_mortality_chart \t", nowtime(), " --- mortality loaded")
     print("      --- update_mortality_chart \t", nowtime(), " --- started plotting deaths")
@@ -1176,24 +1225,52 @@ def update_mortality_chart(n_clicks1, n_clicks2, region_name, province_name,
             line=dict(color='black', width=2)
         )
     )
+
+    #=== Some optional plotting for testing
+    testing_logsmoothed = False
+    if testing_logsmoothed:
+        df_mort_plot2 = df_mort[['date_death_report', 'deaths']].copy()
+        df_mort_plot2['deaths'] = df_mort_plot2['deaths'].rolling(window=7).mean()        
+        df_mort_plot2['logdeaths'] = 0.0
+        for index, row in df_mort_plot2.iterrows():
+            if row.deaths == 0.0:
+                df_mort_plot2.at[index, 'logdeaths'] = np.nan
+            else:
+                df_mort_plot2.at[index, 'logdeaths'] = np.log(row.deaths)
+        #df_mort_plot2['logdeaths'] = \
+        #    df_mort_plot2['logdeaths'].rolling(window=14).mean()
+        df_mort_plot2['logdeaths'] = \
+            df_mort_plot2['logdeaths'].rolling(window=14, center=True).mean()
+        df_mort_plot2['logdeaths'] = \
+            df_mort_plot2['logdeaths'].interpolate(method='polynomial', order=2)
+        df_mort_plot2['deaths'] = np.exp(df_mort_plot2['logdeaths'])
+
+        mortality_fig.add_trace(
+            go.Scatter(
+                x=df_mort_plot2['date_death_report'],
+                y=df_mort_plot2['deaths'],
+                name='Previous Deaths',
+                mode='lines',
+                line={'dash': 'dash', 'color' : 'red'}
+            )
+        )
+        
     
     print("      --- update_mortality_chart \t", nowtime(), " --- finished plotting deaths")
     print("      --- update_mortality_chart \t", nowtime(), " --- started plotting R(t)")
     
-    #=== Initialize R(t) figure and plot the R(t) from actual mortality data
 
-    #===BPH-FIXME: add the R(t) values to the dataframe for similar plotting
-    #              their plotting is very slow.
+    #=== Calculate R(t) from mortality data
+    df_mort_Rt = calculate_Rt_from_mortality(df_mort)
     
-    start_date = daterange[0]
-    end_date = today_str
+    #=== Initialize R(t) figure and plot the R(t) from actual mortality data
     rtcurve_fig = go.Figure()
     rtcurve_fig.add_trace(
         go.Scatter(
-            x = get_dates_list(province_name, region_name, start_date, end_date),
-            y = past_rt_equation(province_name, region_name, start_date, end_date),
-            name='Previous R(t)',
-            line=dict(color='black', width=2),
+            x=df_mort_Rt['date_death_report'],
+            y=df_mort_Rt['Rt'],
+            name='Reproduction Number',
+            line=dict(color='black', width=2)
         )
     )
     print("      --- update_mortality_chart \t", nowtime(), " --- finished plotting R(t)")
@@ -1220,9 +1297,9 @@ def update_mortality_chart(n_clicks1, n_clicks2, region_name, province_name,
 
     
         #=== Run forecast simulations
-        for i in range(number_of_simulations):
+        for i in range(n_simulations):
             print("      --- update_mortality_chart \t", nowtime(), " --- D(t) CURVE: " + str(i))
-            df_forecast = \
+            df_forecast, new_forecast_startdate, df_mort_logsmooth = \
                 get_forecasted_mortality(province_name, region_name,
                                          day_to_start_forecast, months_to_forecast,
                                          df_mort, df_mobility, df_vac, df_weather, df_trends,
@@ -1231,7 +1308,7 @@ def update_mortality_chart(n_clicks1, n_clicks2, region_name, province_name,
                                          max_vax_fraction,
                                          facemask_slider)
             df_forecast = \
-                df_forecast[df_forecast.date.between(day_to_start_forecast, daterange[1])]
+                df_forecast[df_forecast.date.between(new_forecast_startdate, daterange[1])]
             #=== Add simulated forecast of mortality to the mortality figure
             mortality_fig.add_trace(
                 go.Scatter(
@@ -1241,12 +1318,27 @@ def update_mortality_chart(n_clicks1, n_clicks2, region_name, province_name,
                     name='Prediction ' + str(i+1),
                 )
             )
+            #=== Add log-smoothed mortality pre-forecast to show 
+            #    selection of potentially new forecast startdate
+            if (df_mort_logsmooth is not None):
+                mortality_fig.add_trace(
+                    go.Scatter(
+                        x=df_mort_logsmooth['date'],
+                        y=df_mort_logsmooth['deaths'],
+                        name='Previous Deaths',
+                        mode='lines',
+                        line={'dash': 'dash', 'color' : 'red'}
+                    )
+                )
             #=== Add simulated forecast of R(t) to the R(t) figure
-            df_forecast['R(t)'] = np.exp( 5.3 * df_forecast['lambda'] )
+            df_forecast['R(t)'] = \
+                np.exp( Rt_serial_interval * df_forecast['lambda'] )
+            # take moving average
+            df_forecast['R(t)'] = df_forecast['R(t)'].rolling(window=14).mean()            
             rtcurve_fig.add_trace(
                 go.Scatter(
                     x = df_forecast['date'].to_list(),
-                    y = moving_avg(df_forecast['R(t)'].to_list(), 14),
+                    y = df_forecast['R(t)'].to_list(),
                     mode = 'lines',
                     name='Prediction ' + str(i+1),
                 )
@@ -1636,7 +1728,7 @@ def update_trends_charts(n_clicks1, n_clicks2, region_name, facemask_slider,
             name='Predicted Trends',
         )
     )
-
+    
     trends_fig.update_layout(xaxis_title='Date',
                              yaxis_title='Google Searches for Face Masks (arb units)',
                              paper_bgcolor = graph_background_color,
@@ -1851,6 +1943,62 @@ def get_hruid(province_name, region_name):
 #=========================================================
 #===========  Helper Functions: Simulations  =============
 #=========================================================
+def get_logsmoothed_initial_mortality(the_date, df):
+    dfnew = df[['date', 'deaths']].copy()
+    # get the 7-day rolling average data
+    dfnew['deaths'] = dfnew['deaths'].rolling(window=7).mean()
+    # Create a smooth version of that data by logging and
+    # interpolating over the places where deaths=0.
+    #
+    # Note, however that this will not interpolate to the end
+    # of the dateframe if they contain zeros
+    dfnew['logdeaths'] = 0.0
+    for index, row in dfnew.iterrows():
+        if row.deaths == 0.0:
+            # no data from zero-mortality days 
+            dfnew.at[index, 'logdeaths'] = np.nan
+        else:
+            # otherwise get log(deaths)
+            dfnew.at[index, 'logdeaths'] = np.log(row.deaths)
+    # doing a centered rolling average here, so might want to move the
+    # forecast data backwards by a week so as not to depend on future data
+    dfnew['logdeaths'] = \
+        dfnew['logdeaths'].rolling(window=15, center=True).mean()
+        #dfnew['logdeaths'].rolling(window=15, center=True, min_periods=8).mean()    
+    try:
+        dfnew['logdeaths'] = \
+            dfnew['logdeaths'].interpolate(method='polynomial', order=2)
+        # replace deaths with exp(interpolated(smoothed(log(deaths))))
+        dfnew['deaths'] = np.exp(dfnew['logdeaths'])
+        the_date_ind = \
+            pd.to_numeric(
+                dfnew.index[dfnew.date.between(the_date, the_date)]
+            )[0]
+        the_val = dfnew.at[the_date_ind, 'deaths']
+        the_new_date_ind = dfnew['deaths'].last_valid_index()
+    except:
+        the_val = np.nan
+        the_new_date_ind = None
+        dfnew = None
+    if math.isnan(the_val):
+        # Because of the centered rolling average, the requested date
+        # *will* return nan here... but then if the dataset is full,
+        # it will return a date 7 days earlier
+        if the_new_date_ind is None:
+            # if no valid data, then forecast cannot be done
+            print("      --- update_mortality_chart \t\tfell back to original IC method.")
+            #return [-1, None, dfnew]
+            return [-1, None, None]
+        else:
+            the_new_date_str = \
+                dfnew.date.dt.strftime("%Y-%m-%d").loc[the_new_date_ind]
+            return [dfnew.at[the_new_date_ind, 'deaths'],
+                    the_new_date_str,
+                    dfnew]
+    else:
+        #=== This shouldn't ever happen, but I guess if it does
+        print("      --- update_mortality_chart \t\tfell back to original IC method.")
+        return [-1, None, None]
 
 def get_forecasted_mortality(province_name, region_name,
                              forecast_startdate_str, months_to_forecast, 
@@ -1885,17 +2033,43 @@ def get_forecasted_mortality(province_name, region_name,
     # simplify date column name
     df_mort_cols = ['date', 'deaths']
     df_mort_new.columns = df_mort_cols
-
+    
+    #=== Calculate initial value of deaths for the simulation and get
+    #    new mortality dataframe ending at forecast start
+    #
+    thetype = simulation_initial_value_type
+    df_mort_logsmooth = None
+    while True:
+        if (thetype == 'use_7day_rolling_avg'):
+            initial_mortality_on_forecast_startdate = \
+                get_mortality_rolling_avg_at_end(df_mort_new)
+            break
+        elif (thetype == 'log_smoothed'):
+            #== get the logsmoothed value of the mortality up to the
+            #   forecast date, where:
+            #      logsmoothed(deaths) = exp(interpolated(smoothed(log(deaths))))
+            val, new_date_str, df_mort_logsmooth = \
+                get_logsmoothed_initial_mortality(forecast_startdate_str,
+                                                  df_mort_new)
+            if (val > 0):
+                #=== keep if it worked and reset the start date 
+                new_forecast_date_str = new_date_str
+                initial_mortality_on_forecast_startdate = val
+                forecast_startdate_str = new_forecast_date_str
+                df_mort_new = \
+                    df_mortality[df_mortality.date_death_report\
+                                 .between(first_mortality_date, forecast_startdate_str)]\
+                                 [['date_death_report', 'deaths']].copy()
+                # simplify date column name
+                df_mort_cols = ['date', 'deaths']
+                df_mort_new.columns = df_mort_cols
+                break
+            else:
+                #=== otherwise, fall back to the other method
+                #    ... will likely give azero-valued simulation
+                thetype = 'use_7day_rolling_avg'
     #=== Calculate total actual COVID deaths through this day
     total_deaths = df_mort_new['deaths'].sum()
-
-    #=== Calculate the 7dayavg of mortality on the forecast_startdate_str
-    #    for matching simulations to the plotted 7-day avg of actual mortality
-    #===BPH Removed randomization of death data on first day of prediction
-    #       *** Unless the value is zero: then add a small value
-    mort_7dayavg_forecast_start_date = \
-        max(get_random_mortality_rolling_avg_at_end(df_mort_new, randomize=False),
-            small_starting_mortality_when_zero)
 
     #=== Extend the mortality dataframe's dates to last day of forecast
     firstdate = df_mort_new.date.min()
@@ -1907,7 +2081,11 @@ def get_forecasted_mortality(province_name, region_name,
     df_mort_new.columns = df_mort_cols
     #=== Set the mortality on the start date to be the 7day avg value
     df_mort_new.at[df_mort_new.date == forecast_startdate, 'deaths'] = \
-        mort_7dayavg_forecast_start_date
+        initial_mortality_on_forecast_startdate
+    #=== Randomize the initial value
+    if simulation_initial_value_randomized:
+        df_mort_new = \
+            randomize_initial_mortality_value(df_mort_new, forecast_startdate_str)
     # get index of the start date
     start_index = \
         df_mort_new.index[df_mort_new.date == forecast_startdate].to_list()[0]
@@ -2017,7 +2195,9 @@ def get_forecasted_mortality(province_name, region_name,
             
             # print data to user
             #print(row.date, new_deaths)
-    return df_mort_new
+    # return dataframe with forecast, and (if doing "logsmoothed")
+    # the updated forecast startdate, along with the logsmoothed df
+    return [df_mort_new, forecast_startdate_str, df_mort_logsmooth]
 
 
 #=========================================================
@@ -2027,7 +2207,52 @@ def get_forecasted_mortality(province_name, region_name,
 def get_hr_mortality_df(province_name, region_name, getall=True,
                         startdate=None, enddate=None):
     dfp = df_mort_all[df_mort_all.province == province_name]
-    dfr = dfp[dfp.health_region == region_name]
+    dfr = dfp[dfp.health_region == region_name].copy()
+    if (region_name == "Toronto"):
+        #=== Get rid of this Toronto data dump:
+        #
+        #             date       deaths
+        #          29Sep2020     1
+        #          30Sep2020     2
+        #           1Oct2020     1
+        #           2Oct2020     80
+        #           3Oct2020     37
+        #           4Oct2020     3
+        #           5Oct2020     3
+        #           6Oct2020     2
+        #
+        #    According to these articles:
+        #
+        #     https://www.cbc.ca/news/canada/toronto/
+        #                  covid-19-coronavirus-ontario-october-2-1.5747709
+        #     https://www.cbc.ca/news/canada/toronto/
+        #                  ontario-covid-19-cases-october-3-update-1.5749382
+        #     https://www.cbc.ca/news/canada/toronto/
+        #                  ontario-covid-19-cases-october-4-update-1.5749841
+        #
+        #    The spike was due to a "data review and data cleaning
+        #    initiative" by Toronto Public Health, and the old cases were
+        #    from the "spring or summer" of 2020.  The breakdown was:
+        #
+        #        oct 1: 3 new
+        #        oct 2: 2 new 74 old
+        #        oct 3: 4 new 37 old
+        #        oct 4: 4 new 3 old
+        #
+        # reset october 2nd and 3rd values to correct
+        therowindex = dfr.index[dfr.date_death_report.between("2020-10-02", "2020-10-02")]
+        dfr.at[therowindex, 'deaths'] = 2
+        therowindex = dfr.index[dfr.date_death_report.between("2020-10-03", "2020-10-03")]
+        dfr.at[therowindex, 'deaths'] = 4
+        # distribute remaining 111 cases over prior days, proportional
+        # to their existing mortality counts
+        old_deaths = 111.0
+        df_prior = dfr[dfr.date_death_report.between(first_mortality_date, "2020-10-01")]
+        total_deaths_prior = df_prior.deaths.sum()
+        for index, row in df_prior.iterrows():
+            dfr.at[index, 'deaths'] = \
+                dfr.at[index, 'deaths'] \
+                + old_deaths * (dfr.at[index, 'deaths'] / total_deaths_prior)
     if getall:
         return dfr
     else:
@@ -2047,12 +2272,17 @@ def get_hr_cases_df(province_name, region_name, getall=True, startdate=None, end
             exit(0)
         return dfr[dfr.date_report.between(startdate, enddate)]
 
-def get_random_mortality_rolling_avg_at_end(df, randomize=True):
+def get_mortality_rolling_avg_at_end(df):
     last_rolling_avg = df.deaths.rolling(window=7).mean().to_list()[-1]
-    if randomize:
-        return np.random.poisson(7.0 * last_rolling_avg) / 7.0
-    else:
-        return last_rolling_avg        
+    return last_rolling_avg        
+
+def randomize_initial_mortality_value(df_mort_new, forecast_startdate_str):
+    df = df_mort_new.copy()
+    theindex = \
+        pd.to_numeric(df.index[df.date == forecast_startdate_str])[0]
+    val = df.at[theindex, 'deaths']
+    df.at[theindex, 'deaths'] = np.random.poisson(7.0 * val) / 7.0
+    return df
 
 def get_dates_list(province_name, region_name, start_date, end_date):
     """Used for cumulative_deaths and R(t)"""
@@ -2250,79 +2480,54 @@ def get_hr_trends_df(province_name, region_name, getall=True,
 #===========  Helper Functions: R(t) graph     ===========
 #=========================================================
 
-# Rt curve: R(t) =exp(lambda(t)*5.3)
-# Rt for past data= D14(t)/D14(t-5)
+def calculate_Rt_from_mortality(df_mort):
+    #=== Calculate R(t) from mortality data:
+    #
+    #    * for exp growth with fixed serial interval, tau:
+    #
+    #           n(tau) = n0 * R
+    #           n(2*tau) = (n0 * R) * R
+    #           n(N*tau) = n0 R^N
+    #           n(t) = n0 R^(t/tau)
+    #                = n0 exp[t/tau ln(R)]
+    #                = n0 exp[lambda*t]     w/ lambda = ln(R)/tau
+    #
+    #              ---> R = exp(tau*lambda)
+    #
+    #    * Get D_14 = 14-day rolling average of mortality
+    #
+    #    * Assuming
+    #
+    #          D_14(t) = const * exp[ lambda * t ]
+    #
+    #      we have (natural log)
+    #
+    #          lambda(t) = d[log(D_14)]/dt
+    #
+    #      which can be calculated using numpy.gradient
+    #
+    #    * Calculate
+    #
+    #          R(t) = exp[ tau * lambda(t) ] 
+    #   
+    #    * Take 14-day rolling average of the resulting R(t)
+    #
+    df_mort_Rt = df_mort.copy()
+    df_mort_Rt['D14'] = \
+        df_mort_Rt['deaths'].rolling(window=14).mean() + Rt_make_D14_nonzero_offset
+    df_mort_Rt['log_D14'] = np.log(df_mort_Rt['D14'])
+    if Rt_smooth_lambda14_first:
+        df_mort_Rt['lambda_14'] = np.gradient(df_mort_Rt['log_D14'])
+        df_mort_Rt['lambda_14'] = df_mort_Rt['lambda_14'].rolling(window=14).mean()
+        df_mort_Rt['Rt'] = np.exp( Rt_serial_interval
+                                   * df_mort_Rt['lambda_14'] )
+    else:
+        df_mort_Rt['lambda_14'] = np.gradient(df_mort_Rt['log_D14'])
+        df_mort_Rt['Rt'] = np.exp( Rt_serial_interval
+                                   * df_mort_Rt['lambda_14'] )
+        df_mort_Rt['Rt'] = df_mort_Rt['Rt'].rolling(window=14).mean()
 
-def rt_equation(lambda_):
-    return math.exp((lambda_*5.3))
-
-def get_total_deaths_2_weeks_prior(province_name, region_name, days_prior, date_up_to_str):
-    """Used in past_rt_equation, below"""
-    date_up_to = datetime.datetime.strptime(date_up_to_str, "%Y-%m-%d")
-    delta = datetime.timedelta(days=days_prior)
-    first_day = date_up_to - delta
-    end_date_2_weeks_ago = date_up_to
-
-    df_2_weeks = df_mort_all[df_mort_all.date_death_report.between(
-        first_day, end_date_2_weeks_ago
-    )]
-    df_province_2_weeks = df_2_weeks[df_2_weeks.province == province_name]
-    deaths_2_weeks = df_province_2_weeks.deaths[df_province_2_weeks.health_region == region_name]
-    total_deaths_2_weeks = 0.0 # reset total deaths
-    for d in deaths_2_weeks:
-        total_deaths_2_weeks += d
-    return total_deaths_2_weeks
-
-def rt_equation(lambda_):
-    return math.exp((lambda_*5.3))
-
-def past_rt_equation(province_name, region_name, start_date, end_date):
-    D14_values = []
-    D14_t5_values = []
-    
-    #date_D14 = datetime.datetime.today()
-    date_D14 = datetime.datetime.strptime(end_date, "%Y-%m-%d")    
-    date_D14_t5 = date_D14 - datetime.timedelta(days=4)
-    days_prior = 14
-    
-    #start = datetime.datetime.strptime("2020-03-08", "%Y-%m-%d")
-    start = datetime.datetime.strptime(start_date, "%Y-%m-%d")    
-    end = date_D14
-    end = end.strftime("%Y-%m-%d")
-    end = datetime.datetime.strptime(str(end), "%Y-%m-%d")
-    date_generated = [start + datetime.timedelta(days=x) for x in range(0, (end-start).days+1)]
-    for date in date_generated:
-        date_range = date.strftime("%Y-%m-%d")
-        D14 = get_total_deaths_2_weeks_prior(province_name, region_name, days_prior, date_range)
-        #D14 = get_total_cases_2_weeks_prior(province_name, region_name, days_prior, date_range)
-        D14_values.append(D14)	
-        
-    
-    # Shifted the start date by 5 days
-    start = datetime.datetime.strptime("2020-03-04", "%Y-%m-%d")
-    end = date_D14_t5
-    end = end.strftime("%Y-%m-%d")
-    end = datetime.datetime.strptime(str(end), "%Y-%m-%d")
-    date_generated = [start + datetime.timedelta(days=x) for x in range(0, (end-start).days+1)]
-    for date in date_generated:
-        date_range = date.strftime("%Y-%m-%d")
-        D14_t5 = get_total_deaths_2_weeks_prior(province_name, region_name, days_prior, date_range)
-        #D14_t5 = get_total_cases_2_weeks_prior(province_name, region_name, days_prior, date_range)
-        D14_t5_values.append(D14_t5)
-        
-    
-    D14_values = [x+0.5 for x in D14_values]
-    D14_t5_values = [x+0.5 for x in D14_t5_values]    
-    
-    past_data = [x / y if y != 0 else 0.0 for x, y in zip(D14_values, D14_t5_values)]
-    
-    past_data = np.clip(past_data, -3, 10)
-        
-    return moving_avg(past_data, 14)
-
-def moving_avg(x, n):
-    cumsum = np.cumsum(np.insert(x, 0, 0))
-    return (cumsum[n:] - cumsum[:-n]) / float(n)
+    return df_mort_Rt
 
 # ======================= END OF PROGRAM =======================
 
