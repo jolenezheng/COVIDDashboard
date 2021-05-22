@@ -83,10 +83,8 @@ static_data = pd.read_csv(r'data/health_regions_static_data.csv', encoding='Lati
 
 
 #===================================================
-#===========   Misc Global parameters   ============
+#=========  Model/Simulation parameters   ==========
 #===================================================
-
-pd.set_option('display.max_rows', None)
 
 
 #=== Number of D(t) and R(t) simulations (Set to 10, unless testing)
@@ -109,6 +107,128 @@ simulation_initial_value_type = 'log_smoothed' # 'log_smoothed' 'use_7day_avg'
 # Apply a poisson randomization to the initial mortality value
 simulation_initial_value_randomized = False
 
+#=== Model Parameters
+#
+# The growth rate of mortality (lambda) is determined as follows:
+#
+#     lambda = sqrt( k' * effective_susceptible_density ) - 1/tauI
+#          + C_vaxrate * [vax_frac_2wk_ago - vax_frac_4wk_ago]
+#
+# The last term accounts for the direct effect of ongoing vaccinations
+# on the mortality growth rate (as opposed to the indirect effect of
+# reducing the susceptible fraction, see below), with the constant
+# C_vaxrate a parameter that was determined by fitting the model to US
+# county epidemics. The first two terms in the growth rate are the
+# analytical solution of the SEIR compartmental model, under the
+# assumption of constant susceptible fraction, i.e.,
+#
+#  lambda_SEIR = 1/2 * max{
+#     - (1/tauE + 1/tauI) +/- sqrt[ (1/tauI - 1/tauE)^2 + 4 k [S0] f_S / tauE ]
+#                         }
+#
+# with k the infection rate constant, [S0] the population density of the
+# community, f_S the fraction of the population that is susceptible, and
+# tauE and tauI the average incubation and infectious periods, respectively.
+# The first term in the square-root (difference of the inverses of the
+# incubation and infection periods), was not found to be significantly
+# different than zero. Therefore: (i) that difference was omitted from the
+# argument of the square root, (ii) we assume that our k' is k/tauE, and
+# (iii) we set 1/tau_I + 1/tau_E = 2/tau_I.
+#
+# The infectious period was assumed to depend on total annual death and
+# the average number in a household as:
+#
+#   1/tau_I = 
+#          + C_inv_tauI_0
+#          + C_inv_tauI_AD * [ log10(AD) - log10(AD_offset) ]
+#          + C_inv_tauI_HN * [ N_household - N_household_offset ]
+#
+# where constants C_xxx are parameters that
+# were determined by fitting the model US 2020-2021 epidemic data.
+#
+# The "effective density of susceptibles", which is really only assumed
+# to be proportional to the density of susceptibles, is calculated as:
+#
+#     effective_susceptible_density = PWPD_80 * unvax_frac
+#           * exp[ C_deathA * COVID_deaths_past_2_months/annual_death
+#                 + C_deathB * COVID_deaths_prior_to_2_months_ago/annual_death]
+#
+# where PWPD_80 is the population-weighted population density (PWPD) of the
+# region, multiplied by the fraction of its population over 80 years old:
+#
+#     PWPD_80 = PWPD * fraction_of_population_over_80, 
+#
+# where the effects of vaccination reduce the susceptible fraction via:
+#
+#     unvax_frac = [ 1 - max_vax_efficacy * vax_frac_4wk_ago ]
+#
+# where "4wk_ago" accounts for the delay from an effect on the growth rate
+# of true infections to that seen in the mortality growth rate, and
+# where the history of mortality contributes to the effective susceptible
+# density through the final (exponential) term.  
+#
+# The infection rate constant, k, is that of the standard SEIR-type
+# infection process
+#
+#       dS/dt = k [S0] S I / N  = beta * S * I / N
+#
+# where S, I, and N represent the number of susceptible, infectious,
+# total individuals, respectively; k is the population-density-independent
+# infection constant, [S0] is the population density, and beta = k*[S0]
+# is the standard "rate constant for infection" used in such models,
+# which represents the frequency that an individual has close-contact
+# interactions with other individuals (sufficient to transmit infection).
+# [See "How does transmission of infection depend on population size?" by
+# de Jong, Diekmann, and Heesterbeek (in Epidemic Models, 1995).]
+#
+# Our k' variable is proportional to k (including the effects of tauE
+# and an implied proportionality constant for the "effective density of
+# susceptibles").  We assume that:
+#
+#     k' = kA * kB
+#
+# where kA depends on the dynamic driving variables as:
+#
+#    log(kA) = C_logkA0
+#              + C_mobA * mobility_reduction_two_weeks_prior
+#              + C_mobB * mobility_reduction_four_weeks_prior
+#              + C_tempA * [ temp_three_weeks_prior - temp_offset ]^2
+#              + C_tempB * [ temp_three_weeks_prior - temp_offset ]^3
+#              + C_trends * Google_trends_facemask_42d_prior 
+#
+# where the values C_xxx are parameters determined by fitting the model to the
+# 2020-2021 local epidemic data in the United States; and where kB is
+#
+#    kB = [ (8.0/PWPD_80) * (2 - pop_sparsity/2) ]^[ 1 / (2 - pop_sparsity/2) ]
+#
+# where the population sparsity is defined as the power law exponent connecting
+# the population-weighted population density to the (land-area-based) standard
+# population density, i.e.,
+#
+#    pop_sparsity =  log[ (total_pop/land_area) / PWPD ] / log[0.25**2/land_area]
+#
+# where 0.25 km is the length-scale of the smallest cell in the population images
+# from which PWPD is calculated (GHS-POP 2015).
+#
+# Therefore, there are THREE FIXED OFFSET VALUES (not determined by fitting):
+annual_death_offset = 4467.0  # annual death
+temp_offset = 26.58 # C
+N_household_offset = 2.7
+# And 12 MODEL PARAMETERS, determined by fitting the model to the local
+# 2020-2021 COVID-19 epidemic data in all US Counties:
+C_vaxrate = -0.202278
+C_inv_tauI_0 = 0.0398673
+C_inv_tauI_logAD = 0.00654545
+C_inv_tauI_HN = -0.0201251
+C_deathA = -34.5879
+C_deathB = -1.51981
+C_logkA0 = -7.50188
+C_mobA = 0.011227
+C_mobB = 0.0296737
+C_tempA = 0.00476657
+C_tempB = 0.000143682
+C_trends = -0.0244824
+
 #=== Assumed serial interval (in days) for calculation of
 #    Basic Reproduction Number, R(t)
 Rt_serial_interval = 5.3 # "tau"
@@ -117,6 +237,18 @@ Rt_make_D14_nonzero_offset = 0.5/14.0  # avoid divide-by-zero issue
 # lambda_14 before finding R = exp(tau*lambda), or just
 # exponentiate and then find the 14-day rolling average of R(t).
 Rt_smooth_lambda14_first = True
+
+# Maximum fraction assumed vaccinated
+maximum_fraction_vaccinated = 0.9
+# Maximum effectiveness of vaccine (1 = 100%)
+maximum_vaccine_efficacy = 0.9 # 90%
+
+#===================================================
+#===========   Misc Global parameters   ============
+#===================================================
+
+pd.set_option('display.max_rows', None)
+
 
 #== Turn the navbar on/off
 navbar_on = True
@@ -143,10 +275,6 @@ trends_mult_factor_for_QC = 2.5
 #  (then the assumed value is given by the slider value)
 no_data_val = 999999
 
-# Maximum fraction assumed vaccinated
-maximum_fraction_vaccinated = 0.9
-# Maximum effectiveness of vaccine (1 = 100%)
-maximum_vaccine_effectiveness = 0.9 # 90%
 
 #========================================================
 #====    Menu/slider options and initial values    ======
@@ -2008,19 +2136,17 @@ def get_forecasted_mortality(province_name, region_name,
                              facemask_slider):
     #=== Calculate some static values
     total_pop = get_total_pop(province_name, region_name)
-    annual_death = get_annual_death(province_name, region_name)
-    # population over which we have vaccination statistics
-    vax_pop = get_total_pop_for_vax_percent(province_name, region_name)
     # Annual death is the static (1997-adjusted) value, not updated by COVID deaths
-    xLogAnnual = math.log(annual_death, 10)
+    annual_death = get_annual_death(province_name, region_name)
     # Average number of people/household
-    xHouse = get_avg_house(province_name, region_name)
-    # Population-weighted population density (PWPD) times fraction of pop over 80
-    pwpd = get_pwpd(province_name, region_name)    
-    xLogPWPD = math.log(pwpd * get_frac_pop_over_80(province_name, region_name), 10)
+    N_household = get_avg_house(province_name, region_name)
+    # Population-weighted population density (PWPD)
+    #  and pwpd_80 = PWPD * (fraction of pop over 80)
+    pwpd = get_pwpd(province_name, region_name)
+    pwpd_80 = pwpd * get_frac_pop_over_80(province_name, region_name)
     # Population sparsity value
     land_area = get_land_area(province_name, region_name)
-    xBeta = math.log( (total_pop/land_area) / pwpd ) / math.log(0.25**2/land_area)
+    pop_sparsity = math.log( (total_pop/land_area) / pwpd ) / math.log(0.25**2/land_area)
     
     #=== Get mortality df up to (and including) the forecast_startdate_str
     #    using a copy of the already loaded region-specific mortality df.
@@ -2119,11 +2245,14 @@ def get_forecasted_mortality(province_name, region_name,
                 df_mort_new[df_mort_new.date
                             < (date_in_forecast - two_months)]['deaths'].sum()                
             xHerd2 = total_deaths_prior_to_two_months_ago / annual_death
+            covid_death_frac_past_two_months = xHerd - xHerd2
+            covid_death_frac_prior_to_two_months_ago = xHerd2
             
             #=== Google facemask trends (4 weeks ago, or slider value if not found)
             xTrends1 = get_val_on_date('trends', df_trends,
                                        date_in_forecast - fortytwo_days)
             xTrends1 = possibly_replace_w_slider('trends', xTrends1, facemask_slider)
+            facemask_trends_42d_ago = xTrends1
             #=== Mobility (two and four weeks ago, or slider value if not found)
             xMob1 = get_val_on_date('mob', df_mobility,
                                     date_in_forecast - two_weeks)
@@ -2131,57 +2260,83 @@ def get_forecasted_mortality(province_name, region_name,
             xMob2 = get_val_on_date('mob', df_mobility,
                                     date_in_forecast - four_weeks)
             xMob2 = possibly_replace_w_slider('mob', xMob2, mob_slider_negative)            
+            mobility_two_weeks_ago = xMob1
+            mobility_four_weeks_ago = xMob2            
             
             #=== Weather value is 14d average centered three weeks prior (21d)
             xTemp = get_weather_avg_for_day(df_weather, date_in_forecast, 14, 21)
+            avg_temp_three_weeks_ago = xTemp
 
             #=== Get fraction_vaccinated value
             #       (two and four weeks ago, or slider value if in future)
-            vaxP1 = get_val_on_date('vac', df_vac, date_in_forecast - two_weeks)
-            vaxP1 = \
-                possibly_replace_w_slider('vac', vaxP1,
+            vax_percent_two_weeks_ago = get_val_on_date('vac', df_vac, date_in_forecast - two_weeks)
+            vax_percent_two_weeks_ago = \
+                possibly_replace_w_slider('vac', vax_percent_two_weeks_ago,
                                           [vac_slider_fraction,
                                            last_vax_fraction, max_vax_fraction,
                                            days_since_today])
-            vaxP2 = get_val_on_date('vac', df_vac, date_in_forecast - four_weeks)
-            vaxP2 = \
-                possibly_replace_w_slider('vac', vaxP2,
+            vax_percent_four_weeks_ago = get_val_on_date('vac', df_vac, date_in_forecast - four_weeks)
+            vax_percent_four_weeks_ago = \
+                possibly_replace_w_slider('vac', vax_percent_four_weeks_ago,
                                           [vac_slider_fraction,
                                            last_vax_fraction, max_vax_fraction,
                                            days_since_today])            
-
-            #=== Past two weeks of death are those since two weeks ago
+            #=== Forbid vaccination percentage greater than 100%
+            #       (but warn user that it is happening)
+            if (vax_percent_two_weeks_ago > 1):
+                vax_percent_two_weeks_ago = 1.0
+                print("    ***Warning***  vax_percent_two_weeks_ago > 1")
+            if (vax_percent_four_weeks_ago > 1):
+                vax_percent_four_weeks_ago = 1.0
+                print("    ***Warning***  vax_percent_four_weeks_ago > 1")
+            
+            #=== Calculate the growth rate (lambda) from the
+            #    PWPD_80, the depletion of susceptibles by vaccination,
+            #    and the infection rate constant
+            sqrt_PWPD_80 = pwpd_80**0.5
+            sqrt_proportion_unvax = \
+                (1 - maximum_vaccine_efficacy * vax_percent_four_weeks_ago)**0.5
+            sqrt_mortality_effect = \
+                math.exp(0.5 * (C_deathA * covid_death_frac_past_two_months
+                                + C_deathB * covid_death_frac_prior_to_two_months_ago))
+            log_k_A = (
+                C_logkA0
+                + C_mobA * mobility_two_weeks_ago
+                + C_mobB * mobility_four_weeks_ago
+                + C_tempA * (avg_temp_three_weeks_ago - temp_offset)**2
+                + C_tempB * (avg_temp_three_weeks_ago - temp_offset)**3
+                + C_trends * facemask_trends_42d_ago
+            )
+            k_B = (
+                8.0 / pwpd_80
+                * (2.0 - pop_sparsity / 2.0)
+            )**(1.0/(2.0 - pop_sparsity / 2.0))
+            sqrt_k = (math.exp(log_k_A) * k_B )**0.5
+            inv_tauI = (
+                C_inv_tauI_0
+                + C_inv_tauI_logAD * (math.log(annual_death, 10)
+                                      - math.log(annual_death_offset, 10))
+                + C_inv_tauI_HN * (N_household - N_household_offset)
+            )
+            #=== Calculate the growth rate (lambda) as:
+            #
+            #     lambda = sqrt(k PWD_80 unvax_frac)
+            #               + lambda0
+            #               + C_vaxrate * [vax2wk - vax4wk]
+            #               + C_AD * [log10(AD) - 3.65 ]
+            #               + C_HN * [N_household - 2.7]
+            #
+            lambda_val = (
+                sqrt_k * sqrt_PWPD_80 * sqrt_proportion_unvax * sqrt_mortality_effect
+                - inv_tauI
+                + C_vaxrate * (vax_percent_two_weeks_ago - vax_percent_four_weeks_ago)
+            )
+            #=== Apply a Gaussian random error to lambda value
+            # Past two weeks of death are those since two weeks ago
             #        (future values are zero)
             deaths_past_two_weeks = \
                 df_mort_new[df_mort_new.date
                             > (date_in_forecast - two_weeks)]['deaths'].sum()
-
-            #===BPH-FIXME Been having problems with vax data
-            #             not sure if this is now fixed or if we'll still get
-            #             bad values
-            #if ( (1 - 0.9*vaxP2) <= 0):
-            #    print(f"*** Error ***  vaxP2 = {vaxP2:f} --> log(1-0.9*vaxP2) < 0")
-            if (vaxP1 > 1):
-                vaxP1 = 1.0
-            if (vaxP2 > 1):
-                vaxP2 = 1.0
-                
-            
-            #=== Calculate the dynamic contributions to lambda
-            dynamic_lambda = math.exp(
-                0.5 * (-7.50188 - 34.5879 * (xHerd - xHerd2) - 1.51981 * xHerd2 +
-                       0.011227 * xMob1 + 0.0296737 * xMob2 +
-                       0.00476657 * (-26.5794 + xTemp)**2 +
-                       0.000143682 * (-26.5794 + xTemp)**3 - 0.0244824 * xTrends1 +
-                       xLogPWPD * math.log(10.0)
-                       + math.log(1 - maximum_vaccine_effectiveness * vaxP2) + 
-                       (2.0 * math.log(8.0 * 10.0**(-xLogPWPD) * (2.0 - 0.5 * xBeta)))
-                       / (4.0 - xBeta))
-            )
-            lambda_val = -0.0398673 + dynamic_lambda - 0.202278 * (vaxP1 - vaxP2) \
-                - 0.00654545 * (-3.65 + xLogAnnual) + 0.0201251 * (-2.7 + xHouse)
-
-            #=== Apply a Gaussian random error to lambda value
             sigma = math.sqrt(0.093 / (14.0 + deaths_past_two_weeks))
             lambda_err = random.gauss(0.0, sigma)
             lambda_val += lambda_err
