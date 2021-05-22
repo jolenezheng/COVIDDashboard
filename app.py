@@ -143,8 +143,8 @@ simulation_initial_value_randomized = False
 #          + C_inv_tauI_AD * [ log10(AD) - log10(AD_offset) ]
 #          + C_inv_tauI_HN * [ N_household - N_household_offset ]
 #
-# where constants C_xxx are parameters that
-# were determined by fitting the model US 2020-2021 epidemic data.
+# where constants C_xxx are parameters that were determined by fitting
+# the model to 2020-2021 epidemic data in the United States.
 #
 # The "effective density of susceptibles", which is really only assumed
 # to be proportional to the density of susceptibles, is calculated as:
@@ -170,7 +170,7 @@ simulation_initial_value_randomized = False
 # The infection rate constant, k, is that of the standard SEIR-type
 # infection process
 #
-#       dS/dt = k [S0] S I / N  = beta * S * I / N
+#       dS/dt = - k [S0] S I / N  = - beta * S * I / N
 #
 # where S, I, and N represent the number of susceptible, infectious,
 # total individuals, respectively; k is the population-density-independent
@@ -203,7 +203,8 @@ simulation_initial_value_randomized = False
 #
 # where the population sparsity is defined as the power law exponent connecting
 # the population-weighted population density to the (land-area-based) standard
-# population density, i.e.,
+# population density when calculating population density with cells of different
+# scale areas, i.e., 
 #
 #    pop_sparsity =  log[ (total_pop/land_area) / PWPD ] / log[0.25**2/land_area]
 #
