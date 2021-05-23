@@ -264,6 +264,7 @@ prev_states = [None, None, None, None, None, None, None, None, None, None, None,
 #    have changed since then.  For now, we just multiply the annual
 #    death value by this number
 #===BPH-FIXME: really should have a health-region dependent factor
+
 #population_factor_1997_to_today = 1.3  # when using old 1997 values
 population_factor_1997_to_today = 1.1  # when using extrapolated 2020 values
 
