@@ -250,6 +250,9 @@ maximum_vaccine_efficacy = 0.9 # 90%
 
 pd.set_option('display.max_rows', None)
 
+#=== Show the logsmoothed mortality used to get forecast
+#    initial condition (as a dashed red line)
+show_logsmoothed_mortality_preforecast = False
 
 #== Turn the navbar on/off
 navbar_on = True
@@ -438,7 +441,7 @@ navbar2 = dbc.Navbar([
 
 
 footer2 = html.Footer(html.Div([
-    "Dashboard made by Jolene Zheng and Shafika Olalekan Koiki | ",
+    "Portal made by Jolene Zheng and Shafika Olalekan Koiki | ",
     html.A(" GitHub", href="https://github.com/jolenezheng/COVIDDashboard/", target="_blank")
 ], className="footer"))
 
@@ -473,7 +476,7 @@ canadian_dashboard = html.Div(
                                             children=[
                                                 html.Div(children="Region", className="dropdown-title"),
                                                 dcc.Dropdown(
-                                                    id='region-dropdown',
+                                                    id='province-dropdown',
                                                     className='dropdown',
                                                     options=[{'label':name, 'value':name} for name in all_province_names],
                                                     value = initial_province
@@ -486,7 +489,7 @@ canadian_dashboard = html.Div(
                                             children=[
                                                 html.Div(children="Sub-Region", className="dropdown-title"),
                                                 dcc.Dropdown(
-                                                    id='subregion-dropdown',
+                                                    id='healthregion-dropdown',
                                                     className='dropdown',
                                                     value = initial_region
                                                 ),
@@ -633,7 +636,7 @@ canadian_dashboard = html.Div(
                                                 dcc.DatePickerSingle(
                                                     id="forecast-start-date",
                                                     min_date_allowed=first_mortality_date.date(),
-                                                    max_date_allowed=last_mortality_date.date(),
+                                                    max_date_allowed=nowdate.date(),
                                                     initial_visible_month=last_mortality_date.date(), 
                                                     date=forecast_initial_start_date
                                                 ),
@@ -1040,12 +1043,12 @@ def toggle_collapse(q1, q2, q3, q4, q5, q6, q7, q8, q9, q10, q11, q12, q13, q14,
 #   Region --> Get Health Region options (Sub-Region)    #
 #========================================================#
 @app.callback(
-    ddp.Output('subregion-dropdown', 'options'),
-    ddp.Input('region-dropdown', 'value'),
+    ddp.Output('healthregion-dropdown', 'options'),
+    ddp.Input('province-dropdown', 'value'),
 )
-def update_subregion_dropdown(province):
-    print("START --- update_subregion_dropdown \t", nowtime())
-    print("END   --- update_subregion_dropdown \t", nowtime())    
+def update_healthregion_dropdown(province):
+    print("START --- update_healthregion_dropdown \t", nowtime())
+    print("END   --- update_healthregion_dropdown \t", nowtime())    
     return [{'label': i, 'value': i} for i in fnameDict[province]]
 
 #=================================================================#
@@ -1061,10 +1064,10 @@ def update_subregion_dropdown(province):
         ddp.Output('mob-card', 'children'),
     ],
     [
-        ddp.Input('subregion-dropdown', 'value')
+        ddp.Input('healthregion-dropdown', 'value')
     ],
     [
-        ddp.State('region-dropdown', 'value'),
+        ddp.State('province-dropdown', 'value'),
     ]
 )
 def update_static_cards(region_name, province_name):
@@ -1104,10 +1107,10 @@ def update_static_cards(region_name, province_name):
         ddp.Output('covid-deaths2-card', 'children'),
     ],
     [
-        ddp.Input('subregion-dropdown', 'value'),
+        ddp.Input('healthregion-dropdown', 'value'),
     ],
     [
-        ddp.State('region-dropdown', 'value'),
+        ddp.State('province-dropdown', 'value'),
     ]
 )
 def update_dynamic_cards(region_name, province_name):
@@ -1157,10 +1160,10 @@ def update_dynamic_cards(region_name, province_name):
         ddp.Output("cumulativedeaths-header", "children")
     ],
     [
-        ddp.Input('subregion-dropdown', 'value')        
+        ddp.Input('healthregion-dropdown', 'value')        
     ],
     [
-        ddp.State('region-dropdown', 'value'),
+        ddp.State('province-dropdown', 'value'),
     ]
 )
 def update_headers(region_name, province_name):
@@ -1196,10 +1199,10 @@ def update_headers(region_name, province_name):
         ddp.Output("vaccine-slider", "value"),
     ],
     [
-        ddp.Input('subregion-dropdown', 'value')
+        ddp.Input('healthregion-dropdown', 'value')
     ],
     [  
-        ddp.State('region-dropdown', 'value'), 
+        ddp.State('province-dropdown', 'value'), 
     ]
 )
 def set_slider_vals(region_name, province_name):
@@ -1223,10 +1226,10 @@ def set_slider_vals(region_name, province_name):
     [
         ddp.Input('rerun-btn1', 'n_clicks'),
         ddp.Input('rerun-btn2', 'n_clicks'),
-        ddp.Input("subregion-dropdown", "value")        
+        ddp.Input("healthregion-dropdown", "value")        
     ],
     [
-        ddp.State("region-dropdown", "value"),
+        ddp.State("province-dropdown", "value"),
         ddp.State("forecast-start-date", "date"),
         ddp.State('forecast-slider', 'value'),        
     ],
@@ -1235,7 +1238,8 @@ def update_cases_charts(n_clicks1, n_clicks2, region_name, province_name,
                         day_to_start_forecast, months_to_forecast):
     print("START --- update_cases_chart \t\t", nowtime())
 
-    daterange = get_daterange(day_to_start_forecast, months_to_forecast)
+    daterange, day_to_start_forecast = \
+        get_daterange(day_to_start_forecast, months_to_forecast)
 
     province_name = update_province_name(province_name)
 
@@ -1286,10 +1290,10 @@ def update_cases_charts(n_clicks1, n_clicks2, region_name, province_name,
     [
         ddp.Input('rerun-btn1', 'n_clicks'),
         ddp.Input('rerun-btn2', 'n_clicks'),
-        ddp.Input("subregion-dropdown", "value"),
+        ddp.Input("healthregion-dropdown", "value"),
     ],
     [
-        ddp.State("region-dropdown", "value"),
+        ddp.State("province-dropdown", "value"),
         ddp.State("forecast-start-date", "date"),
         ddp.State('forecast-slider', 'value'),
         ddp.State('facemask-slider', 'value'),
@@ -1316,16 +1320,16 @@ def update_mortality_chart(n_clicks1, n_clicks2, region_name, province_name,
         do_simulations = True
     else:
         do_simulations = False
-    if ('subregion-dropdown' in changed_id):
-        subregion_changed = True
+    if ('healthregion-dropdown' in changed_id):
+        healthregion_changed = True
     else:
-        subregion_changed = False
+        healthregion_changed = False
     #=== Identify an initial run or an update for the region
     #    and set slider values manually
     if ( (mob_slider == initial_nonvalue)
          | (facemask_slider == initial_nonvalue)
          | (vac_slider == initial_nonvalue)
-         | (subregion_changed) ):
+         | (healthregion_changed) ):
         facemask_slider, mob_slider, vac_slider = \
             get_last_trends_mob_vaxrate_for_region(province_name, region_name)
     
@@ -1333,13 +1337,14 @@ def update_mortality_chart(n_clicks1, n_clicks2, region_name, province_name,
     
     #=== Set the daterange (same for all graphs).  This is currently:
     #         [first_mortality_date, forecast_startdate + forecast_length]
-    daterange = get_daterange(day_to_start_forecast, months_to_forecast)
+    daterange, day_to_start_forecast = \
+        get_daterange(day_to_start_forecast, months_to_forecast)
     
     #=== Adjust slider values for use in model forecast
     mob_slider_negative = -1*mob_slider
     vac_slider_fraction = vac_slider / 100.0
     max_vax_fraction = max_vax_percent / 100
-    
+
     #=== Get the mortality dataframe and make a copy for plotting
     today_str = datetime.datetime.now().strftime("%Y-%m-%d")
     df_mort = get_hr_mortality_df(province_name, region_name, getall=False,
@@ -1453,18 +1458,19 @@ def update_mortality_chart(n_clicks1, n_clicks2, region_name, province_name,
                     name='Prediction ' + str(i+1),
                 )
             )
-            #=== Add log-smoothed mortality pre-forecast to show 
-            #    selection of potentially new forecast startdate
-            if (df_mort_logsmooth is not None):
-                mortality_fig.add_trace(
-                    go.Scatter(
-                        x=df_mort_logsmooth['date'],
-                        y=df_mort_logsmooth['deaths'],
-                        name='Previous Deaths',
-                        mode='lines',
-                        line={'dash': 'dash', 'color' : 'red'}
+            if show_logsmoothed_mortality_preforecast:
+                #=== Add log-smoothed mortality pre-forecast to show 
+                #    selection of potentially new forecast startdate
+                if (df_mort_logsmooth is not None):
+                    mortality_fig.add_trace(
+                        go.Scatter(
+                            x=df_mort_logsmooth['date'],
+                            y=df_mort_logsmooth['deaths'],
+                            name='Previous Deaths',
+                            mode='lines',
+                            line={'dash': 'dash', 'color' : 'red'}
+                        )
                     )
-                )
             #=== Add simulated forecast of R(t) to the R(t) figure
             df_forecast['R(t)'] = \
                 np.exp( Rt_serial_interval * df_forecast['lambda'] )
@@ -1511,10 +1517,10 @@ def update_mortality_chart(n_clicks1, n_clicks2, region_name, province_name,
     [
         ddp.Input('rerun-btn1', 'n_clicks'),
         ddp.Input('rerun-btn2', 'n_clicks'),
-        ddp.Input("subregion-dropdown", "value"),
+        ddp.Input("healthregion-dropdown", "value"),
     ],
     [
-        ddp.State("region-dropdown", "value"),
+        ddp.State("province-dropdown", "value"),
         ddp.State("forecast-start-date", "date"),
         ddp.State('forecast-slider', 'value'),
     ],
@@ -1523,7 +1529,8 @@ def update_cumulativedeaths_charts(n_clicks1, n_clicks2, region_name, province_n
                                    day_to_start_forecast, months_to_forecast):
     print("START --- update_cumulativedeath_chart \t", nowtime())
     
-    daterange = get_daterange(day_to_start_forecast, months_to_forecast)    
+    daterange, day_to_start_forecast = \
+        get_daterange(day_to_start_forecast, months_to_forecast)
 
     province_name = update_province_name(province_name)
 
@@ -1566,11 +1573,11 @@ def update_cumulativedeaths_charts(n_clicks1, n_clicks2, region_name, province_n
     [
         ddp.Input('rerun-btn1', 'n_clicks'),
         ddp.Input('rerun-btn2', 'n_clicks'),
-        ddp.Input("subregion-dropdown", "value"),
+        ddp.Input("healthregion-dropdown", "value"),
         ddp.Input('mobility-slider', 'value'),
     ],        
     [
-        ddp.State("region-dropdown", "value"),
+        ddp.State("province-dropdown", "value"),
         ddp.State("forecast-start-date", "date"),
         ddp.State('forecast-slider', 'value'),
     ],
@@ -1580,19 +1587,20 @@ def update_mob_charts(n_clicks1, n_clicks2, region_name, mob_slider, province_na
     print("START --- update_mob_charts \t\t", nowtime())
     #print("      --- update_mob_charts \t\t", nowtime(), " --- xMob=" + str(xMob))
 
-    daterange = get_daterange(day_to_start_forecast, months_to_forecast)
+    daterange, day_to_start_forecast = \
+        get_daterange(day_to_start_forecast, months_to_forecast)
     
     province_name = update_province_name(province_name)
 
-    #=== Check to see if subregion changed
+    #=== Check to see if healthregion changed
     changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
-    if ('subregion-dropdown' in changed_id):
-        subregion_changed = True
+    if ('healthregion-dropdown' in changed_id):
+        healthregion_changed = True
     else:
-        subregion_changed = False
+        healthregion_changed = False
     #=== Identify an initial run or sub-region change
     #    and set slider values manually
-    if ( (mob_slider == initial_nonvalue) | (subregion_changed) ):
+    if ( (mob_slider == initial_nonvalue) | (healthregion_changed) ):
         facemask_slider, mob_slider, vac_slider = \
             get_last_trends_mob_vaxrate_for_region(province_name, region_name)
 
@@ -1652,12 +1660,12 @@ def update_mob_charts(n_clicks1, n_clicks2, region_name, mob_slider, province_na
     [
         ddp.Input('rerun-btn1', 'n_clicks'),
         ddp.Input('rerun-btn2', 'n_clicks'),
-        ddp.Input("subregion-dropdown", "value"),
+        ddp.Input("healthregion-dropdown", "value"),
         ddp.Input('vaccine-slider', 'value'),
         ddp.Input('max-vaccination-percent', 'value'),        
     ],
     [
-        ddp.State("region-dropdown", "value"),
+        ddp.State("province-dropdown", "value"),
         ddp.State("forecast-start-date", "date"),
         ddp.State('forecast-slider', 'value'),
     ],
@@ -1668,19 +1676,20 @@ def update_vaccination_charts(n_clicks1, n_clicks2, region_name, vac_slider,
     
     print("START --- update_vaccination_chart \t", nowtime())
     
-    daterange = get_daterange(day_to_start_forecast, months_to_forecast)
+    daterange, day_to_start_forecast = \
+        get_daterange(day_to_start_forecast, months_to_forecast)
     
     province_name = update_province_name(province_name)
     
-    #=== Check to see if subregion changed
+    #=== Check to see if healthregion changed
     changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
-    if ('subregion-dropdown' in changed_id):
-        subregion_changed = True
+    if ('healthregion-dropdown' in changed_id):
+        healthregion_changed = True
     else:
-        subregion_changed = False
+        healthregion_changed = False
     #=== Identify an initial run or a region update
     #    and set slider values manually
-    if ( (vac_slider == initial_nonvalue) | (subregion_changed) ):
+    if ( (vac_slider == initial_nonvalue) | (healthregion_changed) ):
         facemask_slider, mob_slider, vac_slider = \
             get_last_trends_mob_vaxrate_for_region(province_name, region_name)
 
@@ -1750,10 +1759,10 @@ def update_vaccination_charts(n_clicks1, n_clicks2, region_name, vac_slider,
     [
         ddp.Input('rerun-btn1', 'n_clicks'),
         ddp.Input('rerun-btn2', 'n_clicks'), 
-        ddp.Input("subregion-dropdown", "value"),
+        ddp.Input("healthregion-dropdown", "value"),
     ],
     [
-        ddp.State("region-dropdown", "value"),
+        ddp.State("province-dropdown", "value"),
         ddp.State("forecast-start-date", "date"),
         ddp.State('forecast-slider', 'value'),
     ],
@@ -1762,7 +1771,8 @@ def update_weather_chart(n_clicks1, n_clicks2, region_name, province_name,
                          day_to_start_forecast, months_to_forecast,):
     print("START --- update_weather_chart \t\t", nowtime())
 
-    daterange = get_daterange(day_to_start_forecast, months_to_forecast)
+    daterange, day_to_start_forecast = \
+        get_daterange(day_to_start_forecast, months_to_forecast)
 
     province_name = update_province_name(province_name)
 
@@ -1807,11 +1817,11 @@ def update_weather_chart(n_clicks1, n_clicks2, region_name, province_name,
     [
         ddp.Input('rerun-btn1', 'n_clicks'),
         ddp.Input('rerun-btn2', 'n_clicks'),
-        ddp.Input("subregion-dropdown", "value"),
+        ddp.Input("healthregion-dropdown", "value"),
         ddp.Input('facemask-slider', 'value'),
     ],
     [
-        ddp.State("region-dropdown", "value"),
+        ddp.State("province-dropdown", "value"),
         ddp.State("forecast-start-date", "date"),
         ddp.State('forecast-slider', 'value'),
     ],
@@ -1820,19 +1830,20 @@ def update_trends_charts(n_clicks1, n_clicks2, region_name, facemask_slider,
                          province_name, day_to_start_forecast, months_to_forecast):
     print("START --- update_trends_chart \t\t", nowtime())
 
-    daterange = get_daterange(day_to_start_forecast, months_to_forecast)
-    
+    daterange, day_to_start_forecast = \
+        get_daterange(day_to_start_forecast, months_to_forecast)
+
     province_name = update_province_name(province_name)
 
-    #=== Check to see if subregion changed
+    #=== Check to see if healthregion changed
     changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
-    if ('subregion-dropdown' in changed_id):
-        subregion_changed = True
+    if ('healthregion-dropdown' in changed_id):
+        healthregion_changed = True
     else:
-        subregion_changed = False
+        healthregion_changed = False
     #=== Identify an initial run or an update for the region
     #    and set slider values manually
-    if ( (facemask_slider == initial_nonvalue) | (subregion_changed) ):
+    if ( (facemask_slider == initial_nonvalue) | (healthregion_changed) ):
         facemask_slider, mob_slider, vac_slider = \
             get_last_trends_mob_vaxrate_for_region(province_name, region_name)
 
@@ -2022,13 +2033,23 @@ def get_daterange(forecast_startdate, forecast_length_months):
         Use a fixed start date (first date of mortality)
         and just adjust the maxdate depending on forecast 
     """
+    # if user manually entered a date that is disallowed, change it
+    if (forecast_startdate is None):
+        forecast_startdate = last_mortality_date.strftime("%Y-%m-%d")
     fc_start = datetime.datetime.strptime(forecast_startdate, "%Y-%m-%d")
+    # reset forecast start date to the last mortality date if in the future
+    new_forecast_startdate = forecast_startdate
+    if (fc_start > last_mortality_date):
+        fc_start = last_mortality_date
+        new_forecast_startdate = fc_start.strftime("%Y-%m-%d")
+    # set end date to either today, or the end of the forecast
     fc_length = datetime.timedelta(days=forecast_length_months*days_in_month)
     today = datetime.datetime.now()
     maxdate = max(today, fc_start + fc_length)
     if (maxdate > last_possible_date):
         maxdate = last_possible_date
-    return [first_mortality_date_str, maxdate.strftime("%Y-%m-%d")]
+    return [first_mortality_date_str, maxdate.strftime("%Y-%m-%d")], new_forecast_startdate
+            
 
 #=========================================================
 #===========  Helper Functions: Static Data  =============
@@ -2121,7 +2142,7 @@ def get_logsmoothed_initial_mortality(the_date, df):
         # it will return a date 7 days earlier
         if the_new_date_ind is None:
             # if no valid data, then forecast cannot be done
-            print("      --- update_mortality_chart \t\tfell back to original IC method.")
+            print("      --- update_mortality_chart \t\tfell back to original IC method (1).")
             #return [-1, None, dfnew]
             return [-1, None, None]
         else:
@@ -2132,7 +2153,7 @@ def get_logsmoothed_initial_mortality(the_date, df):
                     dfnew]
     else:
         #=== This shouldn't ever happen, but I guess if it does
-        print("      --- update_mortality_chart \t\tfell back to original IC method.")
+        print("      --- update_mortality_chart \t\tfell back to original IC method (2).")
         return [-1, None, None]
 
 def get_forecasted_mortality(province_name, region_name,
