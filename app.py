@@ -75,8 +75,8 @@ df_trends_all["date"] = \
 weather_data_dir = "data/weather/all_health_regions_actual_avg_temperature_files/2020-01-01_2023-01-01/"
 
 #============ Vaccination data ===========
-vac_base_url = "https://api.covid19tracker.ca/reports/regions/"
-vac_base_url_prov = "https://api.covid19tracker.ca/reports/province/"
+vax_base_url = "https://api.covid19tracker.ca/reports/regions/"
+vax_base_url_prov = "https://api.covid19tracker.ca/reports/province/"
 
 #============ Static data on Health Regions ===========
 static_data = pd.read_csv(r'data/health_regions_static_data.csv', encoding='Latin-1')
@@ -249,6 +249,13 @@ maximum_vaccine_efficacy = 0.9 # 90%
 #===================================================
 
 pd.set_option('display.max_rows', None)
+
+#=== Mitigation method for future values:
+#
+#       'constant' = constant value step function at "now"
+#       'logistic' = use logistic fcn for mitigation transition
+#
+future_mitigation_method = 'logistic'
 
 #=== Show the logsmoothed mortality used to get forecast
 #    initial condition (as a dashed red line)
@@ -469,7 +476,7 @@ canadian_dashboard = html.Div(
                     dbc.Row(dbc.Col(
                         dbc.Card(
                             [
-                                dbc.CardHeader("Static Input"),
+                                dbc.CardHeader("Health Region"),
                                 dbc.CardBody([
                                     dbc.Row(dbc.Col(
                                         html.Div(
@@ -503,25 +510,27 @@ canadian_dashboard = html.Div(
                                                     children="Number of Simulations",
                                                     className="dropdown-title"
                                                     ),
-                                                 dcc.Input(
-                                                     id="number-of-simulations",
-                                                     type="number",
-                                                     placeholder="input",
-                                                     value=default_number_of_simulations,
-                                                     min=1,
-                                                     max=10,
-                                                     step='any',
-                                                 ),
+                                                dcc.Slider(
+                                                    id='number-of-simulations',
+                                                    min=1,
+                                                    max=10,
+                                                    step=1.0,
+                                                    value=default_number_of_simulations,
+                                                    marks={ 1: '1', 2: '2', 3: '3',
+                                                            4: '4', 5: '5', 6: '6',
+                                                            7: '7', 8: '8', 9: '9', 10: '10'
+                                                           },
+                                                ),
                                                 html.Div(
-                                                    "expect 2-3 seconds run time per simulation",
-                                                    style={'color': 'red', 'fontSize':'x-small'}
+                                                    "(expect 2-3 s run time per year-long simulation)",
+                                                    style={'color': 'black', 'fontSize':'x-small'}
                                                     )
                                             ]
                                         ),
                                     ), className='input-space'),
                                     dbc.Row(dbc.Col(
                                         html.Div(
-                                            dbc.Button("Run Forecast", id='rerun-btn1', n_clicks=0,
+                                            dbc.Button("Run Forecast", id='rerun-btn', n_clicks=0,
                                                        color="dark", className="mr-1")
                                         ),
                                     ), className='input-space'),
@@ -531,8 +540,82 @@ canadian_dashboard = html.Div(
                     dbc.Row(dbc.Col(
                         dbc.Card(
                             [
-                                dbc.CardHeader("Prediction Input"),
+                                dbc.CardHeader("Forecast Options"),
                                 dbc.CardBody([
+                                    dbc.Row(dbc.Col(
+                                        html.Div(
+                                            children=[
+                                                html.Div(
+                                                    children="Number of Months to Forecast",
+                                                    className="dropdown-title"
+                                                    ),
+                                                dcc.Slider(
+                                                    id='forecast-slider',
+                                                    min=0,
+                                                    max=24,
+                                                    step=1.0,
+                                                    value=forecast_initial_length, 
+                                                    marks={ 0: '0', 4: '4', 8: '8',
+                                                        12: '12', 16: '16', 20: '20', 24: '24'
+                                                    },
+                                                ),
+                                            ]
+                                        ),
+                                    ), className='input-space'),
+                                    dbc.Row(dbc.Col(
+                                        html.Div(
+                                            children=[
+                                                html.Div(
+                                                    children="Date to Start Forecast (mm/dd/yyyy)",
+                                                    className="dropdown-title",
+                                                    ),
+                                                dcc.DatePickerSingle(
+                                                    id="forecast-start-date",
+                                                    min_date_allowed=first_mortality_date.date(),
+                                                    max_date_allowed=nowdate.date(),
+                                                    initial_visible_month=last_mortality_date.date(), 
+                                                    date=forecast_initial_start_date
+                                                ),
+                                                html.Div(
+                                                    "start date might be set earlier if data is sparse",
+                                                    style={'color': 'red', 'fontSize':'x-small'}
+                                                    )
+                                            ]
+                                        ),
+                                    ), className='input-space'),
+                                ]),
+                            ], color="dark", outline=True),
+                    ), className="mb-4"),
+                    dbc.Row(dbc.Col(
+                        dbc.Card(
+                            [
+                                dbc.CardHeader("Future Mitigation"),
+                                dbc.CardBody([
+                                    dbc.Row(dbc.Col(
+                                        html.Div(
+                                            children=[
+                                                html.Div(
+                                                    children="Workplace Mobility Reduction",
+                                                    className="dropdown-title"
+                                                    ),
+                                                dcc.Slider(
+                                                    id='mobility-slider',
+                                                    min=0,
+                                                    max=100,
+                                                    step=1,
+                                                    value=initial_mobility_slider,
+                                                    marks={
+                                                        0: '0%',
+                                                        20: '20%',
+                                                        40: '40%',
+                                                        60: '60%',
+                                                        80: '80%',
+                                                        100: '100% (lockdown)'
+                                                    },
+                                                ),
+                                            ]
+                                        ),
+                                    ), className='input-space'),
                                     dbc.Row(dbc.Col(
                                         html.Div(
                                             children=[
@@ -561,27 +644,51 @@ canadian_dashboard = html.Div(
                                         html.Div(
                                             children=[
                                                 html.Div(
-                                                    children="Workplace Mobility Reduction",
+                                                    children="Start future mitigation in",
                                                     className="dropdown-title"
                                                     ),
                                                 dcc.Slider(
-                                                    id='mobility-slider',
+                                                    id='mitigation-start-slider',
                                                     min=0,
-                                                    max=100,
-                                                    step=1,
-                                                    value=initial_mobility_slider,
-                                                    marks={
-                                                        0: '0%',
-                                                        20: '20%',
-                                                        40: '40%',
-                                                        60: '60%',
-                                                        80: '80%',
-                                                        100: '100% (lockdown)'
+                                                    max=6,
+                                                    step=0.5,
+                                                    value=0.5,
+                                                    marks={ 0: '0 months', 1: '', 2: '2',
+                                                        3: '', 4: '4', 5: '', 6: '6'
                                                     },
                                                 ),
                                             ]
                                         ),
                                     ), className='input-space'),
+                                    dbc.Row(dbc.Col(
+                                        html.Div(
+                                            children=[
+                                                html.Div(
+                                                    children="Mitigation transition period",
+                                                    className="dropdown-title"
+                                                    ),
+                                                dcc.Slider(
+                                                    id='mitigation-transition-slider',
+                                                    min=1,
+                                                    max=12,
+                                                    step=1,
+                                                    value=4,
+                                                    marks={ 1: '1 week', 2: '', 3: '',
+                                                            4: '4', 5: '', 6: '', 7: '',
+                                                            8: '8', 9: '', 10: '', 11: '', 12: '12'
+                                                    },
+                                                ),
+                                            ]
+                                        ),
+                                    ), className='input-space'),
+                                ]),
+                            ], color="dark", outline=True),
+                    ), className="mb-4"),
+                    dbc.Row(dbc.Col(
+                        dbc.Card(
+                            [
+                                dbc.CardHeader("Future Vaccinations"),
+                                dbc.CardBody([
                                     dbc.Row(dbc.Col(
                                         html.Div(
                                             children=[
@@ -624,53 +731,6 @@ canadian_dashboard = html.Div(
                                                      step='any',
                                                  ),
                                             ]
-                                        ),
-                                    ), className='input-space'),
-                                    dbc.Row(dbc.Col(
-                                        html.Div(
-                                            children=[
-                                                html.Div(
-                                                    children="Date to Start Forecast (mm/dd/yyyy)",
-                                                    className="dropdown-title",
-                                                    ),
-                                                dcc.DatePickerSingle(
-                                                    id="forecast-start-date",
-                                                    min_date_allowed=first_mortality_date.date(),
-                                                    max_date_allowed=nowdate.date(),
-                                                    initial_visible_month=last_mortality_date.date(), 
-                                                    date=forecast_initial_start_date
-                                                ),
-                                                html.Div(
-                                                    "start date might be set earlier if data is sparse",
-                                                    style={'color': 'red', 'fontSize':'x-small'}
-                                                    )
-                                            ]
-                                        ),
-                                    ), className='input-space'),
-                                    dbc.Row(dbc.Col(
-                                        html.Div(
-                                            children=[
-                                                html.Div(
-                                                    children="Number of Months to Forecast",
-                                                    className="dropdown-title"
-                                                    ),
-                                                dcc.Slider(
-                                                    id='forecast-slider',
-                                                    min=0,
-                                                    max=24,
-                                                    step=1.0,
-                                                    value=forecast_initial_length, 
-                                                    marks={ 0: '0', 4: '4', 8: '8',
-                                                        12: '12', 16: '16', 20: '20', 24: '24'
-                                                    },
-                                                ),
-                                            ]
-                                        ),
-                                    ), className='input-space'),
-                                    dbc.Row(dbc.Col(
-                                        html.Div(
-                                            dbc.Button("Run Forecast", id='rerun-btn2', n_clicks=0,
-                                                       color="dark", className="mr-1")
                                         ),
                                     ), className='input-space'),
                                 ]),
@@ -860,20 +920,39 @@ canadian_dashboard = html.Div(
                                     ], color="dark", inverse=True),
                             ),
                         ], className="mb-4"),
-                        dbc.Row([                        
+                        dbc.Row([                            
                             dbc.Col(
                                 dbc.Card(
                                     [
-                                        dbc.CardHeader(id="vac-header"),
+                                        dbc.CardHeader(id="trends-header"),
                                         dbc.CardBody(
                                             dcc.Loading(
                                                 children=[html.Div(dcc.Graph(
-                                                    id="vac-chart", config={"displayModeBar": False}))],
+                                                    id="trends-chart", config={"displayModeBar": False}))],
                                                 type="default"
                                         )),
                                         # dbc.CardBody(
                                         #     dcc.Graph(
-                                        #         id="vac-chart", config={"displayModeBar": False}, # style={'display': 'inline-block'},
+                                        #         id="trends-chart", config={"displayModeBar": False}, # style={'display': 'inline-block'},
+                                        #     ),
+                                        # ),
+                                    ], color="dark", inverse=True),
+                            ),
+                        ], className="mb-4"),
+                        dbc.Row([                        
+                            dbc.Col(
+                                dbc.Card(
+                                    [
+                                        dbc.CardHeader(id="vax-header"),
+                                        dbc.CardBody(
+                                            dcc.Loading(
+                                                children=[html.Div(dcc.Graph(
+                                                    id="vax-chart", config={"displayModeBar": False}))],
+                                                type="default"
+                                        )),
+                                        # dbc.CardBody(
+                                        #     dcc.Graph(
+                                        #         id="vax-chart", config={"displayModeBar": False}, # style={'display': 'inline-block'},
                                         #     ),
                                         # ),
                                     ], color="dark", inverse=True),
@@ -898,25 +977,6 @@ canadian_dashboard = html.Div(
                                     ], color="dark", inverse=True),
                             ),
                         ], className="mb-4"),                            
-                        dbc.Row([                            
-                            dbc.Col(
-                                dbc.Card(
-                                    [
-                                        dbc.CardHeader(id="trends-header"),
-                                        dbc.CardBody(
-                                            dcc.Loading(
-                                                children=[html.Div(dcc.Graph(
-                                                    id="trends-chart", config={"displayModeBar": False}))],
-                                                type="default"
-                                        )),
-                                        # dbc.CardBody(
-                                        #     dcc.Graph(
-                                        #         id="trends-chart", config={"displayModeBar": False}, # style={'display': 'inline-block'},
-                                        #     ),
-                                        # ),
-                                    ], color="dark", inverse=True),
-                            ),
-                        ], className="mb-4"),
                         dbc.Row([	
                             dbc.Col(	
                                 dbc.Card(	
@@ -1154,7 +1214,7 @@ def update_dynamic_cards(region_name, province_name):
         ddp.Output("cases-header", "children"),
         ddp.Output("mob-header", "children"),
         ddp.Output("temp-header", "children"),
-        ddp.Output("vac-header", "children"),
+        ddp.Output("vax-header", "children"),
         ddp.Output("trends-header", "children"),
         ddp.Output("rtcurve-header", "children"),
         ddp.Output("cumulativedeaths-header", "children")
@@ -1178,7 +1238,7 @@ def update_headers(region_name, province_name):
         + " (not used for forecasting)"
     mob_label = 'Workplace Social Mobility in ' + region_name + ', ' + province_name
     temp_label = 'Daily Reported Temperature in ' + region_name + ', ' + province_name
-    vac_label = 'Vaccination of Population in ' + region_name + ', ' + province_name
+    vax_label = 'Vaccination of Population in ' + region_name + ', ' + province_name
     trends_label = 'Google Searches for Face Masks in ' + region_name + ', ' + province_name
     rtcurve_label = 'Effective Reproduction Number R(t) Curves for ' + region_name + ', ' \
         + province_name + " (black = actual, colors = predicted)"
@@ -1186,7 +1246,7 @@ def update_headers(region_name, province_name):
 
     print("END   --- update_static_cards \t\t", nowtime())
     
-    return [deaths_label, cases_label, mob_label, temp_label, vac_label,
+    return [deaths_label, cases_label, mob_label, temp_label, vax_label,
             trends_label, rtcurve_label, cumulativedeaths_label]
 
 #==================================================#
@@ -1224,18 +1284,18 @@ def set_slider_vals(region_name, province_name):
 @app.callback(
     ddp.Output("cases-chart", "figure"), 
     [
-        ddp.Input('rerun-btn1', 'n_clicks'),
-        ddp.Input('rerun-btn2', 'n_clicks'),
-        ddp.Input("healthregion-dropdown", "value")        
+        ddp.Input('rerun-btn', 'n_clicks'),
+        ddp.Input("healthregion-dropdown", "value"),
+        ddp.Input("forecast-start-date", "date"),
+        ddp.Input('forecast-slider', 'value'),        
     ],
     [
         ddp.State("province-dropdown", "value"),
-        ddp.State("forecast-start-date", "date"),
-        ddp.State('forecast-slider', 'value'),        
     ],
 )
-def update_cases_charts(n_clicks1, n_clicks2, region_name, province_name, 
-                        day_to_start_forecast, months_to_forecast):
+def update_cases_charts(n_clicks, region_name, day_to_start_forecast,
+                        months_to_forecast, province_name):
+                 
     print("START --- update_cases_chart \t\t", nowtime())
 
     daterange, day_to_start_forecast = \
@@ -1288,25 +1348,28 @@ def update_cases_charts(n_clicks1, n_clicks2, region_name, province_name,
         ddp.Output("rtcurve-chart", "figure")
     ],
     [
-        ddp.Input('rerun-btn1', 'n_clicks'),
-        ddp.Input('rerun-btn2', 'n_clicks'),
+        ddp.Input('rerun-btn', 'n_clicks'),
         ddp.Input("healthregion-dropdown", "value"),
+        ddp.Input("forecast-start-date", "date"),
+        ddp.Input('forecast-slider', 'value'),
     ],
     [
         ddp.State("province-dropdown", "value"),
-        ddp.State("forecast-start-date", "date"),
-        ddp.State('forecast-slider', 'value'),
         ddp.State('facemask-slider', 'value'),
         ddp.State('mobility-slider', 'value'),
+        ddp.State('mitigation-start-slider', 'value'),
+        ddp.State('mitigation-transition-slider', 'value'),
         ddp.State('vaccine-slider', 'value'),
         ddp.State('max-vaccination-percent', 'value'),
         ddp.State('number-of-simulations', 'value'),
     ],
 )
-def update_mortality_chart(n_clicks1, n_clicks2, region_name, province_name, 
+def update_mortality_chart(n_clicks, region_name, 
                            day_to_start_forecast, months_to_forecast,
+                           province_name, 
                            facemask_slider, mob_slider,
-                           vac_slider, max_vax_percent, n_simulations):    
+                           mitigation_start_months, mitigation_transition_weeks,
+                           vax_slider, max_vax_percent, n_simulations):    
     
     print("START --- update_mortality_chart \t", nowtime())
     
@@ -1316,7 +1379,7 @@ def update_mortality_chart(n_clicks1, n_clicks2, region_name, province_name,
     #    or if just the region was changed (replot data only)
     #          https://stackoverflow.com/questions/62671226
     changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
-    if ( ('rerun-btn1' in changed_id) | ('rerun-btn2' in changed_id) ):
+    if ('rerun-btn' in changed_id):
         do_simulations = True
     else:
         do_simulations = False
@@ -1324,25 +1387,31 @@ def update_mortality_chart(n_clicks1, n_clicks2, region_name, province_name,
         healthregion_changed = True
     else:
         healthregion_changed = False
-    #=== Identify an initial run or an update for the region
-    #    and set slider values manually
+    
+    #=== Identify an initial run (sliders have bad initial 
+    #    values) or a region change
+    #          ----> set the slider values for region
     if ( (mob_slider == initial_nonvalue)
          | (facemask_slider == initial_nonvalue)
-         | (vac_slider == initial_nonvalue)
+         | (vax_slider == initial_nonvalue)
          | (healthregion_changed) ):
-        facemask_slider, mob_slider, vac_slider = \
+        facemask_slider, mob_slider, vax_slider = \
             get_last_trends_mob_vaxrate_for_region(province_name, region_name)
-    
+
     print("      --- update_mortality_chart \t", nowtime(), " --- slider data loaded")
     
-    #=== Set the daterange (same for all graphs).  This is currently:
+    #=== Set the daterange (same for all graphs).
+    #
+    #    This is currently:
+    #
     #         [first_mortality_date, forecast_startdate + forecast_length]
+    #
     daterange, day_to_start_forecast = \
         get_daterange(day_to_start_forecast, months_to_forecast)
     
     #=== Adjust slider values for use in model forecast
     mob_slider_negative = -1*mob_slider
-    vac_slider_fraction = vac_slider / 100.0
+    vax_slider_fraction = vax_slider / 100.0
     max_vax_fraction = max_vax_percent / 100
 
     #=== Get the mortality dataframe and make a copy for plotting
@@ -1419,11 +1488,7 @@ def update_mortality_chart(n_clicks1, n_clicks2, region_name, province_name,
 
         #=== Load other data ===
         print("      --- update_mortality_chart \t", nowtime(), " --- started loading data")
-        # Get "fraction_vaccinated" dataframe
-        df_vac = get_hr_vac_data(province_name, region_name)
-        last_vax_fraction = get_last_val('vac', df_vac)
-        print("      --- update_mortality_chart \t", nowtime(), " --- vaccination loaded")    
-        # Get the 7-day rolling average of the mobility data
+        #=== Get the 7-day rolling average of the mobility data
         df_mobility = get_hr_mob_df(province_name, region_name)
         print("      --- update_mortality_chart \t", nowtime(), " --- mobility loaded")
         #=== Get weather dataframe
@@ -1432,9 +1497,35 @@ def update_mortality_chart(n_clicks1, n_clicks2, region_name, province_name,
         #=== Get the 7-day rolling average of Google trends for "facemasks"
         #   (also w/ tanh mask applied about 15Apr2020)
         df_trends = get_hr_trends_df(province_name, region_name)
+        #=== Get "fraction_vaccinated" dataframe
+        df_vax = get_hr_vax_data(province_name, region_name)
+        print("      --- update_mortality_chart \t", nowtime(), " --- vaccination loaded")    
         print("      --- update_mortality_chart \t", nowtime(), " --- trends loaded")    
         print("      --- update_mortality_chart \t", nowtime(), " --- finished loading data")
 
+        #=== Get future data for mitigation drivers (mobility and
+        #    face-mask-trends) and for vaccination percentage
+        #
+        # Extend mobility data using the chosen mitigation set by the 
+        # global variable future_mitigation_method = ("constant" or "logistic")
+        df_mobility = \
+            get_future_mitigation(df_mobility, 'mob', mob_slider_negative,
+                                  mitigation_start_months,
+                                  mitigation_transition_weeks, daterange[1])
+        # Extend trends data using the chosen mitigation set by the 
+        # global variable future_mitigation_method = ("constant" or "logistic")
+        df_trends = \
+            get_future_mitigation(df_trends, 'trends', facemask_slider,
+                                  mitigation_start_months,
+                                  mitigation_transition_weeks, daterange[1])
+        # Get necesary vaccination values from slider and historical data
+        vax_fraction_per_week = vax_slider / 100.0
+        max_vax_fraction = max_vax_percent / 100.0
+        last_vax_data_date = df_vax.date.max()
+        last_vax_fraction = get_last_val('vax', df_vax)
+        # Extend vaccination data using a linear extrapolation of historic data
+        df_vax = get_future_vax(df_vax, last_vax_fraction, vax_fraction_per_week,
+                                max_vax_fraction, last_vax_data_date, daterange[1])
     
         #=== Run forecast simulations
         for i in range(n_simulations):
@@ -1442,11 +1533,9 @@ def update_mortality_chart(n_clicks1, n_clicks2, region_name, province_name,
             df_forecast, new_forecast_startdate, df_mort_logsmooth = \
                 get_forecasted_mortality(province_name, region_name,
                                          day_to_start_forecast, months_to_forecast,
-                                         df_mort, df_mobility, df_vac, df_weather, df_trends,
-                                         mob_slider_negative,
-                                         vac_slider_fraction, last_vax_fraction,
-                                         max_vax_fraction,
-                                         facemask_slider)
+                                         df_mort, df_mobility, df_vax, df_weather, df_trends,
+                                         last_vax_fraction, max_vax_fraction)
+                                         
             df_forecast = \
                 df_forecast[df_forecast.date.between(new_forecast_startdate, daterange[1])]
             #=== Add simulated forecast of mortality to the mortality figure
@@ -1484,7 +1573,7 @@ def update_mortality_chart(n_clicks1, n_clicks2, region_name, province_name,
                     name='Prediction ' + str(i+1),
                 )
             )
-    print("      --- update_mortality_chart \t", nowtime(), " --- finished simulations")    
+            print("      --- update_mortality_chart \t", nowtime(), " --- finished simulations")    
     #=== Apply updates to figures
     mortality_fig.update_layout(xaxis_title='Date',
                            yaxis_title='Daily Mortality (7-day rolling avg)',
@@ -1515,18 +1604,17 @@ def update_mortality_chart(n_clicks1, n_clicks2, region_name, province_name,
 @app.callback(
     ddp.Output("cumulativedeaths-chart", "figure"),
     [
-        ddp.Input('rerun-btn1', 'n_clicks'),
-        ddp.Input('rerun-btn2', 'n_clicks'),
+        ddp.Input('rerun-btn', 'n_clicks'),
         ddp.Input("healthregion-dropdown", "value"),
+        ddp.Input("forecast-start-date", "date"),
+        ddp.Input('forecast-slider', 'value'),
     ],
     [
         ddp.State("province-dropdown", "value"),
-        ddp.State("forecast-start-date", "date"),
-        ddp.State('forecast-slider', 'value'),
     ],
 )
-def update_cumulativedeaths_charts(n_clicks1, n_clicks2, region_name, province_name,
-                                   day_to_start_forecast, months_to_forecast):
+def update_cumulativedeaths_charts(n_clicks, region_name, day_to_start_forecast,
+                                   months_to_forecast, province_name):
     print("START --- update_cumulativedeath_chart \t", nowtime())
     
     daterange, day_to_start_forecast = \
@@ -1571,19 +1659,21 @@ def update_cumulativedeaths_charts(n_clicks1, n_clicks2, region_name, province_n
 @app.callback(
     ddp.Output("mobility-chart", "figure"),
     [
-        ddp.Input('rerun-btn1', 'n_clicks'),
-        ddp.Input('rerun-btn2', 'n_clicks'),
+        ddp.Input('rerun-btn', 'n_clicks'),
         ddp.Input("healthregion-dropdown", "value"),
         ddp.Input('mobility-slider', 'value'),
+        ddp.Input('mitigation-start-slider', 'value'),
+        ddp.Input('mitigation-transition-slider', 'value'),        
+        ddp.Input("forecast-start-date", "date"),
+        ddp.Input('forecast-slider', 'value'),
     ],        
     [
         ddp.State("province-dropdown", "value"),
-        ddp.State("forecast-start-date", "date"),
-        ddp.State('forecast-slider', 'value'),
     ],
 )
-def update_mob_charts(n_clicks1, n_clicks2, region_name, mob_slider, province_name, 
-                      day_to_start_forecast, months_to_forecast):
+def update_mob_charts(n_clicks, region_name, mob_slider,
+                      mitigation_start_months, mitigation_transition_weeks,
+                      day_to_start_forecast, months_to_forecast, province_name):
     print("START --- update_mob_charts \t\t", nowtime())
     #print("      --- update_mob_charts \t\t", nowtime(), " --- xMob=" + str(xMob))
 
@@ -1601,7 +1691,7 @@ def update_mob_charts(n_clicks1, n_clicks2, region_name, mob_slider, province_na
     #=== Identify an initial run or sub-region change
     #    and set slider values manually
     if ( (mob_slider == initial_nonvalue) | (healthregion_changed) ):
-        facemask_slider, mob_slider, vac_slider = \
+        facemask_slider, mob_slider, vax_slider = \
             get_last_trends_mob_vaxrate_for_region(province_name, region_name)
 
     #=== Set value for plotting
@@ -1612,32 +1702,42 @@ def update_mob_charts(n_clicks1, n_clicks2, region_name, mob_slider, province_na
     df_mob = get_hr_mob_df(province_name, region_name, getall=False,
                                   startdate=daterange[0], enddate=today_str)
 
+    #=== Get the future mobility
+    #
+    # Save last date of mobility data (for plotting purposes)
+    last_mob_data_date = df_mob.date.max()
+    last_mob_data_date_str = last_mob_data_date.strftime("%Y-%m-%d")
+    # Extend mobility data using the chosen mitigation set by the 
+    # global variable future_mitigation_method = ("constant" or "logistic")
+    df_mob = \
+        get_future_mitigation(df_mob, 'mob', mob_slider_neg,
+                              mitigation_start_months,
+                              mitigation_transition_weeks, daterange[1])
+    
     #=== Plot the actual Mobility data
     mobility_fig = go.Figure()    
     mobility_fig.add_trace(
         go.Scatter(
-            x=df_mob['date'],
-            y=df_mob['workplaces_percent_change_from_baseline'],
+            x=df_mob[df_mob.date.between(daterange[0],
+                                         last_mob_data_date_str)]['date'],
+            y=df_mob[df_mob.date.between(daterange[0],
+                                         last_mob_data_date_str)]['workplaces_percent_change_from_baseline'],
             name='Actual Mobility',
             mode = 'lines',
         )
     )
-
-    #=== Create and plot a constant mobility function
-    start_date = df_mob.date.max()
-    start_date_str = start_date.strftime("%Y-%m-%d")
-    end_date = daterange[1]
-    rng = pd.date_range(start_date, end_date)
-    df_mob_plot_constant = pd.DataFrame({'date': rng,
-                                         'mob': mob_slider_neg * np.ones(len(rng))})
+    #=== Plot the future mobility
     mobility_fig.add_trace(
         go.Scatter(
-            x=df_mob_plot_constant['date'],
-            y=df_mob_plot_constant['mob'],
-            name='Predicted Mobility',
-            mode = 'lines',            
+            x=df_mob[df_mob.date.between(last_mob_data_date_str,
+                                         daterange[1])]['date'],
+            y=df_mob[df_mob.date.between(last_mob_data_date_str,
+                                         daterange[1])]['workplaces_percent_change_from_baseline'],
+            name='Actual Mobility',
+            mode = 'lines',
         )
     )
+        
     
     mobility_fig.update_layout(xaxis_title='Date',
                                yaxis_title='Workplace Social Mobility',
@@ -1656,23 +1756,22 @@ def update_mob_charts(n_clicks1, n_clicks2, region_name, mob_slider, province_na
 #   Rerun --> Get Vaccination Graph                      #
 #========================================================#
 @app.callback(
-    ddp.Output("vac-chart", "figure"),
+    ddp.Output("vax-chart", "figure"),
     [
-        ddp.Input('rerun-btn1', 'n_clicks'),
-        ddp.Input('rerun-btn2', 'n_clicks'),
+        ddp.Input('rerun-btn', 'n_clicks'),
         ddp.Input("healthregion-dropdown", "value"),
         ddp.Input('vaccine-slider', 'value'),
         ddp.Input('max-vaccination-percent', 'value'),        
+        ddp.Input("forecast-start-date", "date"),
+        ddp.Input('forecast-slider', 'value'),
     ],
     [
         ddp.State("province-dropdown", "value"),
-        ddp.State("forecast-start-date", "date"),
-        ddp.State('forecast-slider', 'value'),
     ],
 )
-def update_vaccination_charts(n_clicks1, n_clicks2, region_name, vac_slider,
-                              max_vax_percent, province_name,
-                              day_to_start_forecast, months_to_forecast):
+def update_vaccination_charts(n_clicks, region_name, vax_slider, max_vax_percent,
+                              day_to_start_forecast, months_to_forecast,
+                              province_name):
     
     print("START --- update_vaccination_chart \t", nowtime())
     
@@ -1689,51 +1788,49 @@ def update_vaccination_charts(n_clicks1, n_clicks2, region_name, vac_slider,
         healthregion_changed = False
     #=== Identify an initial run or a region update
     #    and set slider values manually
-    if ( (vac_slider == initial_nonvalue) | (healthregion_changed) ):
-        facemask_slider, mob_slider, vac_slider = \
+    if ( (vax_slider == initial_nonvalue) | (healthregion_changed) ):
+        facemask_slider, mob_slider, vax_slider = \
             get_last_trends_mob_vaxrate_for_region(province_name, region_name)
-
+        
+    print("      --- update_vaccination_chart \t", nowtime(), " --- started loading data")
     #=== Get fraction_vaccinated dataframe
-    df_vac = get_hr_vac_data(province_name, region_name).copy()
+    df_vax = get_hr_vax_data(province_name, region_name).copy()
+    print("      --- update_vaccination_chart \t", nowtime(), " --- creating future data")
     
+    #=== Append future vaccination data
+    #
+    # Save last date of mobility data (for plotting purposes)
+    last_vax_data_date = df_vax.date.max()
+    last_vax_data_date_str = last_vax_data_date.strftime("%Y-%m-%d")
+    # Get values from slider and historical data
+    last_vax_fraction = get_last_val('vax', df_vax)
+    vax_fraction_per_week = vax_slider / 100.0
+    max_vax_fraction = max_vax_percent / 100.0
+    # Extend vaccination data using a linear extrapolation of historic data
+    df_vax = get_future_vax(df_vax, last_vax_fraction, vax_fraction_per_week,
+                            max_vax_fraction, last_vax_data_date, daterange[1])
+    
+    print("      --- update_vaccination_chart \t", nowtime(), " --- plotting all data")
     #=== Plot the actual fraction_vaccinated data
     vaccination_fig = go.Figure()    
     vaccination_fig.add_trace(
         go.Scatter(
-            x=df_vac['date'],
-            y=100*df_vac['fraction_vaccinated'],
+            x=df_vax[df_vax.date.between(daterange[0],
+                                               last_vax_data_date_str)]['date'],
+            y=100*df_vax[df_vax.date.between(daterange[0],
+                                                   last_vax_data_date_str)]['fraction_vaccinated'],
             name='Estimated Percent Vaccinated',
             mode = 'lines',            
         )
     )
-    
-    #=== Create and plot the extrapolation of fraction_vaccinated
-    #
-    # get value and date of last vaccination data
-    last_vax_fraction = get_last_val('vac', df_vac)
-    start_date_str = df_vac.date.max()
-    start_date = datetime.datetime.strptime(start_date_str, "%Y-%m-%d")
-    # initialize dataframe of linear extrapolation
-    end_date_str = daterange[1]
-    rng = pd.date_range(start_date_str, end_date_str)
-    df_vax_frac_extrap = pd.DataFrame({'date': rng,
-                                  'linear_extrap' : np.zeros(len(rng))})
-    # make column with days since last vax data
-    df_vax_frac_extrap['days_since_last'] = \
-        (df_vax_frac_extrap['date'] - start_date).dt.days
-    # calculate the linear extrapolated values
-    vax_fraction_per_week = vac_slider / 100.0
-    max_vax_fraction = max_vax_percent / 100.0
-    df_vax_frac_extrap = \
-        get_linear_extrap_vax(last_vax_fraction, vax_fraction_per_week,
-                              max_vax_fraction, 'days_since_last',
-                              df=df_vax_frac_extrap)
-    # plot the extrapolated values
+    #=== Plot the extrapolation of fraction_vaccinated
     vaccination_fig.add_trace(
         go.Scatter(
-            x=df_vax_frac_extrap['date'],
-            y=100*df_vax_frac_extrap['linear_extrap'],
-            name='Extrapolated Percent Vaccination',
+            x=df_vax[df_vax.date.between(last_vax_data_date_str,
+                                               daterange[1])]['date'],
+            y=100*df_vax[df_vax.date.between(last_vax_data_date_str,
+                                               daterange[1])]['fraction_vaccinated'],
+            name='Estimated Percent Vaccinated',
             mode = 'lines',            
         )
     )
@@ -1757,18 +1854,17 @@ def update_vaccination_charts(n_clicks1, n_clicks2, region_name, vac_slider,
 @app.callback(
     ddp.Output("weather-chart", "figure"),
     [
-        ddp.Input('rerun-btn1', 'n_clicks'),
-        ddp.Input('rerun-btn2', 'n_clicks'), 
+        ddp.Input('rerun-btn', 'n_clicks'),
         ddp.Input("healthregion-dropdown", "value"),
+        ddp.Input("forecast-start-date", "date"),
+        ddp.Input('forecast-slider', 'value'),
     ],
     [
         ddp.State("province-dropdown", "value"),
-        ddp.State("forecast-start-date", "date"),
-        ddp.State('forecast-slider', 'value'),
     ],
 )
-def update_weather_chart(n_clicks1, n_clicks2, region_name, province_name,
-                         day_to_start_forecast, months_to_forecast,):
+def update_weather_chart(n_clicks, region_name, day_to_start_forecast, months_to_forecast,
+                         province_name):
     print("START --- update_weather_chart \t\t", nowtime())
 
     daterange, day_to_start_forecast = \
@@ -1815,19 +1911,21 @@ def update_weather_chart(n_clicks1, n_clicks2, region_name, province_name,
 @app.callback(
     ddp.Output("trends-chart", "figure"),
     [
-        ddp.Input('rerun-btn1', 'n_clicks'),
-        ddp.Input('rerun-btn2', 'n_clicks'),
+        ddp.Input('rerun-btn', 'n_clicks'),
         ddp.Input("healthregion-dropdown", "value"),
         ddp.Input('facemask-slider', 'value'),
+        ddp.Input('mitigation-start-slider', 'value'),
+        ddp.Input('mitigation-transition-slider', 'value'),
+        ddp.Input("forecast-start-date", "date"),
+        ddp.Input('forecast-slider', 'value'),
     ],
     [
         ddp.State("province-dropdown", "value"),
-        ddp.State("forecast-start-date", "date"),
-        ddp.State('forecast-slider', 'value'),
     ],
 )
-def update_trends_charts(n_clicks1, n_clicks2, region_name, facemask_slider,
-                         province_name, day_to_start_forecast, months_to_forecast):
+def update_trends_charts(n_clicks, region_name, facemask_slider,
+                         mitigation_start_months, mitigation_transition_weeks,
+                         day_to_start_forecast, months_to_forecast, province_name):
     print("START --- update_trends_chart \t\t", nowtime())
 
     daterange, day_to_start_forecast = \
@@ -1835,6 +1933,21 @@ def update_trends_charts(n_clicks1, n_clicks2, region_name, facemask_slider,
 
     province_name = update_province_name(province_name)
 
+    # Get 7-day average trends data
+    df_trends = get_hr_trends_df(province_name, region_name)
+
+    #=== Get the future trends
+    #
+    # Save last date of data (for plotting purposes)
+    last_trends_data_date = df_trends.date.max()
+    last_trends_data_date_str = last_trends_data_date.strftime("%Y-%m-%d")
+    # Extend trends data using the chosen mitigation set by the 
+    # global variable future_mitigation_method = ("constant" or "logistic")
+    df_trends = \
+        get_future_mitigation(df_trends, 'trends', facemask_slider,
+                              mitigation_start_months,
+                              mitigation_transition_weeks, daterange[1])
+    
     #=== Check to see if healthregion changed
     changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
     if ('healthregion-dropdown' in changed_id):
@@ -1844,33 +1957,27 @@ def update_trends_charts(n_clicks1, n_clicks2, region_name, facemask_slider,
     #=== Identify an initial run or an update for the region
     #    and set slider values manually
     if ( (facemask_slider == initial_nonvalue) | (healthregion_changed) ):
-        facemask_slider, mob_slider, vac_slider = \
+        facemask_slider, mob_slider, vax_slider = \
             get_last_trends_mob_vaxrate_for_region(province_name, region_name)
-
-    # Get 7-day average trends data
-    df_trends = get_hr_trends_df(province_name, region_name)
 
     #=== Plot the actual Trends data
     trends_fig = go.Figure()    
     trends_fig.add_trace(
         go.Scatter(
-            x=df_trends['date'],
-            y=df_trends['trend_val'],
+            x=df_trends[df_trends.date.between(daterange[0],
+                                               last_trends_data_date_str)]['date'],
+            y=df_trends[df_trends.date.between(daterange[0],
+                                               last_trends_data_date_str)]['trend_val'],
             name='Actual Trends',
         )
     )
-    
-    #=== Create and plot a constant extrapolation of trends
-    start_date = df_trends.date.max()
-    start_date_str = start_date.strftime("%Y-%m-%d")
-    end_date = daterange[1]
-    rng = pd.date_range(start_date, end_date)
-    df_trends_constant = pd.DataFrame({'date': rng,
-                                      'trend_val': facemask_slider * np.ones(len(rng))})
+    #=== Plot the future Trends data
     trends_fig.add_trace(
         go.Scatter(
-            x=df_trends_constant['date'],
-            y=df_trends_constant['trend_val'],
+            x=df_trends[df_trends.date.between(last_trends_data_date_str,
+                                               daterange[1])]['date'],
+            y=df_trends[df_trends.date.between(last_trends_data_date_str,
+                                               daterange[1])]['trend_val'],
             name='Predicted Trends',
         )
     )
@@ -1892,6 +1999,64 @@ def update_trends_charts(n_clicks1, n_clicks2, region_name, facemask_slider,
 #===========  Helper Functions: General  =============
 #=====================================================
 
+def get_future_vax(df, last_vax_fraction, vax_fraction_per_week,
+                         max_vax_fraction, last_data_date, enddate_str):
+    enddate = datetime.datetime.strptime(enddate_str, "%Y-%m-%d")
+    val_string = 'fraction_vaccinated'
+    dfnew = extend_dates_df(df, enddate, val_string)
+    for index, row in dfnew.iterrows():
+        if (row.date > last_data_date):
+            ndays = 1.0*(row.date - last_data_date).days
+            dfnew.at[index, val_string] = \
+                min(last_vax_fraction 
+                    + vax_fraction_per_week * ndays / 7.0,
+                    max_vax_fraction)
+    return dfnew
+
+def extend_dates_df(df, enddate, valstring):
+    dfnew = df.copy()
+    #=== Extend the dataframe's dates to enddate
+    firstdate = dfnew.date.min()
+    daterng = pd.date_range(firstdate, enddate)
+    dfnew = dfnew.set_index('date').reindex(daterng).reset_index()
+    dfnew.columns = ['date', valstring]
+    return dfnew
+
+def get_future_mitigation(df, datatype_str, new_val, mitigation_start_m,
+                          mitigation_trans_w, enddate_str):
+    enddate = datetime.datetime.strptime(enddate_str, "%Y-%m-%d")
+    if (datatype_str == 'mob'):
+        val_string = 'workplaces_percent_change_from_baseline'
+    elif (datatype_str == 'trends'):
+        val_string = 'trend_val'
+    last_val = df[val_string].to_list()[-1]
+    last_date = df.date.max()
+    # make a copy of the dataframe, extending the dates to enddate
+    dfnew = extend_dates_df(df, enddate, val_string)
+    # use a logistic function to write new values for mobility
+    amplitude = new_val - last_val
+    for index, row in dfnew.iterrows():
+        if (row.date > last_date):
+            ndays = 1.0*(row.date - last_date).days
+            if (future_mitigation_method == "logistic"):
+                dfnew.at[index, val_string] = \
+                    logistic_function(ndays, last_val, amplitude,
+                                      30.0*mitigation_start_m,
+                                      7.0*mitigation_trans_w)
+            elif (future_mitigation_method == "constant"):
+                dfnew.at[index, val_string] = last_val
+    return dfnew
+
+def logistic_function(t, offset, height, t0, delta_t_99):
+    # logistic function is
+    #
+    #    f(t) = offset + height / [ 1 + exp[ (t-t0) / tau ] ]
+    #
+    # where f(t) reaches 0.99*amplitude at (t-t0)/tau = 4.60
+    tau = delta_t_99 / (2.0 * 4.60)
+    new_t = t - delta_t_99 / 2.0
+    return offset + height / (1 + math.exp( -1.0*(new_t - t0) / tau ) )
+
 def get_last_trends_mob_vaxrate_for_region(province_name, region_name):
     """Get values for sliders based on health region"""
     # get the 7-day rolling average of mobility for the region
@@ -1900,18 +2065,18 @@ def get_last_trends_mob_vaxrate_for_region(province_name, region_name):
     last_mob = -1*get_last_val('mob', df_mob)
     
     # load fraction_vaccinated data and get last value
-    df_vac = get_hr_vac_data(province_name, region_name)
-    last_vax_fraction = get_last_val('vac', df_vac)
+    df_vax = get_hr_vax_data(province_name, region_name)
+    last_vax_fraction = get_last_val('vax', df_vax)
 
     # calculate the vaccination rate over last two weeks
-    start_date_str = df_vac.date.max()
-    start_date = datetime.datetime.strptime(start_date_str, "%Y-%m-%d")
+    start_date = df_vax.date.max()
+    start_date_str = start_date.strftime("%Y-%m-%d")
     two_weeks_ago = start_date - datetime.timedelta(days=14)
     two_weeks_ago_str = two_weeks_ago.strftime("%Y-%m-%d")
-    two_weeks_vac = \
-        df_vac[df_vac.date.between(two_weeks_ago_str, start_date_str)]\
+    two_weeks_vax = \
+        df_vax[df_vax.date.between(two_weeks_ago_str, start_date_str)]\
         ['fraction_vaccinated'].to_list()
-    last_vax_rate_per_week = (two_weeks_vac[-1] - two_weeks_vac[0])/2.0
+    last_vax_rate_per_week = (two_weeks_vax[-1] - two_weeks_vax[0])/2.0
 
     # Vaccination percentage depends on whether the numbers are
     # for the province or the health region
@@ -1929,7 +2094,7 @@ def get_last_val(type_str, datavar):
     if (type_str == 'mob'):
         # get last rolling average from dataframe of mobility
         return datavar['workplaces_percent_change_from_baseline'].to_list()[-1]
-    elif (type_str == 'vac'):
+    elif (type_str == 'vax'):
         return datavar['fraction_vaccinated'].to_list()[-1]
     elif (type_str == 'trends'):
         return datavar['trend_val'].to_list()[-1]
@@ -1937,81 +2102,25 @@ def get_last_val(type_str, datavar):
 def get_val_on_date(type_str, datavar, day):
     """Get value on a date from various dataframes"""    
     day_str = day.strftime("%Y-%m-%d")
+    #===BPH Updated this function 25May because the df_mob
+    #       and df_trends should now contain all future data
     if (type_str == 'mob'):
         df = datavar[datavar.date.between(day_str,day_str)]\
             ['workplaces_percent_change_from_baseline']
-        if df.empty:
-            # must be past "now", so give slider value
-            #print(day_str, "no mob data")
-            return no_data_val
-        else:
-            return df.to_list()[0]
-    elif (type_str == 'vac'):
-        df = datavar[datavar.date.between(day_str,day_str)]\
-            ['fraction_vaccinated']
-        if df.empty:
-            # must be past "now", so give slider value
-            #print(day_str, "no vac data")            
-            return no_data_val
-        else:
-            val = df.to_list()[0]
-            if math.isnan(val):
-                return 0.0
-            else:
-                return val
+        return df.to_list()[0]
     elif (type_str == 'trends'):
         df = datavar[datavar.date.between(day_str,day_str)]\
             ['trend_val']
-        if df.empty:
-            # must be past "now", so give slider value
-            #print(day_str, "no trends data")                        
-            return no_data_val
-        else:
-            return df.to_list()[0]
-
-def get_linear_extrap_vax(last_vax_fraction, vax_fraction_per_week,
-                            max_vax_fraction, days_since_last, df=None):
-    """Extrapolate the vaccine data using the rate over past two weeks"""
-    if df is None:
-        linear_extrap = \
-            last_vax_fraction \
-            + vax_fraction_per_week * days_since_last / 7.0
-        return min(linear_extrap, max_vax_fraction)
-    else:
-        # if working with dataframe, the variable
-        # days_since_last is a string column header
-        newdf = df.copy()
-        for index, row in newdf.iterrows():
-            days = row[days_since_last]
-            newdf.at[index, 'linear_extrap'] = \
-                min(last_vax_fraction 
-                    + vax_fraction_per_week * days / 7.0,
-                    max_vax_fraction)
-        return newdf
-
-def possibly_replace_w_slider(type_str, val, slider_val):
-    """When forecasting, if no data found (future), 
-    replace with slider value"""
-    if ( (type_str == 'mob') | (type_str == 'trends') ):
-        if (val == no_data_val):
-            return slider_val
+        return df.to_list()[0]
+    elif (type_str == 'vax'):
+        df = datavar[datavar.date.between(day_str,day_str)]\
+            ['fraction_vaccinated']
+        val = df.to_list()[0]
+        if math.isnan(val):
+            return 0.0
         else:
             return val
-    elif (type_str == 'vac'):
-        if (val == no_data_val):
-            vax_fraction_per_week = slider_val[0]
-            last_vax_fraction = slider_val[1]
-            max_vax_fraction = slider_val[2]            
-            days_since_last = slider_val[3]
-            linear_extrap = \
-                get_linear_extrap_vax(last_vax_fraction,
-                                      vax_fraction_per_week,
-                                      max_vax_fraction,
-                                      days_since_last)
-            return linear_extrap
-        else:
-            return val
-    
+
 def nowtime():
     """return current timestamp"""
     return datetime.datetime.now().time()
@@ -2158,10 +2267,8 @@ def get_logsmoothed_initial_mortality(the_date, df):
 
 def get_forecasted_mortality(province_name, region_name,
                              forecast_startdate_str, months_to_forecast, 
-                             df_mortality, df_mobility, df_vac, df_weather, df_trends,
-                             mob_slider_negative, vac_slider_fraction,
-                             last_vax_fraction, max_vax_fraction,
-                             facemask_slider):
+                             df_mortality, df_mobility, df_vax, df_weather, df_trends,
+                             last_vax_fraction, max_vax_fraction):
     #=== Calculate some static values
     total_pop = get_total_pop(province_name, region_name)
     # Annual death is the static (1997-adjusted) value, not updated by COVID deaths
@@ -2276,18 +2383,16 @@ def get_forecasted_mortality(province_name, region_name,
             covid_death_frac_past_two_months = xHerd - xHerd2
             covid_death_frac_prior_to_two_months_ago = xHerd2
             
-            #=== Google facemask trends (4 weeks ago, or slider value if not found)
+            #=== Google facemask trends (six weeks ago)
             xTrends1 = get_val_on_date('trends', df_trends,
                                        date_in_forecast - fortytwo_days)
-            xTrends1 = possibly_replace_w_slider('trends', xTrends1, facemask_slider)
             facemask_trends_42d_ago = xTrends1
-            #=== Mobility (two and four weeks ago, or slider value if not found)
+            
+            #=== Mobility (two and four weeks ago)
             xMob1 = get_val_on_date('mob', df_mobility,
                                     date_in_forecast - two_weeks)
-            xMob1 = possibly_replace_w_slider('mob', xMob1, mob_slider_negative)
             xMob2 = get_val_on_date('mob', df_mobility,
                                     date_in_forecast - four_weeks)
-            xMob2 = possibly_replace_w_slider('mob', xMob2, mob_slider_negative)            
             mobility_two_weeks_ago = xMob1
             mobility_four_weeks_ago = xMob2            
             
@@ -2295,20 +2400,9 @@ def get_forecasted_mortality(province_name, region_name,
             xTemp = get_weather_avg_for_day(df_weather, date_in_forecast, 14, 21)
             avg_temp_three_weeks_ago = xTemp
 
-            #=== Get fraction_vaccinated value
-            #       (two and four weeks ago, or slider value if in future)
-            vax_percent_two_weeks_ago = get_val_on_date('vac', df_vac, date_in_forecast - two_weeks)
-            vax_percent_two_weeks_ago = \
-                possibly_replace_w_slider('vac', vax_percent_two_weeks_ago,
-                                          [vac_slider_fraction,
-                                           last_vax_fraction, max_vax_fraction,
-                                           days_since_today])
-            vax_percent_four_weeks_ago = get_val_on_date('vac', df_vac, date_in_forecast - four_weeks)
-            vax_percent_four_weeks_ago = \
-                possibly_replace_w_slider('vac', vax_percent_four_weeks_ago,
-                                          [vac_slider_fraction,
-                                           last_vax_fraction, max_vax_fraction,
-                                           days_since_today])            
+            #=== Get fraction_vaccinated value (two and four weeks ago)
+            vax_percent_two_weeks_ago = get_val_on_date('vax', df_vax, date_in_forecast - two_weeks)
+            vax_percent_four_weeks_ago = get_val_on_date('vax', df_vax, date_in_forecast - four_weeks)
             #=== Forbid vaccination percentage greater than 100%
             #       (but warn user that it is happening)
             if (vax_percent_two_weeks_ago > 1):
@@ -2588,13 +2682,13 @@ def get_uid(province_name, region_name):
     uid = get_region_info(province_name, region_name).hr_uid.item()
     return uid
 
-def get_hr_vac_data(province_name, region_name):
+def get_hr_vax_data(province_name, region_name):
     #=== Check whether regional data available (or only provincial)
     vax_data_type = check_vax_data_type(province_name)
     if (vax_data_type == "provincial"):
-        api = vac_base_url_prov + str(get_provinceid(province_name, region_name))
+        api = vax_base_url_prov + str(get_provinceid(province_name, region_name))
     else:
-        api = vac_base_url + str(int(get_uid(province_name, region_name)))
+        api = vax_base_url + str(int(get_uid(province_name, region_name)))
     #=== Download the data into a json files
     with request.urlopen(str(api)) as response:
         source = response.read()
@@ -2619,6 +2713,8 @@ def get_hr_vac_data(province_name, region_name):
     df['fraction_vaccinated'] = \
         ( (1.0 - frac_vax_one_dose) * df['total_vaccinations'] / 2.0
           + frac_vax_one_dose * df['total_vaccinations'] ) / pop
+    #=== Convert date to datetime
+    df["date"] = pd.to_datetime(df["date"], format="%Y-%m-%d") 
     #=== Return only relevant information
     return df[['date', 'fraction_vaccinated']]
 
