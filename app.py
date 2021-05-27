@@ -140,8 +140,8 @@ simulation_initial_value_randomized = False
 #
 #   1/tau_I = 
 #          + C_inv_tauI_0
-#          + C_inv_tauI_AD * [ log10(AD) - log10(AD_offset) ]
-#          + C_inv_tauI_HN * [ N_household - N_household_offset ]
+#          + C_inv_tauI_AD * [ log10(AD) - log10(offset_AD) ]
+#          + C_inv_tauI_HN * [ N_household - offset_N_household ]
 #
 # where constants C_xxx are parameters that were determined by fitting
 # the model to 2020-2021 epidemic data in the United States.
@@ -192,14 +192,21 @@ simulation_initial_value_randomized = False
 #    log(kA) = C_logkA0
 #              + C_mobA * mobility_reduction_two_weeks_prior
 #              + C_mobB * mobility_reduction_four_weeks_prior
-#              + C_tempA * [ temp_three_weeks_prior - temp_offset ]^2
-#              + C_tempB * [ temp_three_weeks_prior - temp_offset ]^3
+#              + C_tempIA * [ temp_three_weeks_prior - offset_tempI ]^2
+#              + C_tempIB * [ temp_three_weeks_prior - offset_tempI ]^3
 #              + C_trends * Google_trends_facemask_42d_prior 
 #
 # where the values C_xxx are parameters determined by fitting the model to the
-# 2020-2021 local epidemic data in the United States; and where kB is
+# 2020-2021 local epidemic data in the United States; alternatively, we can use
+# this dependence on temperature (introduced 23May2021):
 #
-#    kB = [ (8.0/PWPD_80) * (2 - pop_sparsity/2) ]^[ 1 / (2 - pop_sparsity/2) ]
+#    + C_tempIIA * [ tanh( (temp_three_weeks_prior - offset_tempII) / 2 ) - 1 ]
+#
+# and where kB is
+#
+#      kB = 1/[ sqrt(pi) [ 0.25^(2 pop_sparsity) * PWPD_80 ]^(1/(2 - 2 pop_sparsity)) ]
+#
+#   OLDVERSION:    kB = [ (8.0/PWPD_80) * (2 - pop_sparsity/2) ]^[ 1 / (2 - pop_sparsity/2) ]
 #
 # where the population sparsity is defined as the power law exponent connecting
 # the population-weighted population density to the (land-area-based) standard
@@ -211,24 +218,47 @@ simulation_initial_value_randomized = False
 # where 0.25 km is the length-scale of the smallest cell in the population images
 # from which PWPD is calculated (GHS-POP 2015).
 #
-# Therefore, there are THREE FIXED OFFSET VALUES (not determined by fitting):
-annual_death_offset = 4467.0  # annual death
-temp_offset = 26.58 # C
-N_household_offset = 2.7
-# And 12 MODEL PARAMETERS, determined by fitting the model to the local
-# 2020-2021 COVID-19 epidemic data in all US Counties:
-C_vaxrate = -0.202278
-C_inv_tauI_0 = 0.0398673
-C_inv_tauI_logAD = 0.00654545
-C_inv_tauI_HN = -0.0201251
-C_deathA = -34.5879
-C_deathB = -1.51981
-C_logkA0 = -7.50188
-C_mobA = 0.011227
-C_mobB = 0.0296737
-C_tempA = 0.00476657
-C_tempB = 0.000143682
-C_trends = -0.0244824
+# Therefore, there are THREE FIXED OFFSET VALUES (not determined by fitting)
+# And 12 MODEL PARAMETERS, determined by fitting the model to the local 2020-2021
+# COVID-19 epidemic data in all US Counties:
+#
+#       In brackets, model version:
+#              [2021-05-23, 2021-05-01]
+#
+C_vaxrate = -0.201659 # [-0.201659, -0.202278]
+C_inv_tauI_0 = 0.039689 # [0.039689, 0.0398673]
+offset_annual_death = 4467.0 # [4467.0, 4467.0]  # annual death
+C_inv_tauI_logAD = 0.00626438 # [0.00626438, 0.00654545]
+offset_N_household = 2.7 # [2.7, 2.7]
+C_inv_tauI_HN = -0.0215527 # [-0.0215527, -0.0201251]
+C_deathA = -35.8317 # [-35.8317, -34.5879]
+C_deathB = -1.50458 # [-1.50458, -1.51981]
+C_logkA0 = -5.15327 # [-5.15327, -7.50188]
+C_mobA = 0.0122074 # [0.0122074, 0.011227]
+C_mobB = 0.0297732 # [0.0297732, 0.0296737]
+model_temperature_dependence = 'tanh' # ['tanh' 'cubic']
+offset_tempI = None # [None, 26.58] # C
+C_tempIA = None # [None, 0.00476657]
+C_tempIB = None # [None, 0.000143682]
+offset_tempII = 12.7384 # [12.7384, None] # C
+C_tempII = -0.296128 # [0.296128, None]
+C_trends = -0.0256702 # [-0.0256702, -0.0244824]
+
+#=== New model/parameters as of 23May2021
+#
+# -0.039689
+#  + E^(
+#     0.5 (-5.15327 - 35.8317 (xHerd - xHerd2) - 1.50458 xHerd2
+#          + 0.0122074 xMob1 + 0.0297732 xMob2 - 0.0256702 xTrends1
+#          + xLogPWPD Log[10]
+#          - Log[(0.25^(2 xBeta) 10.^xLogPWPD)^(1/(2 - 2 xBeta)) Sqrt[[Pi]]]
+#          + Log[1 - 0.9 VaxP2]
+#          - 0.296128 (-1 + Tanh[0.5 (-12.7384 + xTemp)])
+#          )
+#       )
+#  - 0.201659 (VaxP1 - VaxP2) - 0.00626438 (-3.65 + xAnnual)
+#  + 0.0215527 (-2.7 + xHouse)
+
 
 #=== Assumed serial interval (in days) for calculation of
 #    Basic Reproduction Number, R(t)
@@ -2421,24 +2451,34 @@ def get_forecasted_mortality(province_name, region_name,
             sqrt_mortality_effect = \
                 math.exp(0.5 * (C_deathA * covid_death_frac_past_two_months
                                 + C_deathB * covid_death_frac_prior_to_two_months_ago))
+            # Temperature term depends on type chosen
+            if (model_temperature_dependence == 'cubic'):
+                temp_term = \
+                    C_tempIA * (avg_temp_three_weeks_ago - offset_tempI)**2 \
+                    + C_tempIB * (avg_temp_three_weeks_ago - offset_tempI)**3
+            elif (model_temperature_dependence == 'tanh'):
+                temp_term = C_tempII \
+                    * ( np.tanh((avg_temp_three_weeks_ago - offset_tempII)/2) - 1 )
+            # Dependence on rate constant is product of driver dependencies
             log_k_A = (
                 C_logkA0
                 + C_mobA * mobility_two_weeks_ago
                 + C_mobB * mobility_four_weeks_ago
-                + C_tempA * (avg_temp_three_weeks_ago - temp_offset)**2
-                + C_tempB * (avg_temp_three_weeks_ago - temp_offset)**3
+                + temp_term
                 + C_trends * facemask_trends_42d_ago
             )
-            k_B = (
-                8.0 / pwpd_80
-                * (2.0 - pop_sparsity / 2.0)
-            )**(1.0/(2.0 - pop_sparsity / 2.0))
+            k_B = 1.0 \
+                / (
+                    math.sqrt(math.pi) 
+                    * ( 0.25**(2.0*pop_sparsity) * pwpd_80 )**(1/(2.0 - 2.0*pop_sparsity))
+                )
             sqrt_k = (math.exp(log_k_A) * k_B )**0.5
+            # Dependence on inverse infectious period
             inv_tauI = (
                 C_inv_tauI_0
                 + C_inv_tauI_logAD * (math.log(annual_death, 10)
-                                      - math.log(annual_death_offset, 10))
-                + C_inv_tauI_HN * (N_household - N_household_offset)
+                                      - math.log(offset_annual_death, 10))
+                + C_inv_tauI_HN * (N_household - offset_N_household)
             )
             #=== Calculate the growth rate (lambda) as:
             #
