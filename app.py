@@ -90,6 +90,11 @@ static_data = pd.read_csv(r'data/health_regions_static_data.csv', encoding='Lati
 #=== Number of D(t) and R(t) simulations (Set to 10, unless testing)
 default_number_of_simulations = 5
 
+#=== Error applied daily can be random or random but correlated over 14d period
+#  ['normal', '14d_correlated_normal']
+simulation_error_type = '14d_correlated_normal' 
+#simulation_error_type = 'normal'
+
 #=== Simulation options
 #
 # initial value types:
@@ -225,39 +230,49 @@ simulation_initial_value_randomized = False
 #       In brackets, model version:
 #              [2021-05-23, 2021-05-01]
 #
-C_vaxrate = -0.201659 # [-0.201659, -0.202278]
-C_inv_tauI_0 = 0.039689 # [0.039689, 0.0398673]
-offset_annual_death = 4467.0 # [4467.0, 4467.0]  # annual death
-C_inv_tauI_logAD = 0.00626438 # [0.00626438, 0.00654545]
-offset_N_household = 2.7 # [2.7, 2.7]
-C_inv_tauI_HN = -0.0215527 # [-0.0215527, -0.0201251]
-C_deathA = -35.8317 # [-35.8317, -34.5879]
-C_deathB = -1.50458 # [-1.50458, -1.51981]
-C_logkA0 = -5.15327 # [-5.15327, -7.50188]
-C_mobA = 0.0122074 # [0.0122074, 0.011227]
-C_mobB = 0.0297732 # [0.0297732, 0.0296737]
-model_temperature_dependence = 'tanh' # ['tanh' 'cubic']
-offset_tempI = None # [None, 26.58] # C
-C_tempIA = None # [None, 0.00476657]
-C_tempIB = None # [None, 0.000143682]
-offset_tempII = 12.7384 # [12.7384, None] # C
-C_tempII = -0.296128 # [0.296128, None]
-C_trends = -0.0256702 # [-0.0256702, -0.0244824]
-
-#=== New model/parameters as of 23May2021
-#
-# -0.039689
-#  + E^(
-#     0.5 (-5.15327 - 35.8317 (xHerd - xHerd2) - 1.50458 xHerd2
-#          + 0.0122074 xMob1 + 0.0297732 xMob2 - 0.0256702 xTrends1
-#          + xLogPWPD Log[10]
-#          - Log[(0.25^(2 xBeta) 10.^xLogPWPD)^(1/(2 - 2 xBeta)) Sqrt[[Pi]]]
-#          + Log[1 - 0.9 VaxP2]
-#          - 0.296128 (-1 + Tanh[0.5 (-12.7384 + xTemp)])
-#          )
-#       )
-#  - 0.201659 (VaxP1 - VaxP2) - 0.00626438 (-3.65 + xAnnual)
-#  + 0.0215527 (-2.7 + xHouse)
+model_index_to_use = 0  # try to keep most recent in first slot
+model_pars = {
+    'C_vaccination_rate' : [-0.201659, -0.202278],
+    'C_inverse_tauI_0' : [0.039689, 0.0398673],
+    'offset_annual_death' : [4467.0, 4467.0],
+    'C_inverst_tauI_logAD' : [0.00626438, 0.00654545],
+    'offset_N_household' : [2.7, 2.7],
+    'C_inverst_tauI_HN' : [-0.0215527, -0.0201251],
+    'C_covid_death_past_two_months' : [-35.8317, -34.5879],
+    'C_covid_death_prior_to_two_months' : [-1.50458, -1.51981],
+    'C_logkA_0' : [-5.15327, -7.50188],
+    'C_mobility_two_weeks_ago' : [0.0122074, 0.011227],
+    'C_mobility_four_weeks_ago' : [0.0297732, 0.0296737],
+    'offset_temp-cubic' : [None, 26.58],
+    'C_temp-cubic_quadratic' : [None, 0.00476657],
+    'C_temp-cubic_cubic' : [None, 0.000143682],    
+    'offset_temp-tanh' : [12.7384, None],
+    'C_temp-tanh' : [-0.296128, None],
+    'C_trends' : [-0.0256702, -0.0244824],
+    'model_temp_type' : ['tanh', 'cubic'],
+    'model_sparsity_type' : ['new', 'oldbad'],
+    }
+C_vaxrate = model_pars['C_vaccination_rate'][model_index_to_use]
+C_inv_tauI_0 = model_pars['C_inverse_tauI_0'][model_index_to_use]
+offset_annual_death = model_pars['offset_annual_death'][model_index_to_use]
+C_inv_tauI_logAD = model_pars['C_inverst_tauI_logAD'][model_index_to_use]
+offset_N_household =  model_pars['offset_N_household'][model_index_to_use]
+C_inv_tauI_HN = model_pars['C_inverst_tauI_HN'][model_index_to_use]
+C_deathA = model_pars['C_covid_death_past_two_months'][model_index_to_use]
+C_deathB = model_pars['C_covid_death_prior_to_two_months'][model_index_to_use]
+C_logkA0 = model_pars['C_logkA_0'][model_index_to_use]
+C_mobA = model_pars['C_mobility_two_weeks_ago'][model_index_to_use]
+C_mobB = model_pars['C_mobility_four_weeks_ago'][model_index_to_use]
+offset_temp_cubic = model_pars['offset_temp-cubic'][model_index_to_use]
+C_temp_cubic_A = model_pars['C_temp-cubic_quadratic'][model_index_to_use]
+C_temp_cubic_B = model_pars['C_temp-cubic_cubic'][model_index_to_use]
+offset_temp_tanh = model_pars['offset_temp-tanh'][model_index_to_use]
+C_temp_tanh = model_pars['C_temp-tanh'][model_index_to_use]
+C_trends = model_pars['C_trends'][model_index_to_use]
+model_temperature_dependence_type = \
+    model_pars['model_temp_type'][model_index_to_use]
+model_sparsity_function_type = \
+    model_pars['model_sparsity_type'][model_index_to_use]
 
 
 #=== Assumed serial interval (in days) for calculation of
@@ -303,7 +318,6 @@ prev_states = [None, None, None, None, None, None, None, None, None, None, None,
 #=== Annual death value is from 1997.  Both population and health regions
 #    have changed since then.  For now, we just multiply the annual
 #    death value by this number
-#===BPH-FIXME: really should have a health-region dependent factor
 
 #population_factor_1997_to_today = 1.3  # when using old 1997 values
 population_factor_1997_to_today = 1.1  # when using extrapolated 2020 values
@@ -314,23 +328,22 @@ frac_vax_one_dose = 0.115
 # The searches for "face mask" are much lower in french-speaking QC, so:
 trends_mult_factor_for_QC = 2.5
 
-# When doing predictive model, if data is missing return this
-#  (then the assumed value is given by the slider value)
-no_data_val = 999999
-
-
 #========================================================
 #====    Menu/slider options and initial values    ======
 #========================================================
 #=== Initially displayed province/region
 initial_province = "Ontario"
 initial_region = "Toronto"
-#=== Initially displayed forecast: show a 12-month forecast starting 10-months ago
+#=== Initially displayed forecast possibilities
+#          * show a 12-month forecast starting 10-months ago
+#          * show a 12-month forecast starting from 1 month ago
 nowdate = datetime.datetime.now()
 days_in_month = 30 # to be used for forecast length (quoted in months)
 forecast_initial_length = 12 # [testing (5days): 1/6.0 , default (1yr): 12]
+forecast_start_months_ago = 1   # (1, 10?)
 forecast_initial_start_date = \
-    (nowdate - datetime.timedelta(days=10*days_in_month)).strftime("%Y-%m-%d")
+    (nowdate
+     - datetime.timedelta(days=forecast_start_months_ago*days_in_month)).strftime("%Y-%m-%d")
 #=== Max and min possible dates for plotting range
 first_mortality_date = df_mort_all.date_death_report.min()
 first_mortality_date_str = first_mortality_date.strftime("%Y-%m-%d")
@@ -2380,6 +2393,16 @@ def get_forecasted_mortality(province_name, region_name,
     # get index of the start date
     start_index = \
         df_mort_new.index[df_mort_new.date == forecast_startdate].to_list()[0]
+    #=== Produce correlated random error values
+    df_mort_new['zeros'] = 0.0
+    # a standard normal value for every day
+    df_mort_new['std_normal'] = \
+        np.random.normal(loc = df_mort_new['zeros'],
+                         scale = df_mort_new['zeros'] + 1.0)
+    # produce correlated standard random normal values over 14d period
+    df_mort_new['correlated_normal'] = \
+        df_mort_new['std_normal'].rolling(window=14).sum() / math.sqrt(14.0)
+    df_mort_new['correlated_normal'].fillna(df_mort_new['std_normal'], inplace=True)
     #=== Set mortality values for future dates to zero
     df_mort_new.at[df_mort_new.index > start_index, 'deaths'] = 0.0
     #=== Make a new column for lambda (exp growth rate)
@@ -2452,13 +2475,13 @@ def get_forecasted_mortality(province_name, region_name,
                 math.exp(0.5 * (C_deathA * covid_death_frac_past_two_months
                                 + C_deathB * covid_death_frac_prior_to_two_months_ago))
             # Temperature term depends on type chosen
-            if (model_temperature_dependence == 'cubic'):
+            if (model_temperature_dependence_type == 'cubic'):
                 temp_term = \
-                    C_tempIA * (avg_temp_three_weeks_ago - offset_tempI)**2 \
-                    + C_tempIB * (avg_temp_three_weeks_ago - offset_tempI)**3
-            elif (model_temperature_dependence == 'tanh'):
-                temp_term = C_tempII \
-                    * ( np.tanh((avg_temp_three_weeks_ago - offset_tempII)/2) - 1 )
+                    C_temp_cubic_A * (avg_temp_three_weeks_ago - offset_temp_cubic)**2 \
+                    + C_temp_cubic_B * (avg_temp_three_weeks_ago - offset_temp_cubic)**3
+            elif (model_temperature_dependence_type == 'tanh'):
+                temp_term = C_temp_tanh \
+                    * ( np.tanh((avg_temp_three_weeks_ago - offset_temp_tanh)/2) - 1 )
             # Dependence on rate constant is product of driver dependencies
             log_k_A = (
                 C_logkA0
@@ -2467,11 +2490,19 @@ def get_forecasted_mortality(province_name, region_name,
                 + temp_term
                 + C_trends * facemask_trends_42d_ago
             )
-            k_B = 1.0 \
-                / (
-                    math.sqrt(math.pi) 
-                    * ( 0.25**(2.0*pop_sparsity) * pwpd_80 )**(1/(2.0 - 2.0*pop_sparsity))
-                )
+            # Sparsity term depends on type chosen (although "new" is supposed to be
+            # the one that actually makes sense, and "oldbad" was a mistake)
+            if (model_sparsity_function_type == 'new'):
+                k_B = 1.0 \
+                    / (
+                        math.sqrt(math.pi) 
+                        * ( 0.25**(2.0*pop_sparsity) * pwpd_80 )**(1/(2.0 - 2.0*pop_sparsity))
+                    )
+            elif (model_sparsity_function_type == 'oldbad'):
+                k_B = (
+                    8.0 / pwpd_80
+                    * (2.0 - pop_sparsity / 2.0)
+                    )**(1.0/(2.0 - pop_sparsity / 2.0))
             sqrt_k = (math.exp(log_k_A) * k_B )**0.5
             # Dependence on inverse infectious period
             inv_tauI = (
@@ -2500,7 +2531,10 @@ def get_forecasted_mortality(province_name, region_name,
                 df_mort_new[df_mort_new.date
                             > (date_in_forecast - two_weeks)]['deaths'].sum()
             sigma = math.sqrt(0.093 / (14.0 + deaths_past_two_weeks))
-            lambda_err = random.gauss(0.0, sigma)
+            if (simulation_error_type == 'normal'):
+                lambda_err = sigma*df_mort_new.at[index, 'std_normal']
+            elif (simulation_error_type == '14d_correlated_normal'):
+                lambda_err = sigma*df_mort_new.at[index, 'correlated_normal']
             lambda_val += lambda_err
             
             #=== Save lambda value
