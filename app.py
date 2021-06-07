@@ -2776,25 +2776,23 @@ def get_hr_vax_data(province_name, region_name):
         source = response.read()
         api_data = json.loads(source)['data']
     #=== Convert into pandas dataframe
+    #
+    #    columns = [date, change_cases, change_fatalities, change_tests,
+    #               change_hospitalizations, change_criticals,
+    #               change_recoveries, change_vaccinations,
+    #               change_vaccinated, total_cases, ...
+    #               total_vaccinations, total_vaccinated]
+    #
     df = pd.json_normalize(api_data, max_level=1)
     #df.to_csv('junk.csv', index=False)
-    #=== Data from Govt of Canada show that 11.5% of doses distributed
-    #    to each province as of 12May2021 are AZ (and no J&J):
+    #=== Get the fraction of the population with at least one dose
     #
-    #         https://www.canada.ca/en/public-health/services/diseases
-    #             /2019-novel-coronavirus-infection/prevention-risks
-    #             /covid-19-vaccine-treatment/vaccine-rollout.html
-    #
-    #    Thus 11.5% of vaccinations can be assumed full and the
-    #    rest are half.
-    #
-    #        set frac_vax_one_dose = 0.115
-    #
-    #=== Define an estimate of total vaccinated per population
+    #     (total_vaccinations seems to be total doses delivered
+    #      and total_vaccinated is the number of people fully
+    #      vaccinated. In canada everyone gets two doses.)
     pop = get_total_pop_for_vax_percent(province_name, region_name)
     df['fraction_vaccinated'] = \
-        ( (1.0 - frac_vax_one_dose) * df['total_vaccinations'] / 2.0
-          + frac_vax_one_dose * df['total_vaccinations'] ) / pop
+        (df['total_vaccinations'] - df['total_vaccinated'] ) / pop
     #=== Convert date to datetime
     df["date"] = pd.to_datetime(df["date"], format="%Y-%m-%d") 
     #=== Return only relevant information
