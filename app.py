@@ -91,9 +91,13 @@ static_data = pd.read_csv(r'data/health_regions_static_data.csv', encoding='Lati
 default_number_of_simulations = 5
 
 #=== Error applied daily can be random or random but correlated over 14d period
-#  ['normal', '14d_correlated_normal']
-simulation_error_type = '14d_correlated_normal' 
-#simulation_error_type = 'normal'
+#
+#  options: ['normal', '14d_correlated_normal']
+#
+#      seems like correlated normal is too much uncertainty
+#
+simulation_error_type = 'normal' 
+
 
 #=== Simulation options
 #
@@ -109,8 +113,23 @@ simulation_error_type = '14d_correlated_normal'
 #                          (can estimate correct IC for zero values)
 #
 simulation_initial_value_type = 'log_smoothed' # 'log_smoothed' 'use_7day_avg'
-# Apply a poisson randomization to the initial mortality value
-simulation_initial_value_randomized = False
+# Apply a log-normal randomization to the initial mortality value
+simulation_initial_value_randomized = True
+
+
+#=== Options for calculation of Basic Reproduction Number, R(t)
+Rt_serial_interval = 5.3 # "tau"
+Rt_make_D14_nonzero_offset = 0.5/14.0  # avoid divide-by-zero issue
+# Find the 14-day rolling average of the numerical derivative
+# lambda_14 before finding R = exp(tau*lambda), or just
+# exponentiate and then find the 14-day rolling average of R(t).
+Rt_smooth_lambda14_first = True
+
+#=== Options for effectiveness/max-coverage of vaccine
+# Maximum fraction assumed vaccinated
+maximum_fraction_vaccinated = 0.9
+# Maximum effectiveness of vaccine (1 = 100%)
+maximum_vaccine_efficacy = 0.9 # 90%
 
 #=== Model Parameters
 #
@@ -230,7 +249,7 @@ simulation_initial_value_randomized = False
 #       In brackets, model version:
 #              [2021-05-23, 2021-05-01]
 #
-model_index_to_use = 0  # try to keep most recent in first slot
+model_index_to_use = 1  # try to keep most recent in first slot
 model_pars = {
     'C_vaccination_rate' : [-0.201659, -0.202278],
     'C_inverse_tauI_0' : [0.039689, 0.0398673],
@@ -273,21 +292,6 @@ model_temperature_dependence_type = \
     model_pars['model_temp_type'][model_index_to_use]
 model_sparsity_function_type = \
     model_pars['model_sparsity_type'][model_index_to_use]
-
-
-#=== Assumed serial interval (in days) for calculation of
-#    Basic Reproduction Number, R(t)
-Rt_serial_interval = 5.3 # "tau"
-Rt_make_D14_nonzero_offset = 0.5/14.0  # avoid divide-by-zero issue
-# Find the 14-day rolling average of the numerical derivative
-# lambda_14 before finding R = exp(tau*lambda), or just
-# exponentiate and then find the 14-day rolling average of R(t).
-Rt_smooth_lambda14_first = True
-
-# Maximum fraction assumed vaccinated
-maximum_fraction_vaccinated = 0.9
-# Maximum effectiveness of vaccine (1 = 100%)
-maximum_vaccine_efficacy = 0.9 # 90%
 
 #===================================================
 #===========   Misc Global parameters   ============
@@ -2384,12 +2388,14 @@ def get_forecasted_mortality(province_name, region_name,
     df_mort_new = df_mort_new.set_index('date').reindex(daterng).reset_index()
     df_mort_new.columns = df_mort_cols
     #=== Set the mortality on the start date to be the 7day avg value
-    df_mort_new.at[df_mort_new.date == forecast_startdate, 'deaths'] = \
-        initial_mortality_on_forecast_startdate
-    #=== Randomize the initial value
     if simulation_initial_value_randomized:
-        df_mort_new = \
-            randomize_initial_mortality_value(df_mort_new, forecast_startdate_str)
+        # randomize value if requested
+        df_mort_new.at[df_mort_new.date == forecast_startdate, 'deaths'] = \
+            np.exp( np.log(initial_mortality_on_forecast_startdate)
+                    + np.random.normal(0.0, 1.0/np.sqrt(7.0*val)) )
+    else:
+        df_mort_new.at[df_mort_new.date == forecast_startdate, 'deaths'] = \
+            initial_mortality_on_forecast_startdate
     # get index of the start date
     start_index = \
         df_mort_new.index[df_mort_new.date == forecast_startdate].to_list()[0]
@@ -2632,7 +2638,9 @@ def randomize_initial_mortality_value(df_mort_new, forecast_startdate_str):
     theindex = \
         pd.to_numeric(df.index[df.date == forecast_startdate_str])[0]
     val = df.at[theindex, 'deaths']
-    df.at[theindex, 'deaths'] = np.random.poisson(7.0 * val) / 7.0
+    
+    df.at[theindex, 'deaths'] = \
+        np.exp( np.log(val) + np.random.normal(0.0, 1.0/np.sqrt(7.0*val)) )
     return df
 
 def get_dates_list(province_name, region_name, start_date, end_date):
@@ -2769,7 +2777,7 @@ def get_hr_vax_data(province_name, region_name):
         api_data = json.loads(source)['data']
     #=== Convert into pandas dataframe
     df = pd.json_normalize(api_data, max_level=1)
-    
+    #df.to_csv('junk.csv', index=False)
     #=== Data from Govt of Canada show that 11.5% of doses distributed
     #    to each province as of 12May2021 are AZ (and no J&J):
     #
