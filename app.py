@@ -906,11 +906,24 @@ canadian_dashboard = html.Div(
                             dbc.Col(
                                 dbc.Card(
                                     [
-                                        # dbc.CardHeader("Population Weighted Population Density"),
                                         dbc.CardHeader("Workplace Mobility Reduction"),
                                         dbc.CardBody(
                                             [
                                                 dbc.Spinner(html.H5(id="mob-card",className="card-title"), size="sm")
+                                            ]
+                                        ),
+                                    ],
+                                    color="primary",
+                                    inverse=True
+                                )
+                            ),
+                            dbc.Col(
+                                dbc.Card(
+                                    [
+                                        dbc.CardHeader("Vaccinated (one or more doses)"),
+                                        dbc.CardBody(
+                                            [
+                                                dbc.Spinner(html.H5(id="vax-card",className="card-title"), size="sm")
                                             ]
                                         ),
                                     ],
@@ -1170,6 +1183,7 @@ def update_healthregion_dropdown(province):
         ddp.Output('pwpd-card', 'children'),
         ddp.Output('avg-house-card', 'children'),
         ddp.Output('mob-card', 'children'),
+        ddp.Output('vax-card', 'children'),
     ],
     [
         ddp.Input('healthregion-dropdown', 'value')
@@ -1189,8 +1203,13 @@ def update_static_cards(region_name, province_name):
     # and the last value of that rolling average
     last_mob = get_last_val('mob', df_mob)
 
+    #=== Get last vax value
+    df_vax, first_vax_data_date = get_hr_vax_data(province_name, region_name)
+    last_vax_fraction = get_last_val('vax', df_vax)
+    
     #=== Calculate all card values
     mob = f"{-last_mob:.0f} %"
+    vax = f"{100.0*last_vax_fraction:.0f} %"
     total_pop = round(get_total_pop(province_name, region_name), 0)
     sparsity = round(get_pop_sparsity(province_name, region_name), 3)
     pop_80 = round(get_frac_pop_over_80(province_name, region_name), 3)
@@ -1203,7 +1222,7 @@ def update_static_cards(region_name, province_name):
 
     print("END   --- update_static_cards \t\t", nowtime())
     
-    return total_pop, sparsity, pop_80, pwpd, avg_house, mob
+    return total_pop, sparsity, pop_80, pwpd, avg_house, mob, vax
 
 #===================================================================#
 #   Rerun/Sub-region --> Set dynamic card values for health region  #
