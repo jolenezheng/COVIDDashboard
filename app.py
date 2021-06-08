@@ -17,6 +17,7 @@ import dash.dependencies as ddp
 import plotly.express as px
 import plotly.graph_objects as go
 import plotly.io as pio
+import plotly.colors as pc
 from textwrap import dedent
 from dateutil.relativedelta import relativedelta
 from pages import *
@@ -1539,13 +1540,13 @@ def update_mortality_chart(n_clicks, region_name,
         df_mobility = get_hr_mob_df(province_name, region_name)
         print("      --- update_mortality_chart \t", nowtime(), " --- mobility loaded")
         #=== Get weather dataframe
-        df_weather = get_weather_dataframe(province_name, region_name)
+        df_weather, last_weather_data_date = get_hr_weather_data(province_name, region_name)
         print("      --- update_mortality_chart \t", nowtime(), " --- weather loaded")
         #=== Get the 7-day rolling average of Google trends for "facemasks"
         #   (also w/ tanh mask applied about 15Apr2020)
         df_trends = get_hr_trends_df(province_name, region_name)
         #=== Get "fraction_vaccinated" dataframe
-        df_vax = get_hr_vax_data(province_name, region_name)
+        df_vax, first_vax_data_date = get_hr_vax_data(province_name, region_name)
         print("      --- update_mortality_chart \t", nowtime(), " --- vaccination loaded")    
         print("      --- update_mortality_chart \t", nowtime(), " --- trends loaded")    
         print("      --- update_mortality_chart \t", nowtime(), " --- finished loading data")
@@ -1573,7 +1574,6 @@ def update_mortality_chart(n_clicks, region_name,
         # Extend vaccination data using a linear extrapolation of historic data
         df_vax = get_future_vax(df_vax, last_vax_fraction, vax_fraction_per_week,
                                 max_vax_fraction, last_vax_data_date, daterange[1])
-    
         #=== Run forecast simulations
         for i in range(n_simulations):
             print("      --- update_mortality_chart \t", nowtime(), " --- D(t) CURVE: " + str(i))
@@ -1841,7 +1841,7 @@ def update_vaccination_charts(n_clicks, region_name, vax_slider, max_vax_percent
         
     print("      --- update_vaccination_chart \t", nowtime(), " --- started loading data")
     #=== Get fraction_vaccinated dataframe
-    df_vax = get_hr_vax_data(province_name, region_name).copy()
+    df_vax, first_vax_data_date = get_hr_vax_data(province_name, region_name)
     print("      --- update_vaccination_chart \t", nowtime(), " --- creating future data")
     
     #=== Append future vaccination data
@@ -1862,14 +1862,23 @@ def update_vaccination_charts(n_clicks, region_name, vax_slider, max_vax_percent
     vaccination_fig = go.Figure()    
     vaccination_fig.add_trace(
         go.Scatter(
-            x=df_vax[df_vax.date.between(daterange[0],
-                                               last_vax_data_date_str)]['date'],
-            y=100*df_vax[df_vax.date.between(daterange[0],
-                                                   last_vax_data_date_str)]['fraction_vaccinated'],
+            x=df_vax[df_vax.date.between(first_vax_data_date,
+                                               last_vax_data_date)]['date'],
+            y=100*df_vax[df_vax.date.between(first_vax_data_date,
+                                                   last_vax_data_date)]['fraction_vaccinated'],
             name='Estimated Percent Vaccinated',
             mode = 'lines',            
         )
     )
+    #=== Plot the earlier extrapolated fraction_vaccinated to zero
+    vaccination_fig.add_trace(
+        go.Scatter(
+            x=df_vax[df_vax.date <= first_vax_data_date]['date'],
+            y=100*df_vax[df_vax.date <= first_vax_data_date]['fraction_vaccinated'],
+            name='Estimated Percent Vaccinated',
+            mode = 'lines',            
+        )
+    )    
     #=== Plot the extrapolation of fraction_vaccinated
     vaccination_fig.add_trace(
         go.Scatter(
@@ -1878,7 +1887,8 @@ def update_vaccination_charts(n_clicks, region_name, vax_slider, max_vax_percent
             y=100*df_vax[df_vax.date.between(last_vax_data_date_str,
                                                daterange[1])]['fraction_vaccinated'],
             name='Estimated Percent Vaccinated',
-            mode = 'lines',            
+            mode = 'lines',
+            line_color = pc.qualitative.Plotly[1],
         )
     )
     
@@ -1920,15 +1930,14 @@ def update_weather_chart(n_clicks, region_name, day_to_start_forecast, months_to
     province_name = update_province_name(province_name)
 
     # Get weather dataframe
-    df_weather = get_weather_dataframe(province_name, region_name)
+    df_weather, last_weather_data_date = get_hr_weather_data(province_name, region_name)
     # select out current and future data
-    today = datetime.datetime.today()
     df_weather = df_weather[df_weather.date.between(daterange[0], daterange[1])].copy()
     if plot_weather_14d_rolling:
         df_weather['temp_mean'] = \
             df_weather['temp_mean'].rolling(window=14).mean()
-    df_weather_current = df_weather[df_weather.date < today]
-    df_weather_future = df_weather[df_weather.date >= today]    
+    df_weather_current = df_weather[df_weather.date <= last_weather_data_date]
+    df_weather_future = df_weather[df_weather.date >= last_weather_data_date]    
 
     weather_fig = px.line(df_weather_current, x = 'date', y = 'temp_mean')
 
@@ -2060,11 +2069,12 @@ def get_future_vax(df, last_vax_fraction, vax_fraction_per_week,
                     max_vax_fraction)
     return dfnew
 
-def extend_dates_df(df, enddate, valstring):
+def extend_dates_df(df, enddate, valstring, startdate=None):
     dfnew = df.copy()
     #=== Extend the dataframe's dates to enddate
-    firstdate = dfnew.date.min()
-    daterng = pd.date_range(firstdate, enddate)
+    if (startdate is None):
+        startdate = dfnew.date.min()
+    daterng = pd.date_range(startdate, enddate)
     dfnew = dfnew.set_index('date').reindex(daterng).reset_index()
     dfnew.columns = ['date', valstring]
     return dfnew
@@ -2112,13 +2122,13 @@ def get_last_trends_mob_vaxrate_for_region(province_name, region_name):
     last_mob = -1*get_last_val('mob', df_mob)
     
     # load fraction_vaccinated data and get last value
-    df_vax = get_hr_vax_data(province_name, region_name)
+    df_vax, first_vax_data_date = get_hr_vax_data(province_name, region_name)
     last_vax_fraction = get_last_val('vax', df_vax)
 
     # calculate the vaccination rate over last two weeks
     start_date = df_vax.date.max()
     start_date_str = start_date.strftime("%Y-%m-%d")
-    two_weeks_ago = start_date - datetime.timedelta(days=14)
+    two_weeks_ago = start_date - datetime.timedelta(days=13)
     two_weeks_ago_str = two_weeks_ago.strftime("%Y-%m-%d")
     two_weeks_vax = \
         df_vax[df_vax.date.between(two_weeks_ago_str, start_date_str)]\
@@ -2688,13 +2698,16 @@ def get_hr_mob_df(province_name, region_name, getall=True, startdate=None, endda
     weat_info_province = static_data[static_data.province_name == province_name]
     sub_region = weat_info_province.sub_region_2[weat_info_province.health_region == region_name].item()
     df_mob = df_mob_all[df_mob_all.sub_region_2 == sub_region].copy()
-    df_mob = df_mob[['date', 'workplaces_percent_change_from_baseline']]
+    val_string = 'workplaces_percent_change_from_baseline'
+    df_mob = df_mob[['date', val_string]]
     #=== Get the 7-day rolling average of mobility always
-    df_mob['workplaces_percent_change_from_baseline'] = \
-        df_mob['workplaces_percent_change_from_baseline'].rolling(window=7).mean()
+    df_mob[val_string] = df_mob[val_string].rolling(window=7).mean()
+    #=== Extend to fill in missing dates
+    startdate = df_mob.date.min()
+    enddate = df_mob.date.max()
+    df_mob = extend_dates_df(df_mob, enddate, val_string, startdate=startdate)
     #=== Interpolate the mobility data to fill in blanks
-    df_mob['workplaces_percent_change_from_baseline'] = \
-        df_mob['workplaces_percent_change_from_baseline'].interpolate(method='polynomial', order=3)
+    df_mob[val_string] = df_mob[val_string].interpolate(method='polynomial', order=2)
     if getall:
         return df_mob
     else:
@@ -2707,7 +2720,7 @@ def get_hr_mob_df(province_name, region_name, getall=True, startdate=None, endda
 #===========   Helper Functions: Weather     =============
 #=========================================================
 
-def get_weather_dataframe(province_name, region_name):
+def get_hr_weather_data(province_name, region_name):
     # Get weather dataframe
     #
     #  File contains data from 2020-01-01 -- 2023-01-01.  Data in temp_mean
@@ -2725,9 +2738,16 @@ def get_weather_dataframe(province_name, region_name):
     weatherfile = prov_id + "_" + str(hr_uid) + ".csv"
     # read in data
     df_weather = pd.read_csv(weather_data_dir + weatherfile)
+    last_weather_data_date_ind = df_weather['climate_id'].last_valid_index()
+    last_weather_data_date = df_weather.at[last_weather_data_date_ind, 'date']
+    # keep only the mean temperature column
+    df_weather = df_weather[['date', 'temp_mean']]
+    # fill in any gaps by interpolation
+    df_weather['temp_mean'] = df_weather['temp_mean'].interpolate(method='polynomial', order=2)    
     # convert date column to datetime
     df_weather['date'] = pd.to_datetime(df_weather['date'])
-    return df_weather
+    print(df_weather)
+    return df_weather, last_weather_data_date
 
 def get_weather_avg_for_day(df_weather, day, avg_window_days, avg_window_center_days_prior):
     # filter dataframe on averaging window
@@ -2790,13 +2810,48 @@ def get_hr_vax_data(province_name, region_name):
     #     (total_vaccinations seems to be total doses delivered
     #      and total_vaccinated is the number of people fully
     #      vaccinated. In canada everyone gets two doses.)
+    #
+    # first convert the blank "nan" to zeros
+    df['total_vaccinations'] = df['total_vaccinations'].fillna(0)
+    df['total_vaccinated'] = df['total_vaccinated'].fillna(0)
+    # get the provincial or region population
     pop = get_total_pop_for_vax_percent(province_name, region_name)
+    # subtract off fully vaccinated to remove second doses and take ratio
     df['fraction_vaccinated'] = \
         (df['total_vaccinations'] - df['total_vaccinated'] ) / pop
-    #=== Convert date to datetime
-    df["date"] = pd.to_datetime(df["date"], format="%Y-%m-%d") 
-    #=== Return only relevant information
-    return df[['date', 'fraction_vaccinated']]
+    #=== Convert date to datetime and get last date of data
+    df['date'] = pd.to_datetime(df['date'], format="%Y-%m-%d")
+    enddate = df.date.max()
+    #=== Extrapolate the fraction_vaccinated backwards to zero
+    # find first nonzero row and keep only that data
+    val_string = 'fraction_vaccinated'
+    first_nonzero_index = df[val_string].ne(0).idxmax()
+    startdate = df.at[first_nonzero_index, 'date']
+    startvax = df.at[first_nonzero_index, val_string]
+    df = df[df.index >= first_nonzero_index]
+    df = df[['date', val_string]]
+    # extend dates of dataframe to [first possible date, last date of data]
+    df = extend_dates_df(df, enddate, val_string,
+                         startdate=first_possible_date)
+    # find rate of vaccinations in first two weeks
+    two_weeks_later = startdate + datetime.timedelta(days=13)
+    two_weeks_vax = \
+        df[df.date.between(startdate, two_weeks_later)]\
+        [val_string].to_list()
+    # len(two_weeks_vax) should be 14 (days) but possible there is less data
+    starting_vax_rate_per_day = \
+        (two_weeks_vax[-1] - two_weeks_vax[0]) / len(two_weeks_vax)
+    # disallow a zero rate: just let it go to zero over 4 weeks
+    if (starting_vax_rate_per_day == 0.0):
+        starting_vax_rate_per_day = startvax / 28.0
+    # linearly extrapolate backwards to zero
+    for index, row in df.iterrows():
+        if (row.date < startdate):
+            ndays = 1.0*(row.date - startdate).days
+            df.at[index, val_string] = \
+                max(startvax + starting_vax_rate_per_day * ndays, 0.0)
+    #=== Return the dataframe, but also the first date of actual data
+    return df, startdate
 
 #=========================================================
 #===========  Helper Functions: Google-Trends  ===========
