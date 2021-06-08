@@ -1412,6 +1412,7 @@ def update_cases_charts(n_clicks, region_name, day_to_start_forecast,
 @app.callback(
     [
         ddp.Output("mortality-chart", "figure"),
+        ddp.Output("cumulativedeaths-chart", "figure"),
         ddp.Output("rtcurve-chart", "figure")
     ],
     [
@@ -1501,7 +1502,6 @@ def update_mortality_chart(n_clicks, region_name,
             line=dict(color='black', width=2)
         )
     )
-
     #=== Some optional plotting for testing
     testing_logsmoothed = False
     if testing_logsmoothed:
@@ -1531,11 +1531,18 @@ def update_mortality_chart(n_clicks, region_name,
             )
         )
         
-    
     print("      --- update_mortality_chart \t", nowtime(), " --- finished plotting deaths")
     print("      --- update_mortality_chart \t", nowtime(), " --- started plotting R(t)")
     
-
+    #=== Make a cumulative mortality column
+    df_mort['cumdeaths'] = df_mort['deaths'].cumsum()
+    cumulativedeaths_fig = go.Figure()
+    cumulativedeaths_fig.add_trace(go.Scatter(
+        x=df_mort['date_death_report'],        
+        y=df_mort['cumdeaths'],
+        name='Cumulative Deaths',  
+        line=dict(color='black', width=2)      
+    ))
     #=== Calculate R(t) from mortality data
     df_mort_Rt = calculate_Rt_from_mortality(df_mort)
     
@@ -1626,6 +1633,19 @@ def update_mortality_chart(n_clicks, region_name,
                             line={'dash': 'dash', 'color' : 'red'}
                         )
                     )
+            #=== Add simulated forecast to the cumulative mortality figure
+            # get cumulative mortality at start of forecast
+            cum_death_at_forecast_start = \
+                df_mort[df_mort.date_death_report.between(new_forecast_startdate, new_forecast_startdate)]\
+                ['cumdeaths'].to_list()[0]
+            cumulativedeaths_fig.add_trace(
+                go.Scatter(
+                    x = df_forecast['date'],
+                    y = df_forecast['deaths'].cumsum() + cum_death_at_forecast_start,
+                    mode = 'lines',
+                    name='Prediction ' + str(i+1),
+                    )
+                )
             #=== Add simulated forecast of R(t) to the R(t) figure
             df_forecast['R(t)'] = \
                 np.exp( Rt_serial_interval * df_forecast['lambda'] )
@@ -1651,6 +1671,16 @@ def update_mortality_chart(n_clicks, region_name,
                            annotations=buttons_annotations,
                            updatemenus=buttons_updatemenus,
                            )
+    cumulativedeaths_fig.update_layout(xaxis_title='Date',
+                                       yaxis_title='Number of Deaths',
+                                       xaxis_range = daterange,
+                                       paper_bgcolor = graph_background_color,
+                                       plot_bgcolor = graph_plot_color,                           
+                                       margin = graph_margins,
+                                       showlegend=False,                           
+                                       annotations=buttons_annotations,
+                                       updatemenus=buttons_updatemenus,
+                                       )
     rtcurve_fig.update_layout(xaxis_title='Date',
                               yaxis_title='R(t) Curve Based On Mortality',
                               paper_bgcolor = graph_background_color,
@@ -1662,62 +1692,7 @@ def update_mortality_chart(n_clicks, region_name,
     
     print("END   --- update_mortality_chart \t", nowtime())
     
-    return mortality_fig, rtcurve_fig
-
-#========================================================#
-#   Rerun --> Get Cumulative Death Graph                 #
-#========================================================#
-@app.callback(
-    ddp.Output("cumulativedeaths-chart", "figure"),
-    [
-        ddp.Input('rerun-btn', 'n_clicks'),
-        ddp.Input("healthregion-dropdown", "value"),
-        ddp.Input("forecast-start-date", "date"),
-        ddp.Input('forecast-slider', 'value'),
-    ],
-    [
-        ddp.State("province-dropdown", "value"),
-    ],
-)
-def update_cumulativedeaths_charts(n_clicks, region_name, day_to_start_forecast,
-                                   months_to_forecast, province_name):
-    print("START --- update_cumulativedeath_chart \t", nowtime())
-    
-    daterange, day_to_start_forecast = \
-        get_daterange(day_to_start_forecast, months_to_forecast)
-
-    province_name = update_province_name(province_name)
-
-    start_date = daterange[0]
-    today_str = datetime.datetime.now().strftime("%Y-%m-%d")
-    end_date = today_str
-    #===BPH-FIXME: redo these using dataframes
-    dates = get_dates_list(province_name, region_name, start_date, end_date)
-    cumulativedeaths = get_cumulative_deaths(province_name, region_name,
-                                             start_date, end_date)
-    
-    cumulativedeaths_fig = go.Figure()
-
-    cumulativedeaths_fig.add_trace(go.Scatter(
-            x=dates,
-            y=cumulativedeaths,
-            name='Cumulative Deaths',
-        ))
-    
-    cumulativedeaths_fig.update_layout(xaxis_title='Date',
-                                       yaxis_title='Number of Deaths',
-                                       xaxis_range = daterange,
-                                       paper_bgcolor = graph_background_color,
-                                       plot_bgcolor = graph_plot_color,                           
-                                       margin = graph_margins,
-                                       showlegend=False,                           
-                                       annotations=buttons_annotations,
-                                       updatemenus=buttons_updatemenus,
-                                       )
-
-    print("START --- update_cumulativedeath_chart \t", nowtime())
-    
-    return cumulativedeaths_fig
+    return mortality_fig, cumulativedeaths_fig, rtcurve_fig
 
 #========================================================#
 #   Rerun --> Get Mobility Graph                         #
@@ -2633,6 +2608,8 @@ def get_hr_mortality_df(province_name, region_name, getall=True,
         # distribute remaining 111 cases over prior days, proportional
         # to their existing mortality counts
         old_deaths = 111.0
+        # must change type to float to add fractional amounts
+        dfr.deaths = dfr.deaths.astype('float64')
         df_prior = dfr[dfr.date_death_report.between(first_mortality_date, "2020-10-01")]
         total_deaths_prior = df_prior.deaths.sum()
         for index, row in df_prior.iterrows():
@@ -2672,25 +2649,6 @@ def randomize_initial_mortality_value(df_mort_new, forecast_startdate_str):
         np.exp( np.log(val) + np.random.normal(0.0, 1.0/np.sqrt(7.0*val)) )
     return df
 
-def get_dates_list(province_name, region_name, start_date, end_date):
-    """Used for cumulative_deaths and R(t)"""
-    df = get_hr_mortality_df(province_name, region_name, getall=False,
-                             startdate=start_date, enddate=end_date)
-    return df.date_death_report.dt.strftime("%Y-%m-%d").to_list()
-            
-def get_cumulative_deaths(province_name, region_name, start_date, end_date):
-    #===BPH-FIXME:  don't think we need mm/dd/YYYY here?
-    start_date_str = datetime.datetime.strptime(start_date, '%Y-%m-%d').strftime('%m-%d-%Y')
-    end_date_str = datetime.datetime.strptime(end_date, '%Y-%m-%d').strftime('%m-%d-%Y')
-
-    filtered_df2 = df_mort_all[df_mort_all.date_death_report.between(
-        start_date_str, end_date_str
-    )]
-    df_province = filtered_df2[filtered_df2.province == province_name]
-    
-    deaths = df_province.cumulative_deaths[df_province.health_region == region_name] #.rolling(window=7).mean()
-    return deaths
-
 #=========================================================
 #===========   Helper Functions: Cases       =============
 #=========================================================
@@ -2700,19 +2658,6 @@ def get_cumulative_deaths(province_name, region_name, start_date, end_date):
 #===========   Helper Functions: Mobility    =============
 #=========================================================
 
-#===BPH-FIXME: I've deleted this and I'm not sure where/when it is necesary...
-#              I did implement a pandas interpolate over nan values in the mob
-#              data file, but I didn't check if all dates are there. Should do that.
-def interpolate_mob_dates(province_name, region_name, start_date, end_date, months_to_forecast):
-
-    base = datetime.datetime.strptime(end_date, '%Y-%m-%d')
-    add_dates = [base + datetime.timedelta(days=x) for x in range(months_to_forecast * days_in_month)]
-
-    for i in range(len(add_dates)):
-        add_dates[i] = datetime.datetime.strptime(str(add_dates[i]), '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d')
-    
-    return add_dates
-
 def get_hr_mob_df(province_name, region_name, getall=True, startdate=None, enddate=None):
     weat_info_province = static_data[static_data.province_name == province_name]
     sub_region = weat_info_province.sub_region_2[weat_info_province.health_region == region_name].item()
@@ -2721,7 +2666,7 @@ def get_hr_mob_df(province_name, region_name, getall=True, startdate=None, endda
     df_mob = df_mob[['date', val_string]]
     #=== Get the 7-day rolling average of mobility always
     df_mob[val_string] = df_mob[val_string].rolling(window=7).mean()
-    #=== Extend to fill in missing dates
+    #=== Extend to fill in missing dates from google mobility file
     startdate = df_mob.date.min()
     enddate = df_mob.date.max()
     df_mob = extend_dates_df(df_mob, enddate, val_string, startdate=startdate)
@@ -2765,7 +2710,6 @@ def get_hr_weather_data(province_name, region_name):
     df_weather['temp_mean'] = df_weather['temp_mean'].interpolate(method='polynomial', order=2)    
     # convert date column to datetime
     df_weather['date'] = pd.to_datetime(df_weather['date'])
-    print(df_weather)
     return df_weather, last_weather_data_date
 
 def get_weather_avg_for_day(df_weather, day, avg_window_days, avg_window_center_days_prior):
