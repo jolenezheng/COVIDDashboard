@@ -59,6 +59,13 @@ df_trends = pd.read_csv(r'data/google_trends_face_mask_canada.csv')
 #===BPH removed this global variable
 #df_vac2 = pd.DataFrame()
 
+# Reads the JSON file
+with open('data/health_regions.json', 'r') as myfile:
+    data = myfile.read()
+
+# Parses the file
+geo_json_data = json.loads(data)
+
 prov_id = "ON"
 climate_id = 0
 target_url = ""
@@ -241,6 +248,24 @@ canadian_dashboard = html.Div(
                                             ]
                                         ),
                                     ), className='input-space'),
+                                    dbc.Row(dbc.Col(
+                                        html.Div(
+                                            children=[
+                                                html.Div(children="Map Options", className="dropdown-title"),
+                                                dcc.Dropdown(
+                                                    id='map_options',
+                                                    className='dropdown',
+                                                    options=[
+                                                        {'label': 'Cumulative Deaths', 'value': 'cumulative_deaths'},
+                                                        {'label': 'Daily Deaths', 'value': 'deaths'},
+                                                        {'label': 'Cumulative Deaths per Annual Deaths', 'value': 'cumulative_per_annual'},
+                                                        {'label': 'Cumulative Deaths per 100000 Population', 'value': 'cumulative_per_100000pop'},
+                                                        ],
+                                                    value='cumulative_deaths'
+                                                ),
+                                            ]
+                                        ),
+                                    ), className='input-space'),                                    
                                     dbc.Row(dbc.Col(
                                         html.Div(
                                             children=[
@@ -529,6 +554,19 @@ canadian_dashboard = html.Div(
                                 )
                             ),
                         ], className="mb-4"),
+                        dbc.Row(dbc.Col(
+                            dbc.Card(
+                                [
+                                    # dbc.CardHeader(id="cases-header"),
+                                    dbc.CardBody(
+                                         dcc.Loading(
+                                            children=[html.Div(
+                                                dcc.Graph(
+                                                id="choropleth", config={"displayModeBar": False}))],
+                                            type="default"
+                                    )),
+                                ], color="dark", inverse=True),
+                        ), className="mb-4"),
                         dbc.Row(dbc.Col(
                             dbc.Card(
                                 [
@@ -1576,6 +1614,64 @@ def update_cumulativedeaths_charts(n_clicks1, n_clicks2, province_name, region, 
         
     return cumulativedeaths_fig
 
+@app.callback(
+    ddp.Output("choropleth", "figure"),
+    [
+        ddp.Input("map_options", "value"),
+        ddp.Input('rerun-btn1', 'n_clicks'),        
+    ],
+    [
+        ddp.State("region-dropdown", "value"),
+    ],   
+)
+
+def display_choropleth(map_options, n_clicks, province_name):
+    
+    province_name = update_province_name(province_name)
+    
+    if (province_name == 'Alberta') or (province_name == 'BC') or (province_name == 'Manitoba') or (province_name == 'Saskatchewan'):
+        coordinates = {"lat": 54.2780, "lon": -110.0061}
+        zoom = 4
+    elif (province_name == 'Northwest Territories') or (province_name == 'Nunavut') or (province_name == 'Yukon'):
+        coordinates = {"lat": 65.0157, "lon": -115.5781}
+        zoom = 3.7
+    elif (province_name == 'Quebec'):
+        coordinates = {"lat": 50.6806, "lon": -71.4975}
+        zoom = 4.5     
+    elif (province_name == 'Ontario'):
+        coordinates = {"lat": 47.2185, "lon": -79.6218}
+        zoom = 4.75   
+    else:
+        coordinates = {"lat": 47.7799, "lon": -61.0259}
+        zoom = 4.8
+    
+    if (map_options == 'deaths'):
+        range_color = (0,10)
+        df = df_latest_deaths
+    elif (map_options == 'cumulative_deaths'):
+        range_color = (0,500)
+        df = df_latest_deaths
+    elif (map_options == 'cumulative_per_annual'):
+        df = df_combined
+        range_color = (0,0.1)
+    else:
+        df = df_combined
+        range_color = (0,100)
+        
+    fig = px.choropleth_mapbox(df, geojson=geo_json_data, color=map_options,
+                           color_continuous_scale="Deep", range_color=range_color, opacity=0.5,
+                           locations="ENG_LABEL", featureidkey="properties.ENG_LABEL",
+                           height=700, center=coordinates,
+                           mapbox_style="carto-positron", zoom=zoom)
+    
+    # fig = px.choropleth(df, geojson=geo_json_data, color=death_type,
+                           # color_continuous_scale="Deep", range_color=range_color,
+                           # locations="ENG_LABEL", featureidkey="properties.ENG_LABEL",
+                           # projection='winkel tripel',
+                           # height=700)
+
+    return fig
+
 # -------------- STATIC DATA HELPER FUNCTIONS --------------
 
 def get_region_info(province_name, region_name):
@@ -1607,6 +1703,7 @@ def get_pwpd(province_name, region_name):
 
 def get_pop_sparsity(province_name, region_name):	
     return get_region_info(province_name, region_name).pop_sparsity.item()
+
 
 # -------------- PREDICTIVE MODEL HELPER FUNCTIONS --------------
 
@@ -1699,7 +1796,7 @@ def predicted_deaths(c_num, province_name, region_name, start_date, end_date, da
                         (2.0 * math.log(8.0 * 10.0**(-xLogPWPD) * (2.0 - 0.5 * xBeta))) / (4.0 - xBeta)))
                     
             lambda_ = -0.0398673 + exp_ - 0.202278 * (vaxP1 - vaxP2) - 0.00654545 * (-3.65 + xAnnual) + 0.0201251 * (-2.7 + xHouse)
-            delta = random.gauss(0.0, sigma) #*1/math.sqrt(14)
+            delta = random.gauss(0.0, sigma)*math.sqrt(14)
 
             lambda_ += delta # Sqrt[0.092/(14 + Death in Past two weeks)
 
@@ -2466,6 +2563,54 @@ def past_rt_equation(province_name, region_name):
 def moving_avg(x, n):
     cumsum = np.cumsum(np.insert(x, 0, 0))
     return (cumsum[n:] - cumsum[:-n]) / float(n)
+
+# -------------- MAP FUNCTIONS --------------
+
+static_data2 = pd.read_csv(r'data/health_regions_static_data2.csv', encoding='Latin-1')
+
+df_mort2 = pd.read_csv(r'data/mortality2.csv', dtype={"ENG_LABEL": str})
+df_mort2["date_death_report"] = pd.to_datetime(df_mort2["date_death_report"], format="%d-%m-%Y")
+
+index = df_mort2[df_mort2['ENG_LABEL'] == 'Not Reported'].index
+df_mort2.drop(index, inplace=True)
+
+df_latest_deaths = df_mort2[df_mort2['date_death_report'] == max(df_mort2["date_death_report"])]
+
+ann_death = static_data2["anndeath"]*1.3
+ann_death = ann_death.tolist()
+cumulative_deaths = df_latest_deaths["cumulative_deaths"].tolist()
+
+data = {'cumulative/annual': cumulative_deaths}
+data2 = {'cumulative/annual': ann_death}
+
+region_pop = static_data2["region_pop"]
+region_pop = region_pop.tolist()
+data3 = {'cumulative/pop': cumulative_deaths}
+data4 = {'cumulative/pop': region_pop}
+  
+# Create DataFrame  
+df_cumulative_deaths = pd.DataFrame(data)
+df_ann_death = pd.DataFrame(data2)
+df_cumulative_deaths2 = pd.DataFrame(data3)
+df_region_pop = pd.DataFrame(data4)
+
+# print(df_region_pop)
+df_cumulative_per_annual = df_cumulative_deaths/df_ann_death
+df_cumulative_per_100000pop = df_cumulative_deaths2/df_region_pop*100000
+
+regions = df_latest_deaths.ENG_LABEL.tolist()
+cumulative_per_100000pop = df_cumulative_per_100000pop['cumulative/pop'].tolist()
+cumulative_per_annual = df_cumulative_per_annual['cumulative/annual'].tolist()
+
+combined_data = {'ENG_LABEL': regions, 'cumulative_per_100000pop': cumulative_per_100000pop, 
+                 'cumulative_per_annual': cumulative_per_annual}
+df_combined = pd.DataFrame(combined_data)
+
+# print(df_combined)
+# print(df_cumulative_deaths)
+# print(df_ann_death)
+# print(df_cumulative_per_annual)
+# print(df_cumulative_per_100000pop)
 
 # ======================= END OF PROGRAM =======================
 
