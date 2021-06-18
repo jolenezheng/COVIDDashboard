@@ -464,6 +464,8 @@
 "Alberta","Calgary","13-06-2021",0,688
 "Alberta","Calgary","14-06-2021",0,688
 "Alberta","Calgary","15-06-2021",1,689
+"Alberta","Calgary","16-06-2021",3,692
+"Alberta","Calgary","17-06-2021",0,692
 "Alberta","Central","08-03-2020",0,0
 "Alberta","Central","09-03-2020",0,0
 "Alberta","Central","10-03-2020",0,0
@@ -929,6 +931,8 @@
 "Alberta","Central","13-06-2021",1,162
 "Alberta","Central","14-06-2021",1,163
 "Alberta","Central","15-06-2021",0,163
+"Alberta","Central","16-06-2021",0,163
+"Alberta","Central","17-06-2021",1,164
 "Alberta","Edmonton","08-03-2020",0,0
 "Alberta","Edmonton","09-03-2020",0,0
 "Alberta","Edmonton","10-03-2020",0,0
@@ -1394,6 +1398,8 @@
 "Alberta","Edmonton","13-06-2021",0,1100
 "Alberta","Edmonton","14-06-2021",0,1100
 "Alberta","Edmonton","15-06-2021",1,1101
+"Alberta","Edmonton","16-06-2021",0,1101
+"Alberta","Edmonton","17-06-2021",0,1101
 "Alberta","North","08-03-2020",0,0
 "Alberta","North","09-03-2020",0,0
 "Alberta","North","10-03-2020",0,0
@@ -1859,6 +1865,8 @@
 "Alberta","North","13-06-2021",0,188
 "Alberta","North","14-06-2021",-1,187
 "Alberta","North","15-06-2021",2,189
+"Alberta","North","16-06-2021",1,190
+"Alberta","North","17-06-2021",0,190
 "Alberta","Not Reported","08-03-2020",0,0
 "Alberta","Not Reported","09-03-2020",0,0
 "Alberta","Not Reported","10-03-2020",0,0
@@ -2324,6 +2332,8 @@
 "Alberta","Not Reported","13-06-2021",0,0
 "Alberta","Not Reported","14-06-2021",0,0
 "Alberta","Not Reported","15-06-2021",0,0
+"Alberta","Not Reported","16-06-2021",0,0
+"Alberta","Not Reported","17-06-2021",0,0
 "Alberta","South","08-03-2020",0,0
 "Alberta","South","09-03-2020",0,0
 "Alberta","South","10-03-2020",0,0
@@ -2789,6 +2799,8 @@
 "Alberta","South","13-06-2021",0,132
 "Alberta","South","14-06-2021",0,132
 "Alberta","South","15-06-2021",0,132
+"Alberta","South","16-06-2021",0,132
+"Alberta","South","17-06-2021",1,133
 "BC","Fraser","08-03-2020",0,0
 "BC","Fraser","09-03-2020",0,0
 "BC","Fraser","10-03-2020",0,0
@@ -3254,6 +3266,8 @@
 "BC","Fraser","13-06-2021",0,910
 "BC","Fraser","14-06-2021",3,913
 "BC","Fraser","15-06-2021",0,913
+"BC","Fraser","16-06-2021",1,914
+"BC","Fraser","17-06-2021",0,914
 "BC","Interior","08-03-2020",0,0
 "BC","Interior","09-03-2020",0,0
 "BC","Interior","10-03-2020",0,0
@@ -3719,6 +3733,8 @@
 "BC","Interior","13-06-2021",0,152
 "BC","Interior","14-06-2021",1,153
 "BC","Interior","15-06-2021",0,153
+"BC","Interior","16-06-2021",2,155
+"BC","Interior","17-06-2021",0,155
 "BC","Island","08-03-2020",0,0
 "BC","Island","09-03-2020",0,0
 "BC","Island","10-03-2020",0,0
@@ -4184,6 +4200,8 @@
 "BC","Island","13-06-2021",0,41
 "BC","Island","14-06-2021",0,41
 "BC","Island","15-06-2021",0,41
+"BC","Island","16-06-2021",0,41
+"BC","Island","17-06-2021",0,41
 "BC","Northern","08-03-2020",0,0
 "BC","Northern","09-03-2020",0,0
 "BC","Northern","10-03-2020",0,0
@@ -4649,6 +4667,8 @@
 "BC","Northern","13-06-2021",0,154
 "BC","Northern","14-06-2021",0,154
 "BC","Northern","15-06-2021",0,154
+"BC","Northern","16-06-2021",0,154
+"BC","Northern","17-06-2021",0,154
 "BC","Not Reported","08-03-2020",0,0
 "BC","Not Reported","09-03-2020",0,0
 "BC","Not Reported","10-03-2020",0,0
@@ -5114,6 +5134,8 @@
 "BC","Not Reported","13-06-2021",0,0
 "BC","Not Reported","14-06-2021",0,0
 "BC","Not Reported","15-06-2021",0,0
+"BC","Not Reported","16-06-2021",0,0
+"BC","Not Reported","17-06-2021",0,0
 "BC","Vancouver Coastal","08-03-2020",1,1
 "BC","Vancouver Coastal","09-03-2020",0,1
 "BC","Vancouver Coastal","10-03-2020",0,1
@@ -5579,6 +5601,8 @@
 "BC","Vancouver Coastal","13-06-2021",0,473
 "BC","Vancouver Coastal","14-06-2021",0,473
 "BC","Vancouver Coastal","15-06-2021",0,473
+"BC","Vancouver Coastal","16-06-2021",1,474
+"BC","Vancouver Coastal","17-06-2021",1,475
 "Manitoba","Interlake-Eastern","08-03-2020",0,0
 "Manitoba","Interlake-Eastern","09-03-2020",0,0
 "Manitoba","Interlake-Eastern","10-03-2020",0,0
@@ -6044,6 +6068,8 @@
 "Manitoba","Interlake-Eastern","13-06-2021",0,43
 "Manitoba","Interlake-Eastern","14-06-2021",0,43
 "Manitoba","Interlake-Eastern","15-06-2021",0,43
+"Manitoba","Interlake-Eastern","16-06-2021",0,43
+"Manitoba","Interlake-Eastern","17-06-2021",0,43
 "Manitoba","Northern","08-03-2020",0,0
 "Manitoba","Northern","09-03-2020",0,0
 "Manitoba","Northern","10-03-2020",0,0
@@ -6509,6 +6535,8 @@
 "Manitoba","Northern","13-06-2021",1,54
 "Manitoba","Northern","14-06-2021",0,54
 "Manitoba","Northern","15-06-2021",0,54
+"Manitoba","Northern","16-06-2021",0,54
+"Manitoba","Northern","17-06-2021",0,54
 "Manitoba","Not Reported","08-03-2020",0,0
 "Manitoba","Not Reported","09-03-2020",0,0
 "Manitoba","Not Reported","10-03-2020",0,0
@@ -6974,6 +7002,8 @@
 "Manitoba","Not Reported","13-06-2021",0,0
 "Manitoba","Not Reported","14-06-2021",0,0
 "Manitoba","Not Reported","15-06-2021",0,0
+"Manitoba","Not Reported","16-06-2021",0,0
+"Manitoba","Not Reported","17-06-2021",0,0
 "Manitoba","Prairie Mountain","08-03-2020",0,0
 "Manitoba","Prairie Mountain","09-03-2020",0,0
 "Manitoba","Prairie Mountain","10-03-2020",0,0
@@ -7439,6 +7469,8 @@
 "Manitoba","Prairie Mountain","13-06-2021",0,75
 "Manitoba","Prairie Mountain","14-06-2021",0,75
 "Manitoba","Prairie Mountain","15-06-2021",0,75
+"Manitoba","Prairie Mountain","16-06-2021",0,75
+"Manitoba","Prairie Mountain","17-06-2021",0,75
 "Manitoba","Southern Health","08-03-2020",0,0
 "Manitoba","Southern Health","09-03-2020",0,0
 "Manitoba","Southern Health","10-03-2020",0,0
@@ -7904,6 +7936,8 @@
 "Manitoba","Southern Health","13-06-2021",3,173
 "Manitoba","Southern Health","14-06-2021",1,174
 "Manitoba","Southern Health","15-06-2021",1,175
+"Manitoba","Southern Health","16-06-2021",3,178
+"Manitoba","Southern Health","17-06-2021",0,178
 "Manitoba","Winnipeg","08-03-2020",0,0
 "Manitoba","Winnipeg","09-03-2020",0,0
 "Manitoba","Winnipeg","10-03-2020",0,0
@@ -8369,6 +8403,8 @@
 "Manitoba","Winnipeg","13-06-2021",3,755
 "Manitoba","Winnipeg","14-06-2021",1,756
 "Manitoba","Winnipeg","15-06-2021",1,757
+"Manitoba","Winnipeg","16-06-2021",4,761
+"Manitoba","Winnipeg","17-06-2021",1,762
 "New Brunswick","Not Reported","08-03-2020",0,0
 "New Brunswick","Not Reported","09-03-2020",0,0
 "New Brunswick","Not Reported","10-03-2020",0,0
@@ -8834,6 +8870,8 @@
 "New Brunswick","Not Reported","13-06-2021",0,0
 "New Brunswick","Not Reported","14-06-2021",0,0
 "New Brunswick","Not Reported","15-06-2021",0,0
+"New Brunswick","Not Reported","16-06-2021",0,0
+"New Brunswick","Not Reported","17-06-2021",0,0
 "New Brunswick","Zone 1 (Moncton area)","08-03-2020",0,0
 "New Brunswick","Zone 1 (Moncton area)","09-03-2020",0,0
 "New Brunswick","Zone 1 (Moncton area)","10-03-2020",0,0
@@ -9299,6 +9337,8 @@
 "New Brunswick","Zone 1 (Moncton area)","13-06-2021",0,5
 "New Brunswick","Zone 1 (Moncton area)","14-06-2021",0,5
 "New Brunswick","Zone 1 (Moncton area)","15-06-2021",0,5
+"New Brunswick","Zone 1 (Moncton area)","16-06-2021",0,5
+"New Brunswick","Zone 1 (Moncton area)","17-06-2021",0,5
 "New Brunswick","Zone 2 (Saint John area)","08-03-2020",0,0
 "New Brunswick","Zone 2 (Saint John area)","09-03-2020",0,0
 "New Brunswick","Zone 2 (Saint John area)","10-03-2020",0,0
@@ -9764,6 +9804,8 @@
 "New Brunswick","Zone 2 (Saint John area)","13-06-2021",0,8
 "New Brunswick","Zone 2 (Saint John area)","14-06-2021",0,8
 "New Brunswick","Zone 2 (Saint John area)","15-06-2021",0,8
+"New Brunswick","Zone 2 (Saint John area)","16-06-2021",0,8
+"New Brunswick","Zone 2 (Saint John area)","17-06-2021",0,8
 "New Brunswick","Zone 3 (Fredericton area)","08-03-2020",0,0
 "New Brunswick","Zone 3 (Fredericton area)","09-03-2020",0,0
 "New Brunswick","Zone 3 (Fredericton area)","10-03-2020",0,0
@@ -10229,6 +10271,8 @@
 "New Brunswick","Zone 3 (Fredericton area)","13-06-2021",0,1
 "New Brunswick","Zone 3 (Fredericton area)","14-06-2021",0,1
 "New Brunswick","Zone 3 (Fredericton area)","15-06-2021",0,1
+"New Brunswick","Zone 3 (Fredericton area)","16-06-2021",0,1
+"New Brunswick","Zone 3 (Fredericton area)","17-06-2021",0,1
 "New Brunswick","Zone 4 (Edmundston area)","08-03-2020",0,0
 "New Brunswick","Zone 4 (Edmundston area)","09-03-2020",0,0
 "New Brunswick","Zone 4 (Edmundston area)","10-03-2020",0,0
@@ -10694,6 +10738,8 @@
 "New Brunswick","Zone 4 (Edmundston area)","13-06-2021",0,25
 "New Brunswick","Zone 4 (Edmundston area)","14-06-2021",0,25
 "New Brunswick","Zone 4 (Edmundston area)","15-06-2021",0,25
+"New Brunswick","Zone 4 (Edmundston area)","16-06-2021",0,25
+"New Brunswick","Zone 4 (Edmundston area)","17-06-2021",0,25
 "New Brunswick","Zone 5 (Campbellton area)","08-03-2020",0,0
 "New Brunswick","Zone 5 (Campbellton area)","09-03-2020",0,0
 "New Brunswick","Zone 5 (Campbellton area)","10-03-2020",0,0
@@ -11159,6 +11205,8 @@
 "New Brunswick","Zone 5 (Campbellton area)","13-06-2021",0,4
 "New Brunswick","Zone 5 (Campbellton area)","14-06-2021",0,4
 "New Brunswick","Zone 5 (Campbellton area)","15-06-2021",0,4
+"New Brunswick","Zone 5 (Campbellton area)","16-06-2021",0,4
+"New Brunswick","Zone 5 (Campbellton area)","17-06-2021",0,4
 "New Brunswick","Zone 6 (Bathurst area)","08-03-2020",0,0
 "New Brunswick","Zone 6 (Bathurst area)","09-03-2020",0,0
 "New Brunswick","Zone 6 (Bathurst area)","10-03-2020",0,0
@@ -11624,6 +11672,8 @@
 "New Brunswick","Zone 6 (Bathurst area)","13-06-2021",0,2
 "New Brunswick","Zone 6 (Bathurst area)","14-06-2021",0,2
 "New Brunswick","Zone 6 (Bathurst area)","15-06-2021",0,2
+"New Brunswick","Zone 6 (Bathurst area)","16-06-2021",0,2
+"New Brunswick","Zone 6 (Bathurst area)","17-06-2021",0,2
 "New Brunswick","Zone 7 (Miramichi area)","08-03-2020",0,0
 "New Brunswick","Zone 7 (Miramichi area)","09-03-2020",0,0
 "New Brunswick","Zone 7 (Miramichi area)","10-03-2020",0,0
@@ -12089,6 +12139,8 @@
 "New Brunswick","Zone 7 (Miramichi area)","13-06-2021",0,0
 "New Brunswick","Zone 7 (Miramichi area)","14-06-2021",0,0
 "New Brunswick","Zone 7 (Miramichi area)","15-06-2021",0,0
+"New Brunswick","Zone 7 (Miramichi area)","16-06-2021",0,0
+"New Brunswick","Zone 7 (Miramichi area)","17-06-2021",0,0
 "NL","Central","08-03-2020",0,0
 "NL","Central","09-03-2020",0,0
 "NL","Central","10-03-2020",0,0
@@ -12554,6 +12606,8 @@
 "NL","Central","13-06-2021",0,0
 "NL","Central","14-06-2021",0,0
 "NL","Central","15-06-2021",0,0
+"NL","Central","16-06-2021",0,0
+"NL","Central","17-06-2021",0,0
 "NL","Eastern","08-03-2020",0,0
 "NL","Eastern","09-03-2020",0,0
 "NL","Eastern","10-03-2020",0,0
@@ -13019,6 +13073,8 @@
 "NL","Eastern","13-06-2021",0,6
 "NL","Eastern","14-06-2021",0,6
 "NL","Eastern","15-06-2021",0,6
+"NL","Eastern","16-06-2021",0,6
+"NL","Eastern","17-06-2021",0,6
 "NL","Labrador-Grenfell","08-03-2020",0,0
 "NL","Labrador-Grenfell","09-03-2020",0,0
 "NL","Labrador-Grenfell","10-03-2020",0,0
@@ -13484,6 +13540,8 @@
 "NL","Labrador-Grenfell","13-06-2021",0,0
 "NL","Labrador-Grenfell","14-06-2021",0,0
 "NL","Labrador-Grenfell","15-06-2021",0,0
+"NL","Labrador-Grenfell","16-06-2021",0,0
+"NL","Labrador-Grenfell","17-06-2021",0,0
 "NL","Not Reported","08-03-2020",0,0
 "NL","Not Reported","09-03-2020",0,0
 "NL","Not Reported","10-03-2020",0,0
@@ -13949,6 +14007,8 @@
 "NL","Not Reported","13-06-2021",0,0
 "NL","Not Reported","14-06-2021",0,0
 "NL","Not Reported","15-06-2021",0,0
+"NL","Not Reported","16-06-2021",0,0
+"NL","Not Reported","17-06-2021",0,0
 "NL","Western","08-03-2020",0,0
 "NL","Western","09-03-2020",0,0
 "NL","Western","10-03-2020",0,0
@@ -14414,6 +14474,8 @@
 "NL","Western","13-06-2021",0,1
 "NL","Western","14-06-2021",0,1
 "NL","Western","15-06-2021",0,1
+"NL","Western","16-06-2021",0,1
+"NL","Western","17-06-2021",0,1
 "Nova Scotia","Not Reported","08-03-2020",0,0
 "Nova Scotia","Not Reported","09-03-2020",0,0
 "Nova Scotia","Not Reported","10-03-2020",0,0
@@ -14879,6 +14941,8 @@
 "Nova Scotia","Not Reported","13-06-2021",0,0
 "Nova Scotia","Not Reported","14-06-2021",0,0
 "Nova Scotia","Not Reported","15-06-2021",0,0
+"Nova Scotia","Not Reported","16-06-2021",0,0
+"Nova Scotia","Not Reported","17-06-2021",0,0
 "Nova Scotia","Zone 1 - Western","08-03-2020",0,0
 "Nova Scotia","Zone 1 - Western","09-03-2020",0,0
 "Nova Scotia","Zone 1 - Western","10-03-2020",0,0
@@ -15344,6 +15408,8 @@
 "Nova Scotia","Zone 1 - Western","13-06-2021",0,2
 "Nova Scotia","Zone 1 - Western","14-06-2021",0,2
 "Nova Scotia","Zone 1 - Western","15-06-2021",0,2
+"Nova Scotia","Zone 1 - Western","16-06-2021",0,2
+"Nova Scotia","Zone 1 - Western","17-06-2021",0,2
 "Nova Scotia","Zone 2 - Northern","08-03-2020",0,0
 "Nova Scotia","Zone 2 - Northern","09-03-2020",0,0
 "Nova Scotia","Zone 2 - Northern","10-03-2020",0,0
@@ -15809,6 +15875,8 @@
 "Nova Scotia","Zone 2 - Northern","13-06-2021",0,1
 "Nova Scotia","Zone 2 - Northern","14-06-2021",0,1
 "Nova Scotia","Zone 2 - Northern","15-06-2021",0,1
+"Nova Scotia","Zone 2 - Northern","16-06-2021",0,1
+"Nova Scotia","Zone 2 - Northern","17-06-2021",0,1
 "Nova Scotia","Zone 3 - Eastern","08-03-2020",0,0
 "Nova Scotia","Zone 3 - Eastern","09-03-2020",0,0
 "Nova Scotia","Zone 3 - Eastern","10-03-2020",0,0
@@ -16274,6 +16342,8 @@
 "Nova Scotia","Zone 3 - Eastern","13-06-2021",0,6
 "Nova Scotia","Zone 3 - Eastern","14-06-2021",0,6
 "Nova Scotia","Zone 3 - Eastern","15-06-2021",0,6
+"Nova Scotia","Zone 3 - Eastern","16-06-2021",0,6
+"Nova Scotia","Zone 3 - Eastern","17-06-2021",0,6
 "Nova Scotia","Zone 4 - Central","08-03-2020",0,0
 "Nova Scotia","Zone 4 - Central","09-03-2020",0,0
 "Nova Scotia","Zone 4 - Central","10-03-2020",0,0
@@ -16739,6 +16809,8 @@
 "Nova Scotia","Zone 4 - Central","13-06-2021",0,80
 "Nova Scotia","Zone 4 - Central","14-06-2021",1,81
 "Nova Scotia","Zone 4 - Central","15-06-2021",0,81
+"Nova Scotia","Zone 4 - Central","16-06-2021",0,81
+"Nova Scotia","Zone 4 - Central","17-06-2021",0,81
 "Nunavut","Nunavut","08-03-2020",0,0
 "Nunavut","Nunavut","09-03-2020",0,0
 "Nunavut","Nunavut","10-03-2020",0,0
@@ -17204,6 +17276,8 @@
 "Nunavut","Nunavut","13-06-2021",0,4
 "Nunavut","Nunavut","14-06-2021",0,4
 "Nunavut","Nunavut","15-06-2021",0,4
+"Nunavut","Nunavut","16-06-2021",0,4
+"Nunavut","Nunavut","17-06-2021",0,4
 "NWT","NWT","08-03-2020",0,0
 "NWT","NWT","09-03-2020",0,0
 "NWT","NWT","10-03-2020",0,0
@@ -17669,6 +17743,8 @@
 "NWT","NWT","13-06-2021",0,0
 "NWT","NWT","14-06-2021",0,0
 "NWT","NWT","15-06-2021",0,0
+"NWT","NWT","16-06-2021",0,0
+"NWT","NWT","17-06-2021",0,0
 "Ontario","Algoma","08-03-2020",0,0
 "Ontario","Algoma","09-03-2020",0,0
 "Ontario","Algoma","10-03-2020",0,0
@@ -18134,6 +18210,8 @@
 "Ontario","Algoma","13-06-2021",0,6
 "Ontario","Algoma","14-06-2021",0,6
 "Ontario","Algoma","15-06-2021",0,6
+"Ontario","Algoma","16-06-2021",0,6
+"Ontario","Algoma","17-06-2021",0,6
 "Ontario","Brant","08-03-2020",0,0
 "Ontario","Brant","09-03-2020",0,0
 "Ontario","Brant","10-03-2020",0,0
@@ -18599,6 +18677,8 @@
 "Ontario","Brant","13-06-2021",0,20
 "Ontario","Brant","14-06-2021",0,20
 "Ontario","Brant","15-06-2021",0,20
+"Ontario","Brant","16-06-2021",0,20
+"Ontario","Brant","17-06-2021",0,20
 "Ontario","Chatham-Kent","08-03-2020",0,0
 "Ontario","Chatham-Kent","09-03-2020",0,0
 "Ontario","Chatham-Kent","10-03-2020",0,0
@@ -19064,6 +19144,8 @@
 "Ontario","Chatham-Kent","13-06-2021",0,17
 "Ontario","Chatham-Kent","14-06-2021",0,17
 "Ontario","Chatham-Kent","15-06-2021",0,17
+"Ontario","Chatham-Kent","16-06-2021",0,17
+"Ontario","Chatham-Kent","17-06-2021",0,17
 "Ontario","Durham","08-03-2020",0,0
 "Ontario","Durham","09-03-2020",0,0
 "Ontario","Durham","10-03-2020",0,0
@@ -19529,6 +19611,8 @@
 "Ontario","Durham","13-06-2021",0,370
 "Ontario","Durham","14-06-2021",0,370
 "Ontario","Durham","15-06-2021",0,370
+"Ontario","Durham","16-06-2021",0,370
+"Ontario","Durham","17-06-2021",0,370
 "Ontario","Eastern","08-03-2020",0,0
 "Ontario","Eastern","09-03-2020",0,0
 "Ontario","Eastern","10-03-2020",0,0
@@ -19994,6 +20078,8 @@
 "Ontario","Eastern","13-06-2021",0,107
 "Ontario","Eastern","14-06-2021",0,107
 "Ontario","Eastern","15-06-2021",0,107
+"Ontario","Eastern","16-06-2021",0,107
+"Ontario","Eastern","17-06-2021",0,107
 "Ontario","Grey Bruce","08-03-2020",0,0
 "Ontario","Grey Bruce","09-03-2020",0,0
 "Ontario","Grey Bruce","10-03-2020",0,0
@@ -20459,6 +20545,8 @@
 "Ontario","Grey Bruce","13-06-2021",0,5
 "Ontario","Grey Bruce","14-06-2021",0,5
 "Ontario","Grey Bruce","15-06-2021",0,5
+"Ontario","Grey Bruce","16-06-2021",0,5
+"Ontario","Grey Bruce","17-06-2021",0,5
 "Ontario","Haldimand-Norfolk","08-03-2020",0,0
 "Ontario","Haldimand-Norfolk","09-03-2020",0,0
 "Ontario","Haldimand-Norfolk","10-03-2020",0,0
@@ -20924,6 +21012,8 @@
 "Ontario","Haldimand-Norfolk","13-06-2021",0,47
 "Ontario","Haldimand-Norfolk","14-06-2021",0,47
 "Ontario","Haldimand-Norfolk","15-06-2021",0,47
+"Ontario","Haldimand-Norfolk","16-06-2021",0,47
+"Ontario","Haldimand-Norfolk","17-06-2021",0,47
 "Ontario","Haliburton Kawartha Pineridge","08-03-2020",0,0
 "Ontario","Haliburton Kawartha Pineridge","09-03-2020",0,0
 "Ontario","Haliburton Kawartha Pineridge","10-03-2020",0,0
@@ -21389,6 +21479,8 @@
 "Ontario","Haliburton Kawartha Pineridge","13-06-2021",0,75
 "Ontario","Haliburton Kawartha Pineridge","14-06-2021",0,75
 "Ontario","Haliburton Kawartha Pineridge","15-06-2021",0,75
+"Ontario","Haliburton Kawartha Pineridge","16-06-2021",0,75
+"Ontario","Haliburton Kawartha Pineridge","17-06-2021",0,75
 "Ontario","Halton","08-03-2020",0,0
 "Ontario","Halton","09-03-2020",0,0
 "Ontario","Halton","10-03-2020",0,0
@@ -21854,6 +21946,8 @@
 "Ontario","Halton","13-06-2021",0,229
 "Ontario","Halton","14-06-2021",0,229
 "Ontario","Halton","15-06-2021",0,229
+"Ontario","Halton","16-06-2021",0,229
+"Ontario","Halton","17-06-2021",0,229
 "Ontario","Hamilton","08-03-2020",0,0
 "Ontario","Hamilton","09-03-2020",0,0
 "Ontario","Hamilton","10-03-2020",0,0
@@ -22319,6 +22413,8 @@
 "Ontario","Hamilton","13-06-2021",0,396
 "Ontario","Hamilton","14-06-2021",0,396
 "Ontario","Hamilton","15-06-2021",0,396
+"Ontario","Hamilton","16-06-2021",0,396
+"Ontario","Hamilton","17-06-2021",0,396
 "Ontario","Hastings Prince Edward","08-03-2020",0,0
 "Ontario","Hastings Prince Edward","09-03-2020",0,0
 "Ontario","Hastings Prince Edward","10-03-2020",0,0
@@ -22784,6 +22880,8 @@
 "Ontario","Hastings Prince Edward","13-06-2021",0,11
 "Ontario","Hastings Prince Edward","14-06-2021",0,11
 "Ontario","Hastings Prince Edward","15-06-2021",0,11
+"Ontario","Hastings Prince Edward","16-06-2021",0,11
+"Ontario","Hastings Prince Edward","17-06-2021",0,11
 "Ontario","Huron Perth","08-03-2020",0,0
 "Ontario","Huron Perth","09-03-2020",0,0
 "Ontario","Huron Perth","10-03-2020",0,0
@@ -23249,6 +23347,8 @@
 "Ontario","Huron Perth","13-06-2021",0,57
 "Ontario","Huron Perth","14-06-2021",0,57
 "Ontario","Huron Perth","15-06-2021",0,57
+"Ontario","Huron Perth","16-06-2021",0,57
+"Ontario","Huron Perth","17-06-2021",0,57
 "Ontario","Kingston Frontenac Lennox & Addington","08-03-2020",0,0
 "Ontario","Kingston Frontenac Lennox & Addington","09-03-2020",0,0
 "Ontario","Kingston Frontenac Lennox & Addington","10-03-2020",0,0
@@ -23714,6 +23814,8 @@
 "Ontario","Kingston Frontenac Lennox & Addington","13-06-2021",0,3
 "Ontario","Kingston Frontenac Lennox & Addington","14-06-2021",0,3
 "Ontario","Kingston Frontenac Lennox & Addington","15-06-2021",0,3
+"Ontario","Kingston Frontenac Lennox & Addington","16-06-2021",0,3
+"Ontario","Kingston Frontenac Lennox & Addington","17-06-2021",0,3
 "Ontario","Lambton","08-03-2020",0,0
 "Ontario","Lambton","09-03-2020",0,0
 "Ontario","Lambton","10-03-2020",0,0
@@ -24179,6 +24281,8 @@
 "Ontario","Lambton","13-06-2021",0,61
 "Ontario","Lambton","14-06-2021",0,61
 "Ontario","Lambton","15-06-2021",1,62
+"Ontario","Lambton","16-06-2021",0,62
+"Ontario","Lambton","17-06-2021",0,62
 "Ontario","Leeds Grenville and Lanark","08-03-2020",0,0
 "Ontario","Leeds Grenville and Lanark","09-03-2020",0,0
 "Ontario","Leeds Grenville and Lanark","10-03-2020",0,0
@@ -24644,6 +24748,8 @@
 "Ontario","Leeds Grenville and Lanark","13-06-2021",0,60
 "Ontario","Leeds Grenville and Lanark","14-06-2021",0,60
 "Ontario","Leeds Grenville and Lanark","15-06-2021",0,60
+"Ontario","Leeds Grenville and Lanark","16-06-2021",0,60
+"Ontario","Leeds Grenville and Lanark","17-06-2021",0,60
 "Ontario","Middlesex-London","08-03-2020",0,0
 "Ontario","Middlesex-London","09-03-2020",0,0
 "Ontario","Middlesex-London","10-03-2020",0,0
@@ -25109,6 +25215,8 @@
 "Ontario","Middlesex-London","13-06-2021",0,222
 "Ontario","Middlesex-London","14-06-2021",0,222
 "Ontario","Middlesex-London","15-06-2021",1,223
+"Ontario","Middlesex-London","16-06-2021",0,223
+"Ontario","Middlesex-London","17-06-2021",0,223
 "Ontario","Niagara","08-03-2020",0,0
 "Ontario","Niagara","09-03-2020",0,0
 "Ontario","Niagara","10-03-2020",0,0
@@ -25574,6 +25682,8 @@
 "Ontario","Niagara","13-06-2021",0,411
 "Ontario","Niagara","14-06-2021",0,411
 "Ontario","Niagara","15-06-2021",0,411
+"Ontario","Niagara","16-06-2021",0,411
+"Ontario","Niagara","17-06-2021",0,411
 "Ontario","North Bay Parry Sound","08-03-2020",0,0
 "Ontario","North Bay Parry Sound","09-03-2020",0,0
 "Ontario","North Bay Parry Sound","10-03-2020",0,0
@@ -26039,6 +26149,8 @@
 "Ontario","North Bay Parry Sound","13-06-2021",0,4
 "Ontario","North Bay Parry Sound","14-06-2021",0,4
 "Ontario","North Bay Parry Sound","15-06-2021",0,4
+"Ontario","North Bay Parry Sound","16-06-2021",0,4
+"Ontario","North Bay Parry Sound","17-06-2021",0,4
 "Ontario","Northwestern","08-03-2020",0,0
 "Ontario","Northwestern","09-03-2020",0,0
 "Ontario","Northwestern","10-03-2020",0,0
@@ -26504,6 +26616,8 @@
 "Ontario","Northwestern","13-06-2021",0,7
 "Ontario","Northwestern","14-06-2021",0,7
 "Ontario","Northwestern","15-06-2021",0,7
+"Ontario","Northwestern","16-06-2021",0,7
+"Ontario","Northwestern","17-06-2021",0,7
 "Ontario","Not Reported","08-03-2020",0,0
 "Ontario","Not Reported","09-03-2020",0,0
 "Ontario","Not Reported","10-03-2020",0,0
@@ -26969,6 +27083,8 @@
 "Ontario","Not Reported","13-06-2021",0,0
 "Ontario","Not Reported","14-06-2021",0,0
 "Ontario","Not Reported","15-06-2021",0,0
+"Ontario","Not Reported","16-06-2021",0,0
+"Ontario","Not Reported","17-06-2021",0,0
 "Ontario","Ottawa","08-03-2020",0,0
 "Ontario","Ottawa","09-03-2020",0,0
 "Ontario","Ottawa","10-03-2020",0,0
@@ -27434,6 +27550,8 @@
 "Ontario","Ottawa","13-06-2021",0,585
 "Ontario","Ottawa","14-06-2021",0,585
 "Ontario","Ottawa","15-06-2021",0,585
+"Ontario","Ottawa","16-06-2021",1,586
+"Ontario","Ottawa","17-06-2021",0,586
 "Ontario","Peel","08-03-2020",0,0
 "Ontario","Peel","09-03-2020",0,0
 "Ontario","Peel","10-03-2020",0,0
@@ -27899,6 +28017,8 @@
 "Ontario","Peel","13-06-2021",0,774
 "Ontario","Peel","14-06-2021",0,774
 "Ontario","Peel","15-06-2021",4,778
+"Ontario","Peel","16-06-2021",18,796
+"Ontario","Peel","17-06-2021",2,798
 "Ontario","Peterborough","08-03-2020",0,0
 "Ontario","Peterborough","09-03-2020",0,0
 "Ontario","Peterborough","10-03-2020",0,0
@@ -28364,6 +28484,8 @@
 "Ontario","Peterborough","13-06-2021",0,21
 "Ontario","Peterborough","14-06-2021",0,21
 "Ontario","Peterborough","15-06-2021",0,21
+"Ontario","Peterborough","16-06-2021",0,21
+"Ontario","Peterborough","17-06-2021",0,21
 "Ontario","Porcupine","08-03-2020",0,0
 "Ontario","Porcupine","09-03-2020",0,0
 "Ontario","Porcupine","10-03-2020",0,0
@@ -28829,6 +28951,8 @@
 "Ontario","Porcupine","13-06-2021",0,27
 "Ontario","Porcupine","14-06-2021",0,27
 "Ontario","Porcupine","15-06-2021",0,27
+"Ontario","Porcupine","16-06-2021",0,27
+"Ontario","Porcupine","17-06-2021",0,27
 "Ontario","Renfrew","08-03-2020",0,0
 "Ontario","Renfrew","09-03-2020",0,0
 "Ontario","Renfrew","10-03-2020",0,0
@@ -29294,6 +29418,8 @@
 "Ontario","Renfrew","13-06-2021",0,9
 "Ontario","Renfrew","14-06-2021",0,9
 "Ontario","Renfrew","15-06-2021",0,9
+"Ontario","Renfrew","16-06-2021",0,9
+"Ontario","Renfrew","17-06-2021",0,9
 "Ontario","Simcoe Muskoka","08-03-2020",0,0
 "Ontario","Simcoe Muskoka","09-03-2020",0,0
 "Ontario","Simcoe Muskoka","10-03-2020",0,0
@@ -29759,6 +29885,8 @@
 "Ontario","Simcoe Muskoka","13-06-2021",0,246
 "Ontario","Simcoe Muskoka","14-06-2021",0,246
 "Ontario","Simcoe Muskoka","15-06-2021",0,246
+"Ontario","Simcoe Muskoka","16-06-2021",0,246
+"Ontario","Simcoe Muskoka","17-06-2021",0,246
 "Ontario","Southwestern","08-03-2020",0,0
 "Ontario","Southwestern","09-03-2020",0,0
 "Ontario","Southwestern","10-03-2020",0,0
@@ -30224,6 +30352,8 @@
 "Ontario","Southwestern","13-06-2021",0,83
 "Ontario","Southwestern","14-06-2021",0,83
 "Ontario","Southwestern","15-06-2021",0,83
+"Ontario","Southwestern","16-06-2021",0,83
+"Ontario","Southwestern","17-06-2021",0,83
 "Ontario","Sudbury","08-03-2020",0,0
 "Ontario","Sudbury","09-03-2020",0,0
 "Ontario","Sudbury","10-03-2020",0,0
@@ -30689,6 +30819,8 @@
 "Ontario","Sudbury","13-06-2021",0,30
 "Ontario","Sudbury","14-06-2021",0,30
 "Ontario","Sudbury","15-06-2021",0,30
+"Ontario","Sudbury","16-06-2021",0,30
+"Ontario","Sudbury","17-06-2021",0,30
 "Ontario","Thunder Bay","08-03-2020",0,0
 "Ontario","Thunder Bay","09-03-2020",0,0
 "Ontario","Thunder Bay","10-03-2020",0,0
@@ -31154,6 +31286,8 @@
 "Ontario","Thunder Bay","13-06-2021",0,63
 "Ontario","Thunder Bay","14-06-2021",0,63
 "Ontario","Thunder Bay","15-06-2021",0,63
+"Ontario","Thunder Bay","16-06-2021",0,63
+"Ontario","Thunder Bay","17-06-2021",1,64
 "Ontario","Timiskaming","08-03-2020",0,0
 "Ontario","Timiskaming","09-03-2020",0,0
 "Ontario","Timiskaming","10-03-2020",0,0
@@ -31619,6 +31753,8 @@
 "Ontario","Timiskaming","13-06-2021",0,2
 "Ontario","Timiskaming","14-06-2021",0,2
 "Ontario","Timiskaming","15-06-2021",0,2
+"Ontario","Timiskaming","16-06-2021",0,2
+"Ontario","Timiskaming","17-06-2021",0,2
 "Ontario","Toronto","08-03-2020",0,0
 "Ontario","Toronto","09-03-2020",0,0
 "Ontario","Toronto","10-03-2020",0,0
@@ -32084,6 +32220,8 @@
 "Ontario","Toronto","13-06-2021",0,3444
 "Ontario","Toronto","14-06-2021",12,3456
 "Ontario","Toronto","15-06-2021",0,3456
+"Ontario","Toronto","16-06-2021",7,3463
+"Ontario","Toronto","17-06-2021",5,3468
 "Ontario","Waterloo","08-03-2020",0,0
 "Ontario","Waterloo","09-03-2020",0,0
 "Ontario","Waterloo","10-03-2020",0,0
@@ -32549,6 +32687,8 @@
 "Ontario","Waterloo","13-06-2021",0,258
 "Ontario","Waterloo","14-06-2021",0,258
 "Ontario","Waterloo","15-06-2021",0,258
+"Ontario","Waterloo","16-06-2021",1,259
+"Ontario","Waterloo","17-06-2021",0,259
 "Ontario","Wellington Dufferin Guelph","08-03-2020",0,0
 "Ontario","Wellington Dufferin Guelph","09-03-2020",0,0
 "Ontario","Wellington Dufferin Guelph","10-03-2020",0,0
@@ -33014,6 +33154,8 @@
 "Ontario","Wellington Dufferin Guelph","13-06-2021",0,123
 "Ontario","Wellington Dufferin Guelph","14-06-2021",0,123
 "Ontario","Wellington Dufferin Guelph","15-06-2021",0,123
+"Ontario","Wellington Dufferin Guelph","16-06-2021",0,123
+"Ontario","Wellington Dufferin Guelph","17-06-2021",0,123
 "Ontario","Windsor-Essex","08-03-2020",0,0
 "Ontario","Windsor-Essex","09-03-2020",0,0
 "Ontario","Windsor-Essex","10-03-2020",0,0
@@ -33479,6 +33621,8 @@
 "Ontario","Windsor-Essex","13-06-2021",0,433
 "Ontario","Windsor-Essex","14-06-2021",0,433
 "Ontario","Windsor-Essex","15-06-2021",0,433
+"Ontario","Windsor-Essex","16-06-2021",0,433
+"Ontario","Windsor-Essex","17-06-2021",0,433
 "Ontario","York","08-03-2020",0,0
 "Ontario","York","09-03-2020",0,0
 "Ontario","York","10-03-2020",0,0
@@ -33944,6 +34088,8 @@
 "Ontario","York","13-06-2021",0,708
 "Ontario","York","14-06-2021",3,711
 "Ontario","York","15-06-2021",3,714
+"Ontario","York","16-06-2021",3,717
+"Ontario","York","17-06-2021",0,717
 "PEI","Prince Edward Island","08-03-2020",0,0
 "PEI","Prince Edward Island","09-03-2020",0,0
 "PEI","Prince Edward Island","10-03-2020",0,0
@@ -34409,6 +34555,8 @@
 "PEI","Prince Edward Island","13-06-2021",0,0
 "PEI","Prince Edward Island","14-06-2021",0,0
 "PEI","Prince Edward Island","15-06-2021",0,0
+"PEI","Prince Edward Island","16-06-2021",0,0
+"PEI","Prince Edward Island","17-06-2021",0,0
 "Quebec","Abitibi-Temiscamingue","08-03-2020",0,0
 "Quebec","Abitibi-Temiscamingue","09-03-2020",0,0
 "Quebec","Abitibi-Temiscamingue","10-03-2020",0,0
@@ -34874,6 +35022,8 @@
 "Quebec","Abitibi-Temiscamingue","13-06-2021",0,9
 "Quebec","Abitibi-Temiscamingue","14-06-2021",0,9
 "Quebec","Abitibi-Temiscamingue","15-06-2021",0,9
+"Quebec","Abitibi-Temiscamingue","16-06-2021",0,9
+"Quebec","Abitibi-Temiscamingue","17-06-2021",0,9
 "Quebec","Bas-Saint-Laurent","08-03-2020",0,0
 "Quebec","Bas-Saint-Laurent","09-03-2020",0,0
 "Quebec","Bas-Saint-Laurent","10-03-2020",0,0
@@ -35339,6 +35489,8 @@
 "Quebec","Bas-Saint-Laurent","13-06-2021",1,51
 "Quebec","Bas-Saint-Laurent","14-06-2021",0,51
 "Quebec","Bas-Saint-Laurent","15-06-2021",0,51
+"Quebec","Bas-Saint-Laurent","16-06-2021",0,51
+"Quebec","Bas-Saint-Laurent","17-06-2021",0,51
 "Quebec","Capitale-Nationale","08-03-2020",0,0
 "Quebec","Capitale-Nationale","09-03-2020",0,0
 "Quebec","Capitale-Nationale","10-03-2020",0,0
@@ -35804,6 +35956,8 @@
 "Quebec","Capitale-Nationale","13-06-2021",0,1111
 "Quebec","Capitale-Nationale","14-06-2021",0,1111
 "Quebec","Capitale-Nationale","15-06-2021",1,1112
+"Quebec","Capitale-Nationale","16-06-2021",0,1112
+"Quebec","Capitale-Nationale","17-06-2021",1,1113
 "Quebec","Chaudiere-Appalaches","08-03-2020",0,0
 "Quebec","Chaudiere-Appalaches","09-03-2020",0,0
 "Quebec","Chaudiere-Appalaches","10-03-2020",0,0
@@ -36269,6 +36423,8 @@
 "Quebec","Chaudiere-Appalaches","13-06-2021",0,357
 "Quebec","Chaudiere-Appalaches","14-06-2021",0,357
 "Quebec","Chaudiere-Appalaches","15-06-2021",0,357
+"Quebec","Chaudiere-Appalaches","16-06-2021",0,357
+"Quebec","Chaudiere-Appalaches","17-06-2021",0,357
 "Quebec","Cote-Nord","08-03-2020",0,0
 "Quebec","Cote-Nord","09-03-2020",0,0
 "Quebec","Cote-Nord","10-03-2020",0,0
@@ -36734,6 +36890,8 @@
 "Quebec","Cote-Nord","13-06-2021",0,3
 "Quebec","Cote-Nord","14-06-2021",0,3
 "Quebec","Cote-Nord","15-06-2021",0,3
+"Quebec","Cote-Nord","16-06-2021",0,3
+"Quebec","Cote-Nord","17-06-2021",0,3
 "Quebec","Estrie","08-03-2020",0,0
 "Quebec","Estrie","09-03-2020",0,0
 "Quebec","Estrie","10-03-2020",0,0
@@ -37199,471 +37357,475 @@
 "Quebec","Estrie","13-06-2021",0,350
 "Quebec","Estrie","14-06-2021",0,350
 "Quebec","Estrie","15-06-2021",1,351
-"Quebec","Gaspesie-Îles-de-la-Madeleine","08-03-2020",0,0
-"Quebec","Gaspesie-Îles-de-la-Madeleine","09-03-2020",0,0
-"Quebec","Gaspesie-Îles-de-la-Madeleine","10-03-2020",0,0
-"Quebec","Gaspesie-Îles-de-la-Madeleine","11-03-2020",0,0
-"Quebec","Gaspesie-Îles-de-la-Madeleine","12-03-2020",0,0
-"Quebec","Gaspesie-Îles-de-la-Madeleine","13-03-2020",0,0
-"Quebec","Gaspesie-Îles-de-la-Madeleine","14-03-2020",0,0
-"Quebec","Gaspesie-Îles-de-la-Madeleine","15-03-2020",0,0
-"Quebec","Gaspesie-Îles-de-la-Madeleine","16-03-2020",0,0
-"Quebec","Gaspesie-Îles-de-la-Madeleine","17-03-2020",0,0
-"Quebec","Gaspesie-Îles-de-la-Madeleine","18-03-2020",0,0
-"Quebec","Gaspesie-Îles-de-la-Madeleine","19-03-2020",0,0
-"Quebec","Gaspesie-Îles-de-la-Madeleine","20-03-2020",0,0
-"Quebec","Gaspesie-Îles-de-la-Madeleine","21-03-2020",0,0
-"Quebec","Gaspesie-Îles-de-la-Madeleine","22-03-2020",0,0
-"Quebec","Gaspesie-Îles-de-la-Madeleine","23-03-2020",0,0
-"Quebec","Gaspesie-Îles-de-la-Madeleine","24-03-2020",0,0
-"Quebec","Gaspesie-Îles-de-la-Madeleine","25-03-2020",0,0
-"Quebec","Gaspesie-Îles-de-la-Madeleine","26-03-2020",0,0
-"Quebec","Gaspesie-Îles-de-la-Madeleine","27-03-2020",0,0
-"Quebec","Gaspesie-Îles-de-la-Madeleine","28-03-2020",0,0
-"Quebec","Gaspesie-Îles-de-la-Madeleine","29-03-2020",0,0
-"Quebec","Gaspesie-Îles-de-la-Madeleine","30-03-2020",0,0
-"Quebec","Gaspesie-Îles-de-la-Madeleine","31-03-2020",0,0
-"Quebec","Gaspesie-Îles-de-la-Madeleine","01-04-2020",0,0
-"Quebec","Gaspesie-Îles-de-la-Madeleine","02-04-2020",0,0
-"Quebec","Gaspesie-Îles-de-la-Madeleine","03-04-2020",0,0
-"Quebec","Gaspesie-Îles-de-la-Madeleine","04-04-2020",0,0
-"Quebec","Gaspesie-Îles-de-la-Madeleine","05-04-2020",1,1
-"Quebec","Gaspesie-Îles-de-la-Madeleine","06-04-2020",1,2
-"Quebec","Gaspesie-Îles-de-la-Madeleine","07-04-2020",0,2
-"Quebec","Gaspesie-Îles-de-la-Madeleine","08-04-2020",1,3
-"Quebec","Gaspesie-Îles-de-la-Madeleine","09-04-2020",0,3
-"Quebec","Gaspesie-Îles-de-la-Madeleine","10-04-2020",0,3
-"Quebec","Gaspesie-Îles-de-la-Madeleine","11-04-2020",0,3
-"Quebec","Gaspesie-Îles-de-la-Madeleine","12-04-2020",0,3
-"Quebec","Gaspesie-Îles-de-la-Madeleine","13-04-2020",1,4
-"Quebec","Gaspesie-Îles-de-la-Madeleine","14-04-2020",0,4
-"Quebec","Gaspesie-Îles-de-la-Madeleine","15-04-2020",2,6
-"Quebec","Gaspesie-Îles-de-la-Madeleine","16-04-2020",0,6
-"Quebec","Gaspesie-Îles-de-la-Madeleine","17-04-2020",0,6
-"Quebec","Gaspesie-Îles-de-la-Madeleine","18-04-2020",0,6
-"Quebec","Gaspesie-Îles-de-la-Madeleine","19-04-2020",0,6
-"Quebec","Gaspesie-Îles-de-la-Madeleine","20-04-2020",0,6
-"Quebec","Gaspesie-Îles-de-la-Madeleine","21-04-2020",0,6
-"Quebec","Gaspesie-Îles-de-la-Madeleine","22-04-2020",0,6
-"Quebec","Gaspesie-Îles-de-la-Madeleine","23-04-2020",0,6
-"Quebec","Gaspesie-Îles-de-la-Madeleine","24-04-2020",0,6
-"Quebec","Gaspesie-Îles-de-la-Madeleine","25-04-2020",0,6
-"Quebec","Gaspesie-Îles-de-la-Madeleine","26-04-2020",0,6
-"Quebec","Gaspesie-Îles-de-la-Madeleine","27-04-2020",0,6
-"Quebec","Gaspesie-Îles-de-la-Madeleine","28-04-2020",0,6
-"Quebec","Gaspesie-Îles-de-la-Madeleine","29-04-2020",0,6
-"Quebec","Gaspesie-Îles-de-la-Madeleine","30-04-2020",1,7
-"Quebec","Gaspesie-Îles-de-la-Madeleine","01-05-2020",1,8
-"Quebec","Gaspesie-Îles-de-la-Madeleine","02-05-2020",0,8
-"Quebec","Gaspesie-Îles-de-la-Madeleine","03-05-2020",0,8
-"Quebec","Gaspesie-Îles-de-la-Madeleine","04-05-2020",0,8
-"Quebec","Gaspesie-Îles-de-la-Madeleine","05-05-2020",0,8
-"Quebec","Gaspesie-Îles-de-la-Madeleine","06-05-2020",0,8
-"Quebec","Gaspesie-Îles-de-la-Madeleine","07-05-2020",0,8
-"Quebec","Gaspesie-Îles-de-la-Madeleine","08-05-2020",0,8
-"Quebec","Gaspesie-Îles-de-la-Madeleine","09-05-2020",0,8
-"Quebec","Gaspesie-Îles-de-la-Madeleine","10-05-2020",0,8
-"Quebec","Gaspesie-Îles-de-la-Madeleine","11-05-2020",0,8
-"Quebec","Gaspesie-Îles-de-la-Madeleine","12-05-2020",0,8
-"Quebec","Gaspesie-Îles-de-la-Madeleine","13-05-2020",0,8
-"Quebec","Gaspesie-Îles-de-la-Madeleine","14-05-2020",0,8
-"Quebec","Gaspesie-Îles-de-la-Madeleine","15-05-2020",0,8
-"Quebec","Gaspesie-Îles-de-la-Madeleine","16-05-2020",0,8
-"Quebec","Gaspesie-Îles-de-la-Madeleine","17-05-2020",0,8
-"Quebec","Gaspesie-Îles-de-la-Madeleine","18-05-2020",0,8
-"Quebec","Gaspesie-Îles-de-la-Madeleine","19-05-2020",0,8
-"Quebec","Gaspesie-Îles-de-la-Madeleine","20-05-2020",0,8
-"Quebec","Gaspesie-Îles-de-la-Madeleine","21-05-2020",0,8
-"Quebec","Gaspesie-Îles-de-la-Madeleine","22-05-2020",0,8
-"Quebec","Gaspesie-Îles-de-la-Madeleine","23-05-2020",0,8
-"Quebec","Gaspesie-Îles-de-la-Madeleine","24-05-2020",0,8
-"Quebec","Gaspesie-Îles-de-la-Madeleine","25-05-2020",0,8
-"Quebec","Gaspesie-Îles-de-la-Madeleine","26-05-2020",0,8
-"Quebec","Gaspesie-Îles-de-la-Madeleine","27-05-2020",0,8
-"Quebec","Gaspesie-Îles-de-la-Madeleine","28-05-2020",0,8
-"Quebec","Gaspesie-Îles-de-la-Madeleine","29-05-2020",0,8
-"Quebec","Gaspesie-Îles-de-la-Madeleine","30-05-2020",0,8
-"Quebec","Gaspesie-Îles-de-la-Madeleine","31-05-2020",0,8
-"Quebec","Gaspesie-Îles-de-la-Madeleine","01-06-2020",0,8
-"Quebec","Gaspesie-Îles-de-la-Madeleine","02-06-2020",0,8
-"Quebec","Gaspesie-Îles-de-la-Madeleine","03-06-2020",0,8
-"Quebec","Gaspesie-Îles-de-la-Madeleine","04-06-2020",0,8
-"Quebec","Gaspesie-Îles-de-la-Madeleine","05-06-2020",0,8
-"Quebec","Gaspesie-Îles-de-la-Madeleine","06-06-2020",0,8
-"Quebec","Gaspesie-Îles-de-la-Madeleine","07-06-2020",0,8
-"Quebec","Gaspesie-Îles-de-la-Madeleine","08-06-2020",0,8
-"Quebec","Gaspesie-Îles-de-la-Madeleine","09-06-2020",1,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","10-06-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","11-06-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","12-06-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","13-06-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","14-06-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","15-06-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","16-06-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","17-06-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","18-06-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","19-06-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","20-06-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","21-06-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","22-06-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","23-06-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","24-06-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","25-06-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","26-06-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","27-06-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","28-06-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","29-06-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","30-06-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","01-07-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","02-07-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","03-07-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","04-07-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","05-07-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","06-07-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","07-07-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","08-07-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","09-07-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","10-07-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","11-07-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","12-07-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","13-07-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","14-07-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","15-07-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","16-07-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","17-07-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","18-07-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","19-07-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","20-07-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","21-07-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","22-07-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","23-07-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","24-07-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","25-07-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","26-07-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","27-07-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","28-07-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","29-07-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","30-07-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","31-07-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","01-08-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","02-08-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","03-08-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","04-08-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","05-08-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","06-08-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","07-08-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","08-08-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","09-08-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","10-08-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","11-08-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","12-08-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","13-08-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","14-08-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","15-08-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","16-08-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","17-08-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","18-08-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","19-08-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","20-08-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","21-08-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","22-08-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","23-08-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","24-08-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","25-08-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","26-08-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","27-08-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","28-08-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","29-08-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","30-08-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","31-08-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","01-09-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","02-09-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","03-09-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","04-09-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","05-09-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","06-09-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","07-09-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","08-09-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","09-09-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","10-09-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","11-09-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","12-09-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","13-09-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","14-09-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","15-09-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","16-09-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","17-09-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","18-09-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","19-09-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","20-09-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","21-09-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","22-09-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","23-09-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","24-09-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","25-09-2020",0,9
-"Quebec","Gaspesie-Îles-de-la-Madeleine","26-09-2020",2,11
-"Quebec","Gaspesie-Îles-de-la-Madeleine","27-09-2020",0,11
-"Quebec","Gaspesie-Îles-de-la-Madeleine","28-09-2020",0,11
-"Quebec","Gaspesie-Îles-de-la-Madeleine","29-09-2020",0,11
-"Quebec","Gaspesie-Îles-de-la-Madeleine","30-09-2020",0,11
-"Quebec","Gaspesie-Îles-de-la-Madeleine","01-10-2020",3,14
-"Quebec","Gaspesie-Îles-de-la-Madeleine","02-10-2020",0,14
-"Quebec","Gaspesie-Îles-de-la-Madeleine","03-10-2020",0,14
-"Quebec","Gaspesie-Îles-de-la-Madeleine","04-10-2020",0,14
-"Quebec","Gaspesie-Îles-de-la-Madeleine","05-10-2020",0,14
-"Quebec","Gaspesie-Îles-de-la-Madeleine","06-10-2020",1,15
-"Quebec","Gaspesie-Îles-de-la-Madeleine","07-10-2020",2,17
-"Quebec","Gaspesie-Îles-de-la-Madeleine","08-10-2020",0,17
-"Quebec","Gaspesie-Îles-de-la-Madeleine","09-10-2020",1,18
-"Quebec","Gaspesie-Îles-de-la-Madeleine","10-10-2020",0,18
-"Quebec","Gaspesie-Îles-de-la-Madeleine","11-10-2020",0,18
-"Quebec","Gaspesie-Îles-de-la-Madeleine","12-10-2020",0,18
-"Quebec","Gaspesie-Îles-de-la-Madeleine","13-10-2020",0,18
-"Quebec","Gaspesie-Îles-de-la-Madeleine","14-10-2020",0,18
-"Quebec","Gaspesie-Îles-de-la-Madeleine","15-10-2020",3,21
-"Quebec","Gaspesie-Îles-de-la-Madeleine","16-10-2020",0,21
-"Quebec","Gaspesie-Îles-de-la-Madeleine","17-10-2020",1,22
-"Quebec","Gaspesie-Îles-de-la-Madeleine","18-10-2020",0,22
-"Quebec","Gaspesie-Îles-de-la-Madeleine","19-10-2020",0,22
-"Quebec","Gaspesie-Îles-de-la-Madeleine","20-10-2020",0,22
-"Quebec","Gaspesie-Îles-de-la-Madeleine","21-10-2020",0,22
-"Quebec","Gaspesie-Îles-de-la-Madeleine","22-10-2020",0,22
-"Quebec","Gaspesie-Îles-de-la-Madeleine","23-10-2020",0,22
-"Quebec","Gaspesie-Îles-de-la-Madeleine","24-10-2020",0,22
-"Quebec","Gaspesie-Îles-de-la-Madeleine","25-10-2020",0,22
-"Quebec","Gaspesie-Îles-de-la-Madeleine","26-10-2020",0,22
-"Quebec","Gaspesie-Îles-de-la-Madeleine","27-10-2020",0,22
-"Quebec","Gaspesie-Îles-de-la-Madeleine","28-10-2020",2,24
-"Quebec","Gaspesie-Îles-de-la-Madeleine","29-10-2020",2,26
-"Quebec","Gaspesie-Îles-de-la-Madeleine","30-10-2020",0,26
-"Quebec","Gaspesie-Îles-de-la-Madeleine","31-10-2020",0,26
-"Quebec","Gaspesie-Îles-de-la-Madeleine","01-11-2020",1,27
-"Quebec","Gaspesie-Îles-de-la-Madeleine","02-11-2020",0,27
-"Quebec","Gaspesie-Îles-de-la-Madeleine","03-11-2020",0,27
-"Quebec","Gaspesie-Îles-de-la-Madeleine","04-11-2020",1,28
-"Quebec","Gaspesie-Îles-de-la-Madeleine","05-11-2020",0,28
-"Quebec","Gaspesie-Îles-de-la-Madeleine","06-11-2020",1,29
-"Quebec","Gaspesie-Îles-de-la-Madeleine","07-11-2020",0,29
-"Quebec","Gaspesie-Îles-de-la-Madeleine","08-11-2020",0,29
-"Quebec","Gaspesie-Îles-de-la-Madeleine","09-11-2020",0,29
-"Quebec","Gaspesie-Îles-de-la-Madeleine","10-11-2020",0,29
-"Quebec","Gaspesie-Îles-de-la-Madeleine","11-11-2020",0,29
-"Quebec","Gaspesie-Îles-de-la-Madeleine","12-11-2020",1,30
-"Quebec","Gaspesie-Îles-de-la-Madeleine","13-11-2020",0,30
-"Quebec","Gaspesie-Îles-de-la-Madeleine","14-11-2020",2,32
-"Quebec","Gaspesie-Îles-de-la-Madeleine","15-11-2020",1,33
-"Quebec","Gaspesie-Îles-de-la-Madeleine","16-11-2020",0,33
-"Quebec","Gaspesie-Îles-de-la-Madeleine","17-11-2020",3,36
-"Quebec","Gaspesie-Îles-de-la-Madeleine","18-11-2020",1,37
-"Quebec","Gaspesie-Îles-de-la-Madeleine","19-11-2020",0,37
-"Quebec","Gaspesie-Îles-de-la-Madeleine","20-11-2020",0,37
-"Quebec","Gaspesie-Îles-de-la-Madeleine","21-11-2020",0,37
-"Quebec","Gaspesie-Îles-de-la-Madeleine","22-11-2020",0,37
-"Quebec","Gaspesie-Îles-de-la-Madeleine","23-11-2020",0,37
-"Quebec","Gaspesie-Îles-de-la-Madeleine","24-11-2020",1,38
-"Quebec","Gaspesie-Îles-de-la-Madeleine","25-11-2020",1,39
-"Quebec","Gaspesie-Îles-de-la-Madeleine","26-11-2020",1,40
-"Quebec","Gaspesie-Îles-de-la-Madeleine","27-11-2020",0,40
-"Quebec","Gaspesie-Îles-de-la-Madeleine","28-11-2020",0,40
-"Quebec","Gaspesie-Îles-de-la-Madeleine","29-11-2020",0,40
-"Quebec","Gaspesie-Îles-de-la-Madeleine","30-11-2020",0,40
-"Quebec","Gaspesie-Îles-de-la-Madeleine","01-12-2020",0,40
-"Quebec","Gaspesie-Îles-de-la-Madeleine","02-12-2020",0,40
-"Quebec","Gaspesie-Îles-de-la-Madeleine","03-12-2020",0,40
-"Quebec","Gaspesie-Îles-de-la-Madeleine","04-12-2020",0,40
-"Quebec","Gaspesie-Îles-de-la-Madeleine","05-12-2020",0,40
-"Quebec","Gaspesie-Îles-de-la-Madeleine","06-12-2020",0,40
-"Quebec","Gaspesie-Îles-de-la-Madeleine","07-12-2020",1,41
-"Quebec","Gaspesie-Îles-de-la-Madeleine","08-12-2020",0,41
-"Quebec","Gaspesie-Îles-de-la-Madeleine","09-12-2020",0,41
-"Quebec","Gaspesie-Îles-de-la-Madeleine","10-12-2020",1,42
-"Quebec","Gaspesie-Îles-de-la-Madeleine","11-12-2020",0,42
-"Quebec","Gaspesie-Îles-de-la-Madeleine","12-12-2020",0,42
-"Quebec","Gaspesie-Îles-de-la-Madeleine","13-12-2020",0,42
-"Quebec","Gaspesie-Îles-de-la-Madeleine","14-12-2020",0,42
-"Quebec","Gaspesie-Îles-de-la-Madeleine","15-12-2020",0,42
-"Quebec","Gaspesie-Îles-de-la-Madeleine","16-12-2020",0,42
-"Quebec","Gaspesie-Îles-de-la-Madeleine","17-12-2020",0,42
-"Quebec","Gaspesie-Îles-de-la-Madeleine","18-12-2020",0,42
-"Quebec","Gaspesie-Îles-de-la-Madeleine","19-12-2020",0,42
-"Quebec","Gaspesie-Îles-de-la-Madeleine","20-12-2020",0,42
-"Quebec","Gaspesie-Îles-de-la-Madeleine","21-12-2020",0,42
-"Quebec","Gaspesie-Îles-de-la-Madeleine","22-12-2020",0,42
-"Quebec","Gaspesie-Îles-de-la-Madeleine","23-12-2020",0,42
-"Quebec","Gaspesie-Îles-de-la-Madeleine","24-12-2020",0,42
-"Quebec","Gaspesie-Îles-de-la-Madeleine","25-12-2020",0,42
-"Quebec","Gaspesie-Îles-de-la-Madeleine","26-12-2020",0,42
-"Quebec","Gaspesie-Îles-de-la-Madeleine","27-12-2020",0,42
-"Quebec","Gaspesie-Îles-de-la-Madeleine","28-12-2020",0,42
-"Quebec","Gaspesie-Îles-de-la-Madeleine","29-12-2020",0,42
-"Quebec","Gaspesie-Îles-de-la-Madeleine","30-12-2020",0,42
-"Quebec","Gaspesie-Îles-de-la-Madeleine","31-12-2020",1,43
-"Quebec","Gaspesie-Îles-de-la-Madeleine","01-01-2021",0,43
-"Quebec","Gaspesie-Îles-de-la-Madeleine","02-01-2021",0,43
-"Quebec","Gaspesie-Îles-de-la-Madeleine","03-01-2021",0,43
-"Quebec","Gaspesie-Îles-de-la-Madeleine","04-01-2021",0,43
-"Quebec","Gaspesie-Îles-de-la-Madeleine","05-01-2021",0,43
-"Quebec","Gaspesie-Îles-de-la-Madeleine","06-01-2021",0,43
-"Quebec","Gaspesie-Îles-de-la-Madeleine","07-01-2021",0,43
-"Quebec","Gaspesie-Îles-de-la-Madeleine","08-01-2021",0,43
-"Quebec","Gaspesie-Îles-de-la-Madeleine","09-01-2021",0,43
-"Quebec","Gaspesie-Îles-de-la-Madeleine","10-01-2021",0,43
-"Quebec","Gaspesie-Îles-de-la-Madeleine","11-01-2021",0,43
-"Quebec","Gaspesie-Îles-de-la-Madeleine","12-01-2021",0,43
-"Quebec","Gaspesie-Îles-de-la-Madeleine","13-01-2021",0,43
-"Quebec","Gaspesie-Îles-de-la-Madeleine","14-01-2021",0,43
-"Quebec","Gaspesie-Îles-de-la-Madeleine","15-01-2021",0,43
-"Quebec","Gaspesie-Îles-de-la-Madeleine","16-01-2021",1,44
-"Quebec","Gaspesie-Îles-de-la-Madeleine","17-01-2021",1,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","18-01-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","19-01-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","20-01-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","21-01-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","22-01-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","23-01-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","24-01-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","25-01-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","26-01-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","27-01-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","28-01-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","29-01-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","30-01-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","31-01-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","01-02-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","02-02-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","03-02-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","04-02-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","05-02-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","06-02-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","07-02-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","08-02-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","09-02-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","10-02-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","11-02-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","12-02-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","13-02-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","14-02-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","15-02-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","16-02-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","17-02-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","18-02-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","19-02-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","20-02-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","21-02-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","22-02-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","23-02-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","24-02-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","25-02-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","26-02-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","27-02-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","28-02-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","01-03-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","02-03-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","03-03-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","04-03-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","05-03-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","06-03-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","07-03-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","08-03-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","09-03-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","10-03-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","11-03-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","12-03-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","13-03-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","14-03-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","15-03-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","16-03-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","17-03-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","18-03-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","19-03-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","20-03-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","21-03-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","22-03-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","23-03-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","24-03-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","25-03-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","26-03-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","27-03-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","28-03-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","29-03-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","30-03-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","31-03-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","01-04-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","02-04-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","03-04-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","04-04-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","05-04-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","06-04-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","07-04-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","08-04-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","09-04-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","10-04-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","11-04-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","12-04-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","13-04-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","14-04-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","15-04-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","16-04-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","17-04-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","18-04-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","19-04-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","20-04-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","21-04-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","22-04-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","23-04-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","24-04-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","25-04-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","26-04-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","27-04-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","28-04-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","29-04-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","30-04-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","01-05-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","02-05-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","03-05-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","04-05-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","05-05-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","06-05-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","07-05-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","08-05-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","09-05-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","10-05-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","11-05-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","12-05-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","13-05-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","14-05-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","15-05-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","16-05-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","17-05-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","18-05-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","19-05-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","20-05-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","21-05-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","22-05-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","23-05-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","24-05-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","25-05-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","26-05-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","27-05-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","28-05-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","29-05-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","30-05-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","31-05-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","01-06-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","02-06-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","03-06-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","04-06-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","05-06-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","06-06-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","07-06-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","08-06-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","09-06-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","10-06-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","11-06-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","12-06-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","13-06-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","14-06-2021",0,45
-"Quebec","Gaspesie-Îles-de-la-Madeleine","15-06-2021",0,45
+"Quebec","Estrie","16-06-2021",0,351
+"Quebec","Estrie","17-06-2021",0,351
+"Quebec","Gaspesie-Iles-de-la-Madeleine","08-03-2020",0,0
+"Quebec","Gaspesie-Iles-de-la-Madeleine","09-03-2020",0,0
+"Quebec","Gaspesie-Iles-de-la-Madeleine","10-03-2020",0,0
+"Quebec","Gaspesie-Iles-de-la-Madeleine","11-03-2020",0,0
+"Quebec","Gaspesie-Iles-de-la-Madeleine","12-03-2020",0,0
+"Quebec","Gaspesie-Iles-de-la-Madeleine","13-03-2020",0,0
+"Quebec","Gaspesie-Iles-de-la-Madeleine","14-03-2020",0,0
+"Quebec","Gaspesie-Iles-de-la-Madeleine","15-03-2020",0,0
+"Quebec","Gaspesie-Iles-de-la-Madeleine","16-03-2020",0,0
+"Quebec","Gaspesie-Iles-de-la-Madeleine","17-03-2020",0,0
+"Quebec","Gaspesie-Iles-de-la-Madeleine","18-03-2020",0,0
+"Quebec","Gaspesie-Iles-de-la-Madeleine","19-03-2020",0,0
+"Quebec","Gaspesie-Iles-de-la-Madeleine","20-03-2020",0,0
+"Quebec","Gaspesie-Iles-de-la-Madeleine","21-03-2020",0,0
+"Quebec","Gaspesie-Iles-de-la-Madeleine","22-03-2020",0,0
+"Quebec","Gaspesie-Iles-de-la-Madeleine","23-03-2020",0,0
+"Quebec","Gaspesie-Iles-de-la-Madeleine","24-03-2020",0,0
+"Quebec","Gaspesie-Iles-de-la-Madeleine","25-03-2020",0,0
+"Quebec","Gaspesie-Iles-de-la-Madeleine","26-03-2020",0,0
+"Quebec","Gaspesie-Iles-de-la-Madeleine","27-03-2020",0,0
+"Quebec","Gaspesie-Iles-de-la-Madeleine","28-03-2020",0,0
+"Quebec","Gaspesie-Iles-de-la-Madeleine","29-03-2020",0,0
+"Quebec","Gaspesie-Iles-de-la-Madeleine","30-03-2020",0,0
+"Quebec","Gaspesie-Iles-de-la-Madeleine","31-03-2020",0,0
+"Quebec","Gaspesie-Iles-de-la-Madeleine","01-04-2020",0,0
+"Quebec","Gaspesie-Iles-de-la-Madeleine","02-04-2020",0,0
+"Quebec","Gaspesie-Iles-de-la-Madeleine","03-04-2020",0,0
+"Quebec","Gaspesie-Iles-de-la-Madeleine","04-04-2020",0,0
+"Quebec","Gaspesie-Iles-de-la-Madeleine","05-04-2020",1,1
+"Quebec","Gaspesie-Iles-de-la-Madeleine","06-04-2020",1,2
+"Quebec","Gaspesie-Iles-de-la-Madeleine","07-04-2020",0,2
+"Quebec","Gaspesie-Iles-de-la-Madeleine","08-04-2020",1,3
+"Quebec","Gaspesie-Iles-de-la-Madeleine","09-04-2020",0,3
+"Quebec","Gaspesie-Iles-de-la-Madeleine","10-04-2020",0,3
+"Quebec","Gaspesie-Iles-de-la-Madeleine","11-04-2020",0,3
+"Quebec","Gaspesie-Iles-de-la-Madeleine","12-04-2020",0,3
+"Quebec","Gaspesie-Iles-de-la-Madeleine","13-04-2020",1,4
+"Quebec","Gaspesie-Iles-de-la-Madeleine","14-04-2020",0,4
+"Quebec","Gaspesie-Iles-de-la-Madeleine","15-04-2020",2,6
+"Quebec","Gaspesie-Iles-de-la-Madeleine","16-04-2020",0,6
+"Quebec","Gaspesie-Iles-de-la-Madeleine","17-04-2020",0,6
+"Quebec","Gaspesie-Iles-de-la-Madeleine","18-04-2020",0,6
+"Quebec","Gaspesie-Iles-de-la-Madeleine","19-04-2020",0,6
+"Quebec","Gaspesie-Iles-de-la-Madeleine","20-04-2020",0,6
+"Quebec","Gaspesie-Iles-de-la-Madeleine","21-04-2020",0,6
+"Quebec","Gaspesie-Iles-de-la-Madeleine","22-04-2020",0,6
+"Quebec","Gaspesie-Iles-de-la-Madeleine","23-04-2020",0,6
+"Quebec","Gaspesie-Iles-de-la-Madeleine","24-04-2020",0,6
+"Quebec","Gaspesie-Iles-de-la-Madeleine","25-04-2020",0,6
+"Quebec","Gaspesie-Iles-de-la-Madeleine","26-04-2020",0,6
+"Quebec","Gaspesie-Iles-de-la-Madeleine","27-04-2020",0,6
+"Quebec","Gaspesie-Iles-de-la-Madeleine","28-04-2020",0,6
+"Quebec","Gaspesie-Iles-de-la-Madeleine","29-04-2020",0,6
+"Quebec","Gaspesie-Iles-de-la-Madeleine","30-04-2020",1,7
+"Quebec","Gaspesie-Iles-de-la-Madeleine","01-05-2020",1,8
+"Quebec","Gaspesie-Iles-de-la-Madeleine","02-05-2020",0,8
+"Quebec","Gaspesie-Iles-de-la-Madeleine","03-05-2020",0,8
+"Quebec","Gaspesie-Iles-de-la-Madeleine","04-05-2020",0,8
+"Quebec","Gaspesie-Iles-de-la-Madeleine","05-05-2020",0,8
+"Quebec","Gaspesie-Iles-de-la-Madeleine","06-05-2020",0,8
+"Quebec","Gaspesie-Iles-de-la-Madeleine","07-05-2020",0,8
+"Quebec","Gaspesie-Iles-de-la-Madeleine","08-05-2020",0,8
+"Quebec","Gaspesie-Iles-de-la-Madeleine","09-05-2020",0,8
+"Quebec","Gaspesie-Iles-de-la-Madeleine","10-05-2020",0,8
+"Quebec","Gaspesie-Iles-de-la-Madeleine","11-05-2020",0,8
+"Quebec","Gaspesie-Iles-de-la-Madeleine","12-05-2020",0,8
+"Quebec","Gaspesie-Iles-de-la-Madeleine","13-05-2020",0,8
+"Quebec","Gaspesie-Iles-de-la-Madeleine","14-05-2020",0,8
+"Quebec","Gaspesie-Iles-de-la-Madeleine","15-05-2020",0,8
+"Quebec","Gaspesie-Iles-de-la-Madeleine","16-05-2020",0,8
+"Quebec","Gaspesie-Iles-de-la-Madeleine","17-05-2020",0,8
+"Quebec","Gaspesie-Iles-de-la-Madeleine","18-05-2020",0,8
+"Quebec","Gaspesie-Iles-de-la-Madeleine","19-05-2020",0,8
+"Quebec","Gaspesie-Iles-de-la-Madeleine","20-05-2020",0,8
+"Quebec","Gaspesie-Iles-de-la-Madeleine","21-05-2020",0,8
+"Quebec","Gaspesie-Iles-de-la-Madeleine","22-05-2020",0,8
+"Quebec","Gaspesie-Iles-de-la-Madeleine","23-05-2020",0,8
+"Quebec","Gaspesie-Iles-de-la-Madeleine","24-05-2020",0,8
+"Quebec","Gaspesie-Iles-de-la-Madeleine","25-05-2020",0,8
+"Quebec","Gaspesie-Iles-de-la-Madeleine","26-05-2020",0,8
+"Quebec","Gaspesie-Iles-de-la-Madeleine","27-05-2020",0,8
+"Quebec","Gaspesie-Iles-de-la-Madeleine","28-05-2020",0,8
+"Quebec","Gaspesie-Iles-de-la-Madeleine","29-05-2020",0,8
+"Quebec","Gaspesie-Iles-de-la-Madeleine","30-05-2020",0,8
+"Quebec","Gaspesie-Iles-de-la-Madeleine","31-05-2020",0,8
+"Quebec","Gaspesie-Iles-de-la-Madeleine","01-06-2020",0,8
+"Quebec","Gaspesie-Iles-de-la-Madeleine","02-06-2020",0,8
+"Quebec","Gaspesie-Iles-de-la-Madeleine","03-06-2020",0,8
+"Quebec","Gaspesie-Iles-de-la-Madeleine","04-06-2020",0,8
+"Quebec","Gaspesie-Iles-de-la-Madeleine","05-06-2020",0,8
+"Quebec","Gaspesie-Iles-de-la-Madeleine","06-06-2020",0,8
+"Quebec","Gaspesie-Iles-de-la-Madeleine","07-06-2020",0,8
+"Quebec","Gaspesie-Iles-de-la-Madeleine","08-06-2020",0,8
+"Quebec","Gaspesie-Iles-de-la-Madeleine","09-06-2020",1,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","10-06-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","11-06-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","12-06-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","13-06-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","14-06-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","15-06-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","16-06-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","17-06-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","18-06-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","19-06-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","20-06-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","21-06-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","22-06-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","23-06-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","24-06-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","25-06-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","26-06-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","27-06-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","28-06-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","29-06-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","30-06-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","01-07-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","02-07-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","03-07-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","04-07-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","05-07-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","06-07-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","07-07-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","08-07-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","09-07-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","10-07-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","11-07-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","12-07-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","13-07-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","14-07-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","15-07-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","16-07-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","17-07-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","18-07-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","19-07-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","20-07-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","21-07-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","22-07-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","23-07-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","24-07-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","25-07-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","26-07-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","27-07-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","28-07-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","29-07-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","30-07-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","31-07-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","01-08-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","02-08-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","03-08-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","04-08-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","05-08-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","06-08-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","07-08-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","08-08-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","09-08-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","10-08-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","11-08-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","12-08-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","13-08-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","14-08-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","15-08-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","16-08-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","17-08-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","18-08-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","19-08-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","20-08-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","21-08-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","22-08-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","23-08-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","24-08-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","25-08-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","26-08-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","27-08-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","28-08-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","29-08-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","30-08-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","31-08-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","01-09-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","02-09-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","03-09-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","04-09-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","05-09-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","06-09-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","07-09-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","08-09-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","09-09-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","10-09-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","11-09-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","12-09-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","13-09-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","14-09-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","15-09-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","16-09-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","17-09-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","18-09-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","19-09-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","20-09-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","21-09-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","22-09-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","23-09-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","24-09-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","25-09-2020",0,9
+"Quebec","Gaspesie-Iles-de-la-Madeleine","26-09-2020",2,11
+"Quebec","Gaspesie-Iles-de-la-Madeleine","27-09-2020",0,11
+"Quebec","Gaspesie-Iles-de-la-Madeleine","28-09-2020",0,11
+"Quebec","Gaspesie-Iles-de-la-Madeleine","29-09-2020",0,11
+"Quebec","Gaspesie-Iles-de-la-Madeleine","30-09-2020",0,11
+"Quebec","Gaspesie-Iles-de-la-Madeleine","01-10-2020",3,14
+"Quebec","Gaspesie-Iles-de-la-Madeleine","02-10-2020",0,14
+"Quebec","Gaspesie-Iles-de-la-Madeleine","03-10-2020",0,14
+"Quebec","Gaspesie-Iles-de-la-Madeleine","04-10-2020",0,14
+"Quebec","Gaspesie-Iles-de-la-Madeleine","05-10-2020",0,14
+"Quebec","Gaspesie-Iles-de-la-Madeleine","06-10-2020",1,15
+"Quebec","Gaspesie-Iles-de-la-Madeleine","07-10-2020",2,17
+"Quebec","Gaspesie-Iles-de-la-Madeleine","08-10-2020",0,17
+"Quebec","Gaspesie-Iles-de-la-Madeleine","09-10-2020",1,18
+"Quebec","Gaspesie-Iles-de-la-Madeleine","10-10-2020",0,18
+"Quebec","Gaspesie-Iles-de-la-Madeleine","11-10-2020",0,18
+"Quebec","Gaspesie-Iles-de-la-Madeleine","12-10-2020",0,18
+"Quebec","Gaspesie-Iles-de-la-Madeleine","13-10-2020",0,18
+"Quebec","Gaspesie-Iles-de-la-Madeleine","14-10-2020",0,18
+"Quebec","Gaspesie-Iles-de-la-Madeleine","15-10-2020",3,21
+"Quebec","Gaspesie-Iles-de-la-Madeleine","16-10-2020",0,21
+"Quebec","Gaspesie-Iles-de-la-Madeleine","17-10-2020",1,22
+"Quebec","Gaspesie-Iles-de-la-Madeleine","18-10-2020",0,22
+"Quebec","Gaspesie-Iles-de-la-Madeleine","19-10-2020",0,22
+"Quebec","Gaspesie-Iles-de-la-Madeleine","20-10-2020",0,22
+"Quebec","Gaspesie-Iles-de-la-Madeleine","21-10-2020",0,22
+"Quebec","Gaspesie-Iles-de-la-Madeleine","22-10-2020",0,22
+"Quebec","Gaspesie-Iles-de-la-Madeleine","23-10-2020",0,22
+"Quebec","Gaspesie-Iles-de-la-Madeleine","24-10-2020",0,22
+"Quebec","Gaspesie-Iles-de-la-Madeleine","25-10-2020",0,22
+"Quebec","Gaspesie-Iles-de-la-Madeleine","26-10-2020",0,22
+"Quebec","Gaspesie-Iles-de-la-Madeleine","27-10-2020",0,22
+"Quebec","Gaspesie-Iles-de-la-Madeleine","28-10-2020",2,24
+"Quebec","Gaspesie-Iles-de-la-Madeleine","29-10-2020",2,26
+"Quebec","Gaspesie-Iles-de-la-Madeleine","30-10-2020",0,26
+"Quebec","Gaspesie-Iles-de-la-Madeleine","31-10-2020",0,26
+"Quebec","Gaspesie-Iles-de-la-Madeleine","01-11-2020",1,27
+"Quebec","Gaspesie-Iles-de-la-Madeleine","02-11-2020",0,27
+"Quebec","Gaspesie-Iles-de-la-Madeleine","03-11-2020",0,27
+"Quebec","Gaspesie-Iles-de-la-Madeleine","04-11-2020",1,28
+"Quebec","Gaspesie-Iles-de-la-Madeleine","05-11-2020",0,28
+"Quebec","Gaspesie-Iles-de-la-Madeleine","06-11-2020",1,29
+"Quebec","Gaspesie-Iles-de-la-Madeleine","07-11-2020",0,29
+"Quebec","Gaspesie-Iles-de-la-Madeleine","08-11-2020",0,29
+"Quebec","Gaspesie-Iles-de-la-Madeleine","09-11-2020",0,29
+"Quebec","Gaspesie-Iles-de-la-Madeleine","10-11-2020",0,29
+"Quebec","Gaspesie-Iles-de-la-Madeleine","11-11-2020",0,29
+"Quebec","Gaspesie-Iles-de-la-Madeleine","12-11-2020",1,30
+"Quebec","Gaspesie-Iles-de-la-Madeleine","13-11-2020",0,30
+"Quebec","Gaspesie-Iles-de-la-Madeleine","14-11-2020",2,32
+"Quebec","Gaspesie-Iles-de-la-Madeleine","15-11-2020",1,33
+"Quebec","Gaspesie-Iles-de-la-Madeleine","16-11-2020",0,33
+"Quebec","Gaspesie-Iles-de-la-Madeleine","17-11-2020",3,36
+"Quebec","Gaspesie-Iles-de-la-Madeleine","18-11-2020",1,37
+"Quebec","Gaspesie-Iles-de-la-Madeleine","19-11-2020",0,37
+"Quebec","Gaspesie-Iles-de-la-Madeleine","20-11-2020",0,37
+"Quebec","Gaspesie-Iles-de-la-Madeleine","21-11-2020",0,37
+"Quebec","Gaspesie-Iles-de-la-Madeleine","22-11-2020",0,37
+"Quebec","Gaspesie-Iles-de-la-Madeleine","23-11-2020",0,37
+"Quebec","Gaspesie-Iles-de-la-Madeleine","24-11-2020",1,38
+"Quebec","Gaspesie-Iles-de-la-Madeleine","25-11-2020",1,39
+"Quebec","Gaspesie-Iles-de-la-Madeleine","26-11-2020",1,40
+"Quebec","Gaspesie-Iles-de-la-Madeleine","27-11-2020",0,40
+"Quebec","Gaspesie-Iles-de-la-Madeleine","28-11-2020",0,40
+"Quebec","Gaspesie-Iles-de-la-Madeleine","29-11-2020",0,40
+"Quebec","Gaspesie-Iles-de-la-Madeleine","30-11-2020",0,40
+"Quebec","Gaspesie-Iles-de-la-Madeleine","01-12-2020",0,40
+"Quebec","Gaspesie-Iles-de-la-Madeleine","02-12-2020",0,40
+"Quebec","Gaspesie-Iles-de-la-Madeleine","03-12-2020",0,40
+"Quebec","Gaspesie-Iles-de-la-Madeleine","04-12-2020",0,40
+"Quebec","Gaspesie-Iles-de-la-Madeleine","05-12-2020",0,40
+"Quebec","Gaspesie-Iles-de-la-Madeleine","06-12-2020",0,40
+"Quebec","Gaspesie-Iles-de-la-Madeleine","07-12-2020",1,41
+"Quebec","Gaspesie-Iles-de-la-Madeleine","08-12-2020",0,41
+"Quebec","Gaspesie-Iles-de-la-Madeleine","09-12-2020",0,41
+"Quebec","Gaspesie-Iles-de-la-Madeleine","10-12-2020",1,42
+"Quebec","Gaspesie-Iles-de-la-Madeleine","11-12-2020",0,42
+"Quebec","Gaspesie-Iles-de-la-Madeleine","12-12-2020",0,42
+"Quebec","Gaspesie-Iles-de-la-Madeleine","13-12-2020",0,42
+"Quebec","Gaspesie-Iles-de-la-Madeleine","14-12-2020",0,42
+"Quebec","Gaspesie-Iles-de-la-Madeleine","15-12-2020",0,42
+"Quebec","Gaspesie-Iles-de-la-Madeleine","16-12-2020",0,42
+"Quebec","Gaspesie-Iles-de-la-Madeleine","17-12-2020",0,42
+"Quebec","Gaspesie-Iles-de-la-Madeleine","18-12-2020",0,42
+"Quebec","Gaspesie-Iles-de-la-Madeleine","19-12-2020",0,42
+"Quebec","Gaspesie-Iles-de-la-Madeleine","20-12-2020",0,42
+"Quebec","Gaspesie-Iles-de-la-Madeleine","21-12-2020",0,42
+"Quebec","Gaspesie-Iles-de-la-Madeleine","22-12-2020",0,42
+"Quebec","Gaspesie-Iles-de-la-Madeleine","23-12-2020",0,42
+"Quebec","Gaspesie-Iles-de-la-Madeleine","24-12-2020",0,42
+"Quebec","Gaspesie-Iles-de-la-Madeleine","25-12-2020",0,42
+"Quebec","Gaspesie-Iles-de-la-Madeleine","26-12-2020",0,42
+"Quebec","Gaspesie-Iles-de-la-Madeleine","27-12-2020",0,42
+"Quebec","Gaspesie-Iles-de-la-Madeleine","28-12-2020",0,42
+"Quebec","Gaspesie-Iles-de-la-Madeleine","29-12-2020",0,42
+"Quebec","Gaspesie-Iles-de-la-Madeleine","30-12-2020",0,42
+"Quebec","Gaspesie-Iles-de-la-Madeleine","31-12-2020",1,43
+"Quebec","Gaspesie-Iles-de-la-Madeleine","01-01-2021",0,43
+"Quebec","Gaspesie-Iles-de-la-Madeleine","02-01-2021",0,43
+"Quebec","Gaspesie-Iles-de-la-Madeleine","03-01-2021",0,43
+"Quebec","Gaspesie-Iles-de-la-Madeleine","04-01-2021",0,43
+"Quebec","Gaspesie-Iles-de-la-Madeleine","05-01-2021",0,43
+"Quebec","Gaspesie-Iles-de-la-Madeleine","06-01-2021",0,43
+"Quebec","Gaspesie-Iles-de-la-Madeleine","07-01-2021",0,43
+"Quebec","Gaspesie-Iles-de-la-Madeleine","08-01-2021",0,43
+"Quebec","Gaspesie-Iles-de-la-Madeleine","09-01-2021",0,43
+"Quebec","Gaspesie-Iles-de-la-Madeleine","10-01-2021",0,43
+"Quebec","Gaspesie-Iles-de-la-Madeleine","11-01-2021",0,43
+"Quebec","Gaspesie-Iles-de-la-Madeleine","12-01-2021",0,43
+"Quebec","Gaspesie-Iles-de-la-Madeleine","13-01-2021",0,43
+"Quebec","Gaspesie-Iles-de-la-Madeleine","14-01-2021",0,43
+"Quebec","Gaspesie-Iles-de-la-Madeleine","15-01-2021",0,43
+"Quebec","Gaspesie-Iles-de-la-Madeleine","16-01-2021",1,44
+"Quebec","Gaspesie-Iles-de-la-Madeleine","17-01-2021",1,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","18-01-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","19-01-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","20-01-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","21-01-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","22-01-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","23-01-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","24-01-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","25-01-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","26-01-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","27-01-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","28-01-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","29-01-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","30-01-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","31-01-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","01-02-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","02-02-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","03-02-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","04-02-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","05-02-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","06-02-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","07-02-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","08-02-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","09-02-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","10-02-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","11-02-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","12-02-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","13-02-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","14-02-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","15-02-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","16-02-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","17-02-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","18-02-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","19-02-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","20-02-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","21-02-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","22-02-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","23-02-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","24-02-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","25-02-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","26-02-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","27-02-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","28-02-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","01-03-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","02-03-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","03-03-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","04-03-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","05-03-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","06-03-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","07-03-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","08-03-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","09-03-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","10-03-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","11-03-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","12-03-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","13-03-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","14-03-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","15-03-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","16-03-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","17-03-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","18-03-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","19-03-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","20-03-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","21-03-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","22-03-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","23-03-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","24-03-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","25-03-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","26-03-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","27-03-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","28-03-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","29-03-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","30-03-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","31-03-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","01-04-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","02-04-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","03-04-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","04-04-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","05-04-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","06-04-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","07-04-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","08-04-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","09-04-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","10-04-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","11-04-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","12-04-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","13-04-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","14-04-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","15-04-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","16-04-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","17-04-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","18-04-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","19-04-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","20-04-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","21-04-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","22-04-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","23-04-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","24-04-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","25-04-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","26-04-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","27-04-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","28-04-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","29-04-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","30-04-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","01-05-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","02-05-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","03-05-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","04-05-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","05-05-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","06-05-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","07-05-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","08-05-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","09-05-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","10-05-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","11-05-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","12-05-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","13-05-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","14-05-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","15-05-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","16-05-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","17-05-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","18-05-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","19-05-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","20-05-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","21-05-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","22-05-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","23-05-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","24-05-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","25-05-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","26-05-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","27-05-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","28-05-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","29-05-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","30-05-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","31-05-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","01-06-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","02-06-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","03-06-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","04-06-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","05-06-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","06-06-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","07-06-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","08-06-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","09-06-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","10-06-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","11-06-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","12-06-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","13-06-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","14-06-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","15-06-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","16-06-2021",0,45
+"Quebec","Gaspesie-Iles-de-la-Madeleine","17-06-2021",0,45
 "Quebec","Lanaudiere","08-03-2020",0,0
 "Quebec","Lanaudiere","09-03-2020",0,0
 "Quebec","Lanaudiere","10-03-2020",0,0
@@ -38129,6 +38291,8 @@
 "Quebec","Lanaudiere","13-06-2021",0,516
 "Quebec","Lanaudiere","14-06-2021",0,516
 "Quebec","Lanaudiere","15-06-2021",0,516
+"Quebec","Lanaudiere","16-06-2021",0,516
+"Quebec","Lanaudiere","17-06-2021",0,516
 "Quebec","Laurentides","08-03-2020",0,0
 "Quebec","Laurentides","09-03-2020",0,0
 "Quebec","Laurentides","10-03-2020",0,0
@@ -38594,6 +38758,8 @@
 "Quebec","Laurentides","13-06-2021",0,506
 "Quebec","Laurentides","14-06-2021",0,506
 "Quebec","Laurentides","15-06-2021",0,506
+"Quebec","Laurentides","16-06-2021",0,506
+"Quebec","Laurentides","17-06-2021",0,506
 "Quebec","Laval","08-03-2020",0,0
 "Quebec","Laval","09-03-2020",0,0
 "Quebec","Laval","10-03-2020",0,0
@@ -39059,6 +39225,8 @@
 "Quebec","Laval","13-06-2021",0,911
 "Quebec","Laval","14-06-2021",0,911
 "Quebec","Laval","15-06-2021",0,911
+"Quebec","Laval","16-06-2021",0,911
+"Quebec","Laval","17-06-2021",0,911
 "Quebec","Mauricie","08-03-2020",0,0
 "Quebec","Mauricie","09-03-2020",0,0
 "Quebec","Mauricie","10-03-2020",0,0
@@ -39524,6 +39692,8 @@
 "Quebec","Mauricie","13-06-2021",0,520
 "Quebec","Mauricie","14-06-2021",0,520
 "Quebec","Mauricie","15-06-2021",-1,519
+"Quebec","Mauricie","16-06-2021",1,520
+"Quebec","Mauricie","17-06-2021",0,520
 "Quebec","Monteregie","08-03-2020",0,0
 "Quebec","Monteregie","09-03-2020",0,0
 "Quebec","Monteregie","10-03-2020",0,0
@@ -39989,6 +40159,8 @@
 "Quebec","Monteregie","13-06-2021",0,1551
 "Quebec","Monteregie","14-06-2021",0,1551
 "Quebec","Monteregie","15-06-2021",2,1553
+"Quebec","Monteregie","16-06-2021",-1,1552
+"Quebec","Monteregie","17-06-2021",0,1552
 "Quebec","Montreal","08-03-2020",0,0
 "Quebec","Montreal","09-03-2020",0,0
 "Quebec","Montreal","10-03-2020",0,0
@@ -40454,6 +40626,8 @@
 "Quebec","Montreal","13-06-2021",1,4755
 "Quebec","Montreal","14-06-2021",1,4756
 "Quebec","Montreal","15-06-2021",1,4757
+"Quebec","Montreal","16-06-2021",0,4757
+"Quebec","Montreal","17-06-2021",0,4757
 "Quebec","Nord-du-Quebec","08-03-2020",0,0
 "Quebec","Nord-du-Quebec","09-03-2020",0,0
 "Quebec","Nord-du-Quebec","10-03-2020",0,0
@@ -40919,6 +41093,8 @@
 "Quebec","Nord-du-Quebec","13-06-2021",0,0
 "Quebec","Nord-du-Quebec","14-06-2021",0,0
 "Quebec","Nord-du-Quebec","15-06-2021",0,0
+"Quebec","Nord-du-Quebec","16-06-2021",0,0
+"Quebec","Nord-du-Quebec","17-06-2021",0,0
 "Quebec","Not Reported","08-03-2020",0,0
 "Quebec","Not Reported","09-03-2020",0,0
 "Quebec","Not Reported","10-03-2020",0,0
@@ -41384,6 +41560,8 @@
 "Quebec","Not Reported","13-06-2021",0,0
 "Quebec","Not Reported","14-06-2021",0,0
 "Quebec","Not Reported","15-06-2021",0,0
+"Quebec","Not Reported","16-06-2021",0,0
+"Quebec","Not Reported","17-06-2021",0,0
 "Quebec","Nunavik","08-03-2020",0,0
 "Quebec","Nunavik","09-03-2020",0,0
 "Quebec","Nunavik","10-03-2020",0,0
@@ -41849,6 +42027,8 @@
 "Quebec","Nunavik","13-06-2021",0,0
 "Quebec","Nunavik","14-06-2021",0,0
 "Quebec","Nunavik","15-06-2021",0,0
+"Quebec","Nunavik","16-06-2021",0,0
+"Quebec","Nunavik","17-06-2021",0,0
 "Quebec","Outaouais","08-03-2020",0,0
 "Quebec","Outaouais","09-03-2020",0,0
 "Quebec","Outaouais","10-03-2020",0,0
@@ -42314,6 +42494,8 @@
 "Quebec","Outaouais","13-06-2021",0,214
 "Quebec","Outaouais","14-06-2021",0,214
 "Quebec","Outaouais","15-06-2021",0,214
+"Quebec","Outaouais","16-06-2021",0,214
+"Quebec","Outaouais","17-06-2021",0,214
 "Quebec","Saguenay","08-03-2020",0,0
 "Quebec","Saguenay","09-03-2020",0,0
 "Quebec","Saguenay","10-03-2020",0,0
@@ -42779,6 +42961,8 @@
 "Quebec","Saguenay","13-06-2021",0,270
 "Quebec","Saguenay","14-06-2021",0,270
 "Quebec","Saguenay","15-06-2021",0,270
+"Quebec","Saguenay","16-06-2021",0,270
+"Quebec","Saguenay","17-06-2021",0,270
 "Quebec","Terres-Cries-de-la-Baie-James","08-03-2020",0,0
 "Quebec","Terres-Cries-de-la-Baie-James","09-03-2020",0,0
 "Quebec","Terres-Cries-de-la-Baie-James","10-03-2020",0,0
@@ -43244,6 +43428,8 @@
 "Quebec","Terres-Cries-de-la-Baie-James","13-06-2021",0,3
 "Quebec","Terres-Cries-de-la-Baie-James","14-06-2021",0,3
 "Quebec","Terres-Cries-de-la-Baie-James","15-06-2021",0,3
+"Quebec","Terres-Cries-de-la-Baie-James","16-06-2021",0,3
+"Quebec","Terres-Cries-de-la-Baie-James","17-06-2021",0,3
 "Repatriated","Not Reported","08-03-2020",0,0
 "Repatriated","Not Reported","09-03-2020",0,0
 "Repatriated","Not Reported","10-03-2020",0,0
@@ -43709,6 +43895,8 @@
 "Repatriated","Not Reported","13-06-2021",0,0
 "Repatriated","Not Reported","14-06-2021",0,0
 "Repatriated","Not Reported","15-06-2021",0,0
+"Repatriated","Not Reported","16-06-2021",0,0
+"Repatriated","Not Reported","17-06-2021",0,0
 "Saskatchewan","Central","08-03-2020",0,0
 "Saskatchewan","Central","09-03-2020",0,0
 "Saskatchewan","Central","10-03-2020",0,0
@@ -44174,6 +44362,8 @@
 "Saskatchewan","Central","13-06-2021",0,28
 "Saskatchewan","Central","14-06-2021",0,28
 "Saskatchewan","Central","15-06-2021",0,28
+"Saskatchewan","Central","16-06-2021",1,29
+"Saskatchewan","Central","17-06-2021",0,29
 "Saskatchewan","Far North","08-03-2020",0,0
 "Saskatchewan","Far North","09-03-2020",0,0
 "Saskatchewan","Far North","10-03-2020",0,0
@@ -44639,6 +44829,8 @@
 "Saskatchewan","Far North","13-06-2021",0,47
 "Saskatchewan","Far North","14-06-2021",0,47
 "Saskatchewan","Far North","15-06-2021",0,47
+"Saskatchewan","Far North","16-06-2021",0,47
+"Saskatchewan","Far North","17-06-2021",0,47
 "Saskatchewan","North","08-03-2020",0,0
 "Saskatchewan","North","09-03-2020",0,0
 "Saskatchewan","North","10-03-2020",0,0
@@ -45104,6 +45296,8 @@
 "Saskatchewan","North","13-06-2021",0,140
 "Saskatchewan","North","14-06-2021",0,140
 "Saskatchewan","North","15-06-2021",2,142
+"Saskatchewan","North","16-06-2021",1,143
+"Saskatchewan","North","17-06-2021",0,143
 "Saskatchewan","Not Reported","08-03-2020",0,0
 "Saskatchewan","Not Reported","09-03-2020",0,0
 "Saskatchewan","Not Reported","10-03-2020",0,0
@@ -45569,6 +45763,8 @@
 "Saskatchewan","Not Reported","13-06-2021",0,0
 "Saskatchewan","Not Reported","14-06-2021",0,0
 "Saskatchewan","Not Reported","15-06-2021",0,0
+"Saskatchewan","Not Reported","16-06-2021",0,0
+"Saskatchewan","Not Reported","17-06-2021",0,0
 "Saskatchewan","Regina","08-03-2020",0,0
 "Saskatchewan","Regina","09-03-2020",0,0
 "Saskatchewan","Regina","10-03-2020",0,0
@@ -46034,6 +46230,8 @@
 "Saskatchewan","Regina","13-06-2021",0,154
 "Saskatchewan","Regina","14-06-2021",0,154
 "Saskatchewan","Regina","15-06-2021",0,154
+"Saskatchewan","Regina","16-06-2021",0,154
+"Saskatchewan","Regina","17-06-2021",-1,153
 "Saskatchewan","Saskatoon","08-03-2020",0,0
 "Saskatchewan","Saskatoon","09-03-2020",0,0
 "Saskatchewan","Saskatoon","10-03-2020",0,0
@@ -46499,6 +46697,8 @@
 "Saskatchewan","Saskatoon","13-06-2021",0,112
 "Saskatchewan","Saskatoon","14-06-2021",1,113
 "Saskatchewan","Saskatoon","15-06-2021",1,114
+"Saskatchewan","Saskatoon","16-06-2021",0,114
+"Saskatchewan","Saskatoon","17-06-2021",0,114
 "Saskatchewan","South","08-03-2020",0,0
 "Saskatchewan","South","09-03-2020",0,0
 "Saskatchewan","South","10-03-2020",0,0
@@ -46964,6 +47164,8 @@
 "Saskatchewan","South","13-06-2021",0,74
 "Saskatchewan","South","14-06-2021",0,74
 "Saskatchewan","South","15-06-2021",1,75
+"Saskatchewan","South","16-06-2021",0,75
+"Saskatchewan","South","17-06-2021",0,75
 "Yukon","Yukon","08-03-2020",0,0
 "Yukon","Yukon","09-03-2020",0,0
 "Yukon","Yukon","10-03-2020",0,0
@@ -47429,3 +47631,5 @@
 "Yukon","Yukon","13-06-2021",0,2
 "Yukon","Yukon","14-06-2021",0,2
 "Yukon","Yukon","15-06-2021",1,3
+"Yukon","Yukon","16-06-2021",0,3
+"Yukon","Yukon","17-06-2021",0,3
