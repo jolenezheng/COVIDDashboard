@@ -2776,7 +2776,7 @@ def get_hr_vax_data(province_name, region_name):
     #               total_vaccinations, total_vaccinated]
     #
     df = pd.json_normalize(api_data, max_level=1)
-    df.to_csv('junk.csv', index=False)
+    #df.to_csv('junk.csv', index=False)
     #=== Get the fraction of the population with at least one dose
     #
     #     (total_vaccinations seems to be total doses delivered
@@ -2899,6 +2899,7 @@ def calculate_Rt_from_mortality(df_mort):
     #    * Take 14-day rolling average of the resulting R(t)
     #
     df_mort_Rt = df_mort.copy()
+    print(df_mort_Rt)
     df_mort_Rt['D14'] = \
         df_mort_Rt['deaths'].rolling(window=14).mean() + Rt_make_D14_nonzero_offset
     df_mort_Rt['log_D14'] = np.log(df_mort_Rt['D14'])
