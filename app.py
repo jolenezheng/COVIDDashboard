@@ -2899,7 +2899,7 @@ def calculate_Rt_from_mortality(df_mort):
     #    * Take 14-day rolling average of the resulting R(t)
     #
     df_mort_Rt = df_mort.copy()
-    print(df_mort_Rt)
+    #print(df_mort_Rt)
     df_mort_Rt['D14'] = \
         df_mort_Rt['deaths'].rolling(window=14).mean() + Rt_make_D14_nonzero_offset
     df_mort_Rt['log_D14'] = np.log(df_mort_Rt['D14'])
