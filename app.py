@@ -1190,9 +1190,10 @@ def update_healthregion_dropdown(province):
     ],
     [
         ddp.State('province-dropdown', 'value'),
+        ddp.State('max-vaccination-percent', 'value'),             
     ]
 )
-def update_static_cards(region_name, province_name):
+def update_static_cards(region_name, province_name, max_vax_percent):
 
     print("START --- update_static_cards \t\t", nowtime())
     
@@ -1204,7 +1205,8 @@ def update_static_cards(region_name, province_name):
     last_mob = get_last_val('mob', df_mob)
 
     #=== Get last vax value
-    df_vax, first_vax_data_date = get_hr_vax_data(province_name, region_name)
+    df_vax, first_vax_data_date = get_hr_vax_data(province_name, region_name,
+                                                  max_vax_percent)
     last_vax_fraction = get_last_val('vax', df_vax)
     
     #=== Calculate all card values
@@ -1329,17 +1331,19 @@ def update_headers(region_name, province_name):
         ddp.Input('healthregion-dropdown', 'value')
     ],
     [  
-        ddp.State('province-dropdown', 'value'), 
+        ddp.State('province-dropdown', 'value'),
+        ddp.State('max-vaccination-percent', 'value'),        
     ]
 )
-def set_slider_vals(region_name, province_name):
+def set_slider_vals(region_name, province_name, max_vax_percent):
 
     print("START --- set_slider_vals \t\t", nowtime())
     
     province_name = update_province_name(province_name)
 
     last_trends, last_mob, vax_rate_percent = \
-        get_last_trends_mob_vaxrate_for_region(province_name, region_name)
+        get_last_trends_mob_vaxrate_for_region(province_name, region_name,
+                                               max_vax_percent)
     
     print("END   --- set_slider_vals \t\t", nowtime())
     
@@ -1464,7 +1468,8 @@ def update_mortality_chart(n_clicks, region_name,
          | (vax_slider == initial_nonvalue)
          | (healthregion_changed) ):
         facemask_slider, mob_slider, vax_slider = \
-            get_last_trends_mob_vaxrate_for_region(province_name, region_name)
+            get_last_trends_mob_vaxrate_for_region(province_name, region_name,
+                                                   max_vax_percent)
 
     print("      --- update_mortality_chart \t", nowtime(), " --- slider data loaded")
     
@@ -1572,7 +1577,8 @@ def update_mortality_chart(n_clicks, region_name,
         #   (also w/ tanh mask applied about 15Apr2020)
         df_trends = get_hr_trends_df(province_name, region_name)
         #=== Get "fraction_vaccinated" dataframe
-        df_vax, first_vax_data_date = get_hr_vax_data(province_name, region_name)
+        df_vax, first_vax_data_date = get_hr_vax_data(province_name, region_name,
+                                                      max_vax_percent)
         print("      --- update_mortality_chart \t", nowtime(), " --- vaccination loaded")    
         print("      --- update_mortality_chart \t", nowtime(), " --- trends loaded")    
         print("      --- update_mortality_chart \t", nowtime(), " --- finished loading data")
@@ -1710,11 +1716,13 @@ def update_mortality_chart(n_clicks, region_name,
     ],        
     [
         ddp.State("province-dropdown", "value"),
+        ddp.State('max-vaccination-percent', 'value'),        
     ],
 )
 def update_mob_charts(n_clicks, region_name, mob_slider,
                       mitigation_start_months, mitigation_transition_weeks,
-                      day_to_start_forecast, months_to_forecast, province_name):
+                      day_to_start_forecast, months_to_forecast, province_name,
+                      max_vax_percent):
     print("START --- update_mob_charts \t\t", nowtime())
     #print("      --- update_mob_charts \t\t", nowtime(), " --- xMob=" + str(xMob))
 
@@ -1733,7 +1741,8 @@ def update_mob_charts(n_clicks, region_name, mob_slider,
     #    and set slider values manually
     if ( (mob_slider == initial_nonvalue) | (healthregion_changed) ):
         facemask_slider, mob_slider, vax_slider = \
-            get_last_trends_mob_vaxrate_for_region(province_name, region_name)
+            get_last_trends_mob_vaxrate_for_region(province_name, region_name,
+                                                   max_vax_percent)
 
     #=== Set value for plotting
     mob_slider_neg = -1.0*mob_slider
@@ -1831,11 +1840,13 @@ def update_vaccination_charts(n_clicks, region_name, vax_slider, max_vax_percent
     #    and set slider values manually
     if ( (vax_slider == initial_nonvalue) | (healthregion_changed) ):
         facemask_slider, mob_slider, vax_slider = \
-            get_last_trends_mob_vaxrate_for_region(province_name, region_name)
+            get_last_trends_mob_vaxrate_for_region(province_name, region_name,
+                                                   max_vax_percent)
         
     print("      --- update_vaccination_chart \t", nowtime(), " --- started loading data")
     #=== Get fraction_vaccinated dataframe
-    df_vax, first_vax_data_date = get_hr_vax_data(province_name, region_name)
+    df_vax, first_vax_data_date = \
+        get_hr_vax_data(province_name, region_name, max_vax_percent)
     print("      --- update_vaccination_chart \t", nowtime(), " --- creating future data")
     
     #=== Append future vaccination data
@@ -1971,11 +1982,13 @@ def update_weather_chart(n_clicks, region_name, day_to_start_forecast, months_to
     ],
     [
         ddp.State("province-dropdown", "value"),
+        ddp.State('max-vaccination-percent', 'value'),                
     ],
 )
 def update_trends_charts(n_clicks, region_name, facemask_slider,
                          mitigation_start_months, mitigation_transition_weeks,
-                         day_to_start_forecast, months_to_forecast, province_name):
+                         day_to_start_forecast, months_to_forecast, province_name,
+                         max_vax_percent):
     print("START --- update_trends_chart \t\t", nowtime())
 
     daterange, day_to_start_forecast = \
@@ -2008,7 +2021,8 @@ def update_trends_charts(n_clicks, region_name, facemask_slider,
     #    and set slider values manually
     if ( (facemask_slider == initial_nonvalue) | (healthregion_changed) ):
         facemask_slider, mob_slider, vax_slider = \
-            get_last_trends_mob_vaxrate_for_region(province_name, region_name)
+            get_last_trends_mob_vaxrate_for_region(province_name, region_name,
+                                                   max_vax_percent)
 
     #=== Plot the actual Trends data
     trends_fig = go.Figure()    
@@ -2108,7 +2122,7 @@ def logistic_function(t, offset, height, t0, delta_t_99):
     new_t = t - delta_t_99 / 2.0
     return offset + height / (1 + math.exp( -1.0*(new_t - t0) / tau ) )
 
-def get_last_trends_mob_vaxrate_for_region(province_name, region_name):
+def get_last_trends_mob_vaxrate_for_region(province_name, region_name, max_vax_percent):
     """Get values for sliders based on health region"""
     # get the 7-day rolling average of mobility for the region
     df_mob = get_hr_mob_df(province_name, region_name)
@@ -2116,7 +2130,8 @@ def get_last_trends_mob_vaxrate_for_region(province_name, region_name):
     last_mob = -1*get_last_val('mob', df_mob)
     
     # load fraction_vaccinated data and get last value
-    df_vax, first_vax_data_date = get_hr_vax_data(province_name, region_name)
+    df_vax, first_vax_data_date = \
+        get_hr_vax_data(province_name, region_name, max_vax_percent)
     last_vax_fraction = get_last_val('vax', df_vax)
 
     # calculate the vaccination rate over last two weeks
@@ -2756,7 +2771,7 @@ def get_uid(province_name, region_name):
     uid = get_region_info(province_name, region_name).hr_uid.item()
     return uid
 
-def get_hr_vax_data(province_name, region_name):
+def get_hr_vax_data(province_name, region_name, max_vax_percent):
     #=== Check whether regional data available (or only provincial)
     vax_data_type = check_vax_data_type(province_name)
     if (vax_data_type == "provincial"):
@@ -2822,6 +2837,9 @@ def get_hr_vax_data(province_name, region_name):
             ndays = 1.0*(row.date - startdate).days
             df.at[index, val_string] = \
                 max(startvax + starting_vax_rate_per_day * ndays, 0.0)
+    # prevent vaccination above 100% (or the max_vax_percent)
+    max_vax_frac = max_vax_percent / 100.0
+    df[val_string] = df[val_string].clip(0.0, max_vax_frac)
     #=== Return the dataframe, but also the first date of actual data
     return df, startdate
 
