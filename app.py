@@ -2659,9 +2659,17 @@ def randomize_initial_mortality_value(df_mort_new, forecast_startdate_str):
 #=========================================================
 
 def get_hr_mob_df(province_name, region_name, getall=True, startdate=None, enddate=None):
-    weat_info_province = static_data[static_data.province_name == province_name]
-    sub_region = weat_info_province.sub_region_2[weat_info_province.health_region == region_name].item()
-    df_mob = df_mob_all[df_mob_all.sub_region_2 == sub_region].copy()
+    provinces_without_region_mobility = ["Yukon", "Northwest Territories"]
+    if (province_name in provinces_without_region_mobility):
+        df_mob = df_mob_all[df_mob_all["sub_region_1"] == province_name].copy()
+        polyorder=1
+    else:
+        sub_region_name = \
+            static_data[(static_data["province_name"] == province_name)
+                        & (static_data["health_region"] == region_name)]\
+                        ["sub_region_2"].item()
+        df_mob = df_mob_all[df_mob_all["sub_region_2"] == sub_region_name].copy()
+        polyorder=2
     val_string = 'workplaces_percent_change_from_baseline'
     df_mob = df_mob[['date', val_string]]
     #=== Get the 7-day rolling average of mobility always
@@ -2671,7 +2679,8 @@ def get_hr_mob_df(province_name, region_name, getall=True, startdate=None, endda
     enddate = df_mob.date.max()
     df_mob = extend_dates_df(df_mob, enddate, val_string, startdate=startdate)
     #=== Interpolate the mobility data to fill in blanks
-    df_mob[val_string] = df_mob[val_string].interpolate(method='polynomial', order=2)
+    df_mob[val_string] = \
+        df_mob[val_string].interpolate(method='polynomial', order=polyorder)
     if getall:
         return df_mob
     else:
@@ -2767,7 +2776,7 @@ def get_hr_vax_data(province_name, region_name):
     #               total_vaccinations, total_vaccinated]
     #
     df = pd.json_normalize(api_data, max_level=1)
-    #df.to_csv('junk.csv', index=False)
+    df.to_csv('junk.csv', index=False)
     #=== Get the fraction of the population with at least one dose
     #
     #     (total_vaccinations seems to be total doses delivered
