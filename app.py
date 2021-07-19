@@ -2839,10 +2839,10 @@ def get_hr_vax_data(province_name, region_name, max_vax_percent):
                 max(startvax + starting_vax_rate_per_day * ndays, 0.0)
         # prevent vaccination above 100% (or the max_vax_percent)
         max_vax_frac = max_vax_percent / 100.0
-        # df[val_string] = df[val_string].clip(0.0, max_vax_frac)
-        df[val_string] = max_vax_frac
-        if (max_vax_frac > 100.0):
-            df[val_string] = 100.0
+        df[val_string] = df[val_string].clip(0.0, max_vax_frac)
+        # df[val_string] = max_vax_frac
+        # if (max_vax_frac > 100.0):
+        #     df[val_string] = 100.0
     #=== Return the dataframe, but also the first date of actual data
     return df, startdate
 
