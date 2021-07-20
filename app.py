@@ -2198,9 +2198,9 @@ def update_province_name(province_name):
     elif (province_name == "British Columbia"):
         province_name = "BC"
     elif (province_name == "Prince Edward Island"):
-        province_name == "PEI"
+        province_name = "PEI"
     elif (province_name == "Northwest Territories"):
-        province_name == "NWT"
+        province_name = "NWT"
     return province_name
 
 def get_daterange(forecast_startdate, forecast_length_months):
@@ -2674,9 +2674,11 @@ def randomize_initial_mortality_value(df_mort_new, forecast_startdate_str):
 #=========================================================
 
 def get_hr_mob_df(province_name, region_name, getall=True, startdate=None, enddate=None):
-    provinces_without_region_mobility = ["Yukon", "Northwest Territories"]
-    if (province_name in provinces_without_region_mobility):
-        df_mob = df_mob_all[df_mob_all["sub_region_1"] == province_name].copy()
+    if (province_name == "NWT"):
+        df_mob = df_mob_all[df_mob_all["sub_region_1"] == "Northwest Territories"].copy()
+        polyorder=1
+    elif (province_name == "Yukon"):
+        df_mob = df_mob_all[df_mob_all["sub_region_1"] == "Yukon"].copy()
         polyorder=1
     else:
         sub_region_name = \
@@ -2688,7 +2690,8 @@ def get_hr_mob_df(province_name, region_name, getall=True, startdate=None, endda
     val_string = 'workplaces_percent_change_from_baseline'
     df_mob = df_mob[['date', val_string]]
     #=== Get the 7-day rolling average of mobility always
-    df_mob[val_string] = df_mob[val_string].rolling(window=7).mean()
+    #    (to avoid getting nan in rolling mean of sparse data, use min_periods=1)
+    df_mob[val_string] = df_mob[val_string].rolling(window=7, min_periods=1).mean()
     #=== Extend to fill in missing dates from google mobility file
     startdate = df_mob.date.min()
     enddate = df_mob.date.max()
