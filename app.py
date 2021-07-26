@@ -554,6 +554,31 @@ canadian_dashboard = html.Div(
                                     dbc.Row(dbc.Col(
                                         html.Div(
                                             children=[
+                                                html.Div(children="Map Options", className="dropdown-title"),
+                                                dcc.Dropdown(
+                                                    id='map_options',
+                                                    className='dropdown',
+                                                    options=[
+                                                             {'label': 'Estimated Total Population', 'value': 'region_pop'},
+                                                             {'label': 'Population Weighted Population Density (PWPD)', 'value': 'pwpd'},
+                                                             {'label': 'Population Sparsity', 'value': 'pop_sparsity'},
+                                                             {'label': 'Annual Deaths (Non-COVID 19 Related)', 'value': 'anndeath'},
+                                                             {'label': 'Fraction of the Population Over 80', 'value': 'frac80'},
+                                                             {'label':'Average Number of People in a Household', 'value': 'house'},
+                                                             {'label': 'Daily Cases', 'value': 'cases'},
+                                                             {'label': 'Cumulative Cases', 'value': 'cumulative_cases'},
+                                                             {'label': 'Cumulative Deaths', 'value': 'cumulative_deaths'},
+                                                             {'label': 'Cumulative Deaths per Annual Death', 'value': 'cumulative_per_annual'},
+                                                             {'label':'Cumulative Deaths per 100000 Population', 'value':'cumulative_per_100000pop'},                                                             
+                                                            ],
+                                                    value = 'cumulative_deaths'
+                                                ),
+                                            ]
+                                        ),
+                                    ), className='input-space'),                                    
+                                    dbc.Row(dbc.Col(
+                                        html.Div(
+                                            children=[
                                                 html.Div(
                                                     children="Number of Simulations",
                                                     className="dropdown-title"
@@ -927,11 +952,24 @@ canadian_dashboard = html.Div(
                                             ]
                                         ),
                                     ],
-                                    color="primary",
+                                    color="dark",
                                     inverse=True
                                 )
                             ),
                         ], className="mb-4"),
+                        dbc.Row(dbc.Col(
+                            dbc.Card(
+                                [
+                                    # dbc.CardHeader(id="map-header"),
+                                    dbc.CardBody(
+                                         dcc.Loading(
+                                            children=[html.Div(
+                                                dcc.Graph(
+                                                id="choropleth", config={"displayModeBar": False}))],
+                                            type="default"
+                                    )),
+                                ], color="dark", inverse=True),
+                        ), className="mb-4"),
                         dbc.Row(dbc.Col(
                             dbc.Card(
                                 [
@@ -2059,6 +2097,91 @@ def update_trends_charts(n_clicks, region_name, facemask_slider,
 
     return trends_fig #, facemask_fig
 
+#========================================================#
+#   Rerun --> Get Choropleth Map                         #
+#========================================================#
+
+@app.callback(
+    ddp.Output("choropleth", "figure"),
+    [
+        ddp.Input("map_options", "value"),
+        ddp.Input('rerun-btn', 'n_clicks'),        
+    ],
+    [
+        ddp.State("province-dropdown", "value"),
+    ],   
+)
+
+def display_choropleth(map_options, n_clicks, province_name):
+    
+    province_name = update_province_name(province_name)
+    
+    if (province_name == 'Alberta') or (province_name == 'BC') or (province_name == 'Manitoba') or (province_name == 'Saskatchewan'):
+        coordinates = {"lat": 54.2780, "lon": -110.0061}
+        zoom = 4
+    elif (province_name == 'Northwest Territories') or (province_name == 'Nunavut') or (province_name == 'Yukon'):
+        coordinates = {"lat": 65.0157, "lon": -115.5781}
+        zoom = 3.7
+    elif (province_name == 'Quebec'):
+        coordinates = {"lat": 50.6806, "lon": -71.4975}
+        zoom = 4.5     
+    elif (province_name == 'Ontario'):
+        coordinates = {"lat": 47.2185, "lon": -79.6218}
+        zoom = 4.75   
+    else:
+        coordinates = {"lat": 47.7799, "lon": -61.0259}
+        zoom = 4.8
+    
+    if (map_options == 'cumulative_deaths'):
+        range_color = (0,500)
+     
+    elif (map_options == 'cumulative_per_annual'):
+        range_color = (0,0.1)
+    
+    elif (map_options == 'pwpd'):
+        range_color = (0,8000)
+    
+    elif (map_options == 'frac80'):
+        range_color = (0,15)
+    
+    elif (map_options == 'region_pop'):
+        range_color = (0,1000000)
+    
+    elif (map_options == 'house'):
+        range_color = (0,5)         
+    
+    elif (map_options == 'pop_sparsity'):
+        range_color = (0,1) 
+    
+    elif (map_options == 'anndeath'):
+        range_color = (0, 9000)
+    
+    elif (map_options == 'cases'):
+        range_color = (0, 15)
+        
+    elif (map_options == 'cumulative_cases'):
+        range_color = (0, 5000)       
+    
+    elif (map_options == 'workplace_mobility'):
+        range_color = (-50, 10)
+    
+    else:
+        range_color = (0,100)
+        
+    fig = px.choropleth_mapbox(df_map_data(region_list), geojson=geo_json_data, color=map_options,
+                           color_continuous_scale="Deep", range_color=range_color, opacity=0.5,
+                           locations="ENG_LABEL", featureidkey="properties.ENG_LABEL",
+                           height=700, center=coordinates,
+                           mapbox_style="carto-positron", zoom=zoom)
+    
+    # fig = px.choropleth(df, geojson=geo_json_data, color=death_type,
+                           # color_continuous_scale="Deep", range_color=range_color,
+                           # locations="ENG_LABEL", featureidkey="properties.ENG_LABEL",
+                           # projection='winkel tripel',
+                           # height=700)
+
+    return fig
+
 #=====================================================
 #===========  Helper Functions: General  =============
 #=====================================================
@@ -2939,6 +3062,89 @@ def calculate_Rt_from_mortality(df_mort):
         df_mort_Rt['Rt'] = df_mort_Rt['Rt'].rolling(window=14).mean()
 
     return df_mort_Rt
+
+# -------------- MAP FUNCTIONS --------------
+
+# Reads the JSON file
+with open('data/health_regions.json', 'r') as myfile:
+    map_data = myfile.read()
+
+# Parses the file
+geo_json_data = json.loads(map_data)
+
+static_data2 = pd.read_csv(r'data/health_regions_static_data2.csv', encoding='Latin-1')
+region_list = static_data2["ENG_LABEL"].tolist()
+
+df_mort2 = pd.read_csv(r'data/mortality2.csv', dtype={"ENG_LABEL": str})
+df_mort2["date_death_report"] = pd.to_datetime(df_mort2["date_death_report"], format="%d-%m-%Y")
+
+index = df_mort2[df_mort2['ENG_LABEL'] == 'Not Reported'].index
+df_mort2.drop(index, inplace=True)
+
+# df_mobility = pd.read_csv(r'data/mobility.csv')
+# df_mobility["date"] = pd.to_datetime(df_mobility["date"], format="%Y-%m-%d")
+# df_mobility = df_mobility[df_mobility['date'] == max(df_mobility["date"])]
+
+df_cases2 = pd.read_csv(r'data/cases2.csv', dtype={"ENG_LABEL": str})
+df_cases2["date_report"] = pd.to_datetime(df_cases2["date_report"], format="%d-%m-%Y")
+
+index = df_cases2[df_cases2['ENG_LABEL'] == 'Not Reported'].index
+df_cases2.drop(index, inplace=True)
+
+# def get_mobility_region_list(region_list):
+    # return static_data2.sub_region_2[static_data2.ENG_LABEL == region_list].tolist()
+
+def df_map_data(region_list):
+    
+    df_deaths = df_mort2[df_mort2['date_death_report'] == max(df_mort2["date_death_report"])]
+    cumulative_deaths_data = df_deaths.cumulative_deaths[df_deaths.ENG_LABEL == region_list].tolist()
+    
+    df_cases = df_cases2[df_cases2['date_report'] == max(df_cases2["date_report"])]
+    cumulative_cases_data = df_cases.cumulative_cases[df_cases.ENG_LABEL == region_list].tolist()
+    daily_cases_data = df_cases.cases[df_cases.ENG_LABEL == region_list].tolist()
+    
+    frac80_data = static_data2.frac80[static_data2.ENG_LABEL == region_list].tolist()
+    frac80_data = [i * 100 for i in frac80_data]
+    
+    region_pop_data = static_data2.region_pop[static_data2.ENG_LABEL == region_list].tolist()
+    
+    pwpd_data = static_data2.pwpd[static_data2.ENG_LABEL == region_list].tolist()
+    
+    pop_sparsity_data = static_data2.region_pop[static_data2.ENG_LABEL == region_list].tolist()
+    
+    anndeath_data = static_data2.anndeath[static_data2.ENG_LABEL == region_list].tolist()
+    anndeath_data = [i * 1.3 for i in anndeath_data]
+    
+    cumulative_per_annual_data = [int(c) / int(a) for c,a in zip(cumulative_deaths_data, anndeath_data)]
+    
+    cumulative_per_pop_data = [int(c) / int(r) for c,r in zip(cumulative_deaths_data, region_pop_data)]
+    cumulative_per_100000pop_data = [i * 100000 for i in cumulative_per_pop_data]
+    
+    avg_per_house_data = static_data2.house[static_data2.ENG_LABEL == region_list].tolist()
+    
+    # df_mob = df_mobility[df_mobility['date'] == max(df_mobility["date"])]
+    # mobility_yukon = df_mob.workplaces_percent_change_from_baseline[df_mob.sub_region_1 == 'Yukon'].item()
+    # df_mob = df_mob[df_mob.sub_region_2.isin(get_mobility_region_list(region_list)) == True]
+    # mobility_data = df_mob.workplaces_percent_change_from_baseline.tolist()
+    # mobility_data.append(mobility_yukon)
+
+    
+    combined_data = {'ENG_LABEL': region_list,
+                     'region_pop': region_pop_data,
+                     'pwpd': pwpd_data,
+                     'pop_sparsity': pop_sparsity_data,
+                     'anndeath': anndeath_data,
+                     'frac80': frac80_data,
+                     'house': avg_per_house_data,
+                     'cumulative_cases': cumulative_cases_data,
+                     'cases': daily_cases_data,
+                     'cumulative_deaths': cumulative_deaths_data,
+                     'cumulative_per_100000pop': cumulative_per_100000pop_data, 
+                     'cumulative_per_annual': cumulative_per_annual_data,}
+                     # 'workplace_mobility': mobility_data}
+    
+    df_map_data = pd.DataFrame(combined_data)
+    return df_map_data
 
 # ======================= END OF PROGRAM =======================
 
