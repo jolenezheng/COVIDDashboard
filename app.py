@@ -3065,6 +3065,29 @@ def calculate_Rt_from_mortality(df_mort):
 
 # -------------- MAP FUNCTIONS --------------
 
+def adjust_region_names_for_json(df):
+    provs = ['Alberta', 'Alberta', 'Alberta',
+             'BC', 'Manitoba',
+             'NL', 'NL', 'NL',
+             'Ontario', 'Ontario', 'Ontario',
+             'Saskatchewan', 'Saskatchewan', 'Saskatchewan', 'Saskatchewan' ]
+    regs = ['Central', 'North', 'South',
+            'Northern', 'Northern',
+            'Central', 'Eastern', 'Western',
+            'Eastern', 'Northwestern', 'Southwestern',
+            'Central', 'Far North', 'North', 'South']
+    abbs = ['AB', 'AB', 'AB',
+            'BC', 'MB',
+            'NL', 'NL', 'NL',
+            'ON', 'ON', 'ON',
+            'SK', 'SK', 'SK', 'SK']
+    dfnew = df.copy()
+    for i in range(len(abbs)):
+        theones = ( (dfnew['health_region'] == regs[i])
+                    & (dfnew['province'] == provs[i]) )
+        dfnew.loc[theones, 'health_region'] = regs[i] + " " + abbs[i]
+    return dfnew
+
 # Reads the JSON file
 with open('data/health_regions.json', 'r') as myfile:
     map_data = myfile.read()
@@ -3075,17 +3098,29 @@ geo_json_data = json.loads(map_data)
 static_data2 = pd.read_csv(r'data/health_regions_static_data2.csv', encoding='Latin-1')
 region_list = static_data2["ENG_LABEL"].tolist()
 
-df_mort2 = pd.read_csv(r'data/mortality2.csv', dtype={"ENG_LABEL": str})
+#df_mort2 = pd.read_csv(r'data/mortality2.csv', dtype={"ENG_LABEL": str})
+df_mort2 = df_mort_all.copy()
+df_mort2 = adjust_region_names_for_json(df_mort2)
+col_names = df_mort2.columns.to_list()
+col_names[1] = "ENG_LABEL"
+df_mort2.columns = col_names
 df_mort2["date_death_report"] = pd.to_datetime(df_mort2["date_death_report"], format="%d-%m-%Y")
 
 index = df_mort2[df_mort2['ENG_LABEL'] == 'Not Reported'].index
 df_mort2.drop(index, inplace=True)
 
+df_mort2.to_csv("junk.csv", index=False)
+
 # df_mobility = pd.read_csv(r'data/mobility.csv')
 # df_mobility["date"] = pd.to_datetime(df_mobility["date"], format="%Y-%m-%d")
 # df_mobility = df_mobility[df_mobility['date'] == max(df_mobility["date"])]
 
-df_cases2 = pd.read_csv(r'data/cases2.csv', dtype={"ENG_LABEL": str})
+#df_cases2 = pd.read_csv(r'data/cases2.csv', dtype={"ENG_LABEL": str})
+df_cases2 = df_cases_all.copy()
+df_cases2 = adjust_region_names_for_json(df_cases2)
+col_names = df_cases2.columns.to_list()
+col_names[1] = "ENG_LABEL"
+df_cases2.columns = col_names
 df_cases2["date_report"] = pd.to_datetime(df_cases2["date_report"], format="%d-%m-%Y")
 
 index = df_cases2[df_cases2['ENG_LABEL'] == 'Not Reported'].index
