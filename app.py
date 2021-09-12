@@ -680,12 +680,13 @@ canadian_dashboard = html.Div(
                                                              {'label': 'Fraction of the Population Over 80', 'value': 'frac80'},
                                                              {'label':'Average Number of People in a Household', 'value': 'house'},
                                                              {'label': 'Daily Cases', 'value': 'cases'},
+                                                             {'label': 'Daily Cases Per 100k', 'value': 'cases_per_100k'},
                                                              {'label': 'Cumulative Cases', 'value': 'cumulative_cases'},
                                                              {'label': 'Cumulative Deaths', 'value': 'cumulative_deaths'},
                                                              {'label': 'Cumulative Deaths per Annual Death', 'value': 'cumulative_per_annual'},
-                                                             {'label':'Cumulative Deaths per 100000 Population', 'value':'cumulative_per_100000pop'},                                                             
+                                                             {'label':'Cumulative Deaths per 100k', 'value':'cumulative_per_100k'},                                                             
                                                             ],
-                                                    value = 'cumulative_deaths'
+                                                    value = 'cases_per_100k'
                                                 ),
                                             ]
                                         ),
@@ -2247,43 +2248,36 @@ def display_choropleth(region_name, map_options, n_clicks, province_name):
     else:
         coordinates = {"lat": 47.7799, "lon": -61.0259}
         zoom = 4.8
+
     print("      --- display_choropleth \t\t", nowtime(), "  --- got province")
     
     if (map_options == 'cumulative_deaths'):
         range_color = (0,500)
-     
     elif (map_options == 'cumulative_per_annual'):
         range_color = (0,0.1)
-    
     elif (map_options == 'pwpd'):
         range_color = (0,8000)
-    
     elif (map_options == 'frac80'):
         range_color = (0,15)
-    
     elif (map_options == 'region_pop'):
         range_color = (0,1000000)
-    
     elif (map_options == 'house'):
         range_color = (0,5)         
-    
     elif (map_options == 'pop_sparsity'):
         range_color = (0,1) 
-    
     elif (map_options == 'anndeath'):
         range_color = (0, 9000)
-    
     elif (map_options == 'cases'):
         range_color = (0, 15)
-        
+    elif (map_options == 'cases_per_100k'):
+        range_color = (0, 60)
     elif (map_options == 'cumulative_cases'):
         range_color = (0, 5000)       
-    
     elif (map_options == 'workplace_mobility'):
         range_color = (-50, 10)
-    
     else:
         range_color = (0,100)
+
     print("      --- display_choropleth \t\t", nowtime(), "  --- set range_color")
     print("      --- display_choropleth \t\t", nowtime(), "  --- start choropleth_mapbox")
 
@@ -3209,13 +3203,17 @@ def calculate_Rt_from_mortality(df_mort):
 # -------------- MAP FUNCTIONS --------------
 
 def get_map_data(region_list):
-    
-    df_deaths = df_mort2[df_mort2['date_death_report'] == max(df_mort2["date_death_report"])]
+
+    df_deaths = df_mort2.copy()
+    df_deaths['deaths'] = df_deaths['deaths'].rolling(window=7).mean()
+    df_deaths = df_deaths[df_deaths['date_death_report'] == max(df_mort2["date_death_report"])]
     cumulative_deaths_data = df_deaths.cumulative_deaths[df_deaths.ENG_LABEL == region_list].tolist()
 
     print("      --- display_choropleth \t\t", nowtime(), "  --- got deaths")
-    
-    df_cases = df_cases2[df_cases2['date_report'] == max(df_cases2["date_report"])]
+
+    df_cases = df_cases2.copy()
+    df_cases['cases'] = df_cases['cases'].rolling(window=7).mean()
+    df_cases = df_cases[df_cases['date_report'] == max(df_cases2["date_report"])]
     cumulative_cases_data = df_cases.cumulative_cases[df_cases.ENG_LABEL == region_list].tolist()
     daily_cases_data = df_cases.cases[df_cases.ENG_LABEL == region_list].tolist()
     
@@ -3238,7 +3236,10 @@ def get_map_data(region_list):
     cumulative_per_annual_data = [int(c) / int(a) for c,a in zip(cumulative_deaths_data, anndeath_data)]
     
     cumulative_per_pop_data = [int(c) / int(r) for c,r in zip(cumulative_deaths_data, region_pop_data)]
-    cumulative_per_100000pop_data = [i * 100000 for i in cumulative_per_pop_data]
+    cumulative_per_100k_data = [i * 100000 for i in cumulative_per_pop_data]
+
+    daily_cases_per_pop_data = [float(c) / float(r) for c,r in zip(daily_cases_data, region_pop_data)]
+    daily_cases_per_100k_data = [i * 100000 for i in daily_cases_per_pop_data]
     
     avg_per_house_data = static_data2.house[static_data2.ENG_LABEL == region_list].tolist()
 
@@ -3260,8 +3261,9 @@ def get_map_data(region_list):
                      'house': avg_per_house_data,
                      'cumulative_cases': cumulative_cases_data,
                      'cases': daily_cases_data,
+                     'cases_per_100k': daily_cases_per_100k_data,                     
                      'cumulative_deaths': cumulative_deaths_data,
-                     'cumulative_per_100000pop': cumulative_per_100000pop_data, 
+                     'cumulative_per_100k': cumulative_per_100k_data, 
                      'cumulative_per_annual': cumulative_per_annual_data,}
                      # 'workplace_mobility': mobility_data}
     
