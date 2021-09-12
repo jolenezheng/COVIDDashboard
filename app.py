@@ -40,37 +40,42 @@ app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP, external_s
 server = app.server
 app.title = "MyLocalCOVID Portal"
 
-
 #=========================================
 #==========  Data locations  =============
 #=========================================
 
 #============ COVID cases and mortality ===========
 #
-#===BPH-FIXME These data files should be downloaded with cron jobs
+# There are cronjobs set up (see *_script.sh within data directory) to
+# grab these files regularly:
 #
-# Mortality data for all health regions
-#   https://raw.githubusercontent.com/ccodwg/Covid19Canada/master/timeseries_hr/mortality_timeseries_hr.csv
-df_mort_all = pd.read_csv(r'data/mortality.csv') 
-df_mort_all["date_death_report"] = \
-    pd.to_datetime(df_mort_all["date_death_report"], format="%d-%m-%Y") 
-# Case data for all health regions
-#   https://raw.githubusercontent.com/ccodwg/Covid19Canada/master/timeseries_hr/cases_timeseries_hr.csv
-df_cases_all = pd.read_csv(r'data/cases.csv') 
-df_cases_all["date_report"] = \
-    pd.to_datetime(df_cases_all["date_report"], format="%d-%m-%Y")
+#    Mortality data for all health regions
+#    https://raw.githubusercontent.com/ccodwg/Covid19Canada/master/timeseries_hr/mortality_timeseries_hr.csv
+#
+#    Case data for all health regions
+#    https://raw.githubusercontent.com/ccodwg/Covid19Canada/master/timeseries_hr/cases_timeseries_hr.csv
+#
+filename_mortality = 'data/mortality.csv'
+filename_cases = 'data/cases.csv'
+
 
 #============ Mobility data ===========
-df_mob_all = pd.read_csv(r'data/mobility.csv')
-df_mob_all["date"] = \
-    pd.to_datetime(df_mob_all["date"], format="%Y-%m-%d") 
-#===BPH-FIXME does this do anything?
-#df_mob_all["sub_region_2"] = df_mob_all["sub_region_2"]
+#
+# Found here:
+#
+#     https://www.gstatic.com/covid19/mobility/Global_Mobility_Report.csv
+#
+# and regularly downloaded with the data/mobility_update_script.sh script, which
+# calls data/get_google_mobility_data.py to retrieve only the Canada entries.
+#  
+filename_mobility = 'data/mobility.csv'
+
 
 #============ Google Trends (facemask) data ===========
-df_trends_all = pd.read_csv(r'data/google_trends_face_mask_canada.csv')
-df_trends_all["date"] = \
-    pd.to_datetime(df_trends_all["date"], format="%Y-%m-%d") 
+#
+# Created by Ben's scripts, which should be run regularly (by cron jobs?)
+#
+filename_googletrends = 'data/google_trends_face_mask_canada.csv'
 
 #============ Weather data ===========
 weather_data_dir = "data/weather/all_health_regions_actual_avg_temperature_files/2020-01-01_2023-01-01/"
@@ -80,8 +85,33 @@ vax_base_url = "https://api.covid19tracker.ca/reports/regions/"
 vax_base_url_prov = "https://api.covid19tracker.ca/reports/province/"
 
 #============ Static data on Health Regions ===========
-static_data = pd.read_csv(r'data/health_regions_static_data.csv', encoding='Latin-1')
+filename_healthregion_static_data = 'data/health_regions_static_data.csv'
 
+#============ Choropleth Map data ===========
+#
+# Boundary file found from here? (fixme: where exactly... doesn't seem right)
+#
+#  https://github.com/sitrucp/canada_covid_health_regions
+#
+# Separate static data file is used... fixme: why?
+#
+# Ben took the original shapefile found by Shafika and then "simplfied" it
+# following this advice:
+#
+#    https://gis.stackexchange.com/questions/46969
+#
+# and using this online tool:
+#
+#    https://mapshaper.org/
+#
+# with Simplify/"Visvalingam / weighted area" and "prevent shape removal".
+# Going to about "2%" the file was reduced from 30MB to 644K, and this
+# speeds things significantly.
+#
+filename_healthregion_boundaries = 'data/health_regions_boundaries_smoothed.json'
+filename_healthregion_static_data_map = 'data/health_regions_static_data2.csv'
+# old file before "simplifying" boundaries
+#filename_healthregion_boundaries = 'data/health_regions_boundaries.json'
 
 #===================================================
 #=========  Model/Simulation parameters   ==========
@@ -333,6 +363,96 @@ frac_vax_one_dose = 0.115
 # The searches for "face mask" are much lower in french-speaking QC, so:
 trends_mult_factor_for_QC = 2.5
 
+#====================================
+#==========  Import Data  ===========
+#====================================
+
+#=== Read in mortality data, make data column a date
+df_mort_all = pd.read_csv(filename_mortality)
+df_mort_all["date_death_report"] = \
+    pd.to_datetime(df_mort_all["date_death_report"], format="%d-%m-%Y") 
+#=== Set max and min possible dates for plotting range
+first_mortality_date = df_mort_all.date_death_report.min()
+first_mortality_date_str = first_mortality_date.strftime("%Y-%m-%d")
+last_mortality_date = df_mort_all.date_death_report.max()
+last_mortality_date_str = last_mortality_date.strftime("%Y-%m-%d")
+first_possible_date=datetime.datetime.strptime("2020-01-01", "%Y-%m-%d")
+last_possible_date = datetime.datetime.strptime("2023-01-01", "%Y-%m-%d")
+
+#=== Read in case data, make data column a date
+df_cases_all = pd.read_csv(filename_cases) 
+df_cases_all["date_report"] = \
+    pd.to_datetime(df_cases_all["date_report"], format="%d-%m-%Y")
+
+#=== Read in moblity data and make date column a date
+df_mob_all = pd.read_csv(filename_mobility)
+df_mob_all["date"] = \
+    pd.to_datetime(df_mob_all["date"], format="%Y-%m-%d")
+
+#=== Read in trends (facemask) data and make date column a date
+df_trends_all = pd.read_csv(filename_googletrends)
+df_trends_all["date"] = \
+    pd.to_datetime(df_trends_all["date"], format="%Y-%m-%d")
+
+#=== Read in static data for all health regions
+static_data = pd.read_csv(filename_healthregion_static_data, encoding='Latin-1')
+
+#=== Load things for the choropleth map
+
+#--- Subroutine to adjust mortality data files
+def adjust_region_names_for_json(df):
+    provs = ['Alberta', 'Alberta', 'Alberta',
+             'BC', 'Manitoba',
+             'NL', 'NL', 'NL',
+             'Ontario', 'Ontario', 'Ontario',
+             'Saskatchewan', 'Saskatchewan', 'Saskatchewan', 'Saskatchewan' ]
+    regs = ['Central', 'North', 'South',
+            'Northern', 'Northern',
+            'Central', 'Eastern', 'Western',
+            'Eastern', 'Northwestern', 'Southwestern',
+            'Central', 'Far North', 'North', 'South']
+    abbs = ['AB', 'AB', 'AB',
+            'BC', 'MB',
+            'NL', 'NL', 'NL',
+            'ON', 'ON', 'ON',
+            'SK', 'SK', 'SK', 'SK']
+    dfnew = df.copy()
+    for i in range(len(abbs)):
+        theones = ( (dfnew['health_region'] == regs[i])
+                    & (dfnew['province'] == provs[i]) )
+        dfnew.loc[theones, 'health_region'] = regs[i] + " " + abbs[i]
+    return dfnew
+
+#--- Health region boundary file
+# open and parse the json file
+with open(filename_healthregion_boundaries, 'r') as myfile:
+    map_data = myfile.read()
+geo_json_data = json.loads(map_data)
+
+#--- Separate static data file (fixme: why?)
+static_data2 = pd.read_csv(filename_healthregion_static_data_map, encoding='Latin-1')
+# list of regions for using map json file
+region_list = static_data2["ENG_LABEL"].tolist()
+
+#--- Create separate copy of mortality data
+df_mort2 = df_mort_all.copy()
+df_mort2 = adjust_region_names_for_json(df_mort2)
+col_names = df_mort2.columns.to_list()
+col_names[1] = "ENG_LABEL"
+df_mort2.columns = col_names
+df_mort2["date_death_report"] = pd.to_datetime(df_mort2["date_death_report"], format="%d-%m-%Y")
+index = df_mort2[df_mort2['ENG_LABEL'] == 'Not Reported'].index
+df_mort2.drop(index, inplace=True)
+#--- Create separate copy of cases data
+df_cases2 = df_cases_all.copy()
+df_cases2 = adjust_region_names_for_json(df_cases2)
+col_names = df_cases2.columns.to_list()
+col_names[1] = "ENG_LABEL"
+df_cases2.columns = col_names
+df_cases2["date_report"] = pd.to_datetime(df_cases2["date_report"], format="%d-%m-%Y")
+index = df_cases2[df_cases2['ENG_LABEL'] == 'Not Reported'].index
+df_cases2.drop(index, inplace=True)
+
 #========================================================
 #====    Menu/slider options and initial values    ======
 #========================================================
@@ -349,13 +469,6 @@ forecast_start_months_ago = 1   # (1, 10?)
 forecast_initial_start_date = \
     (nowdate
      - datetime.timedelta(days=forecast_start_months_ago*days_in_month)).strftime("%Y-%m-%d")
-#=== Max and min possible dates for plotting range
-first_mortality_date = df_mort_all.date_death_report.min()
-first_mortality_date_str = first_mortality_date.strftime("%Y-%m-%d")
-last_mortality_date = df_mort_all.date_death_report.max()
-last_mortality_date_str = last_mortality_date.strftime("%Y-%m-%d")
-first_possible_date=datetime.datetime.strptime("2020-01-01", "%Y-%m-%d")
-last_possible_date = datetime.datetime.strptime("2023-01-01", "%Y-%m-%d")
 #=== Set initial slider values to negative, so that initial
 #    runs of graphs will get updated values for the region
 initial_nonvalue = -9999
@@ -514,8 +627,9 @@ else:
         footer2,
     ])
 
+# set the app layout
 app.layout = site_backbone
-
+    
 canadian_dashboard = html.Div(
     children=[
         dbc.Row(
@@ -2104,6 +2218,7 @@ def update_trends_charts(n_clicks, region_name, facemask_slider,
 @app.callback(
     ddp.Output("choropleth", "figure"),
     [
+        ddp.Input("healthregion-dropdown", "value"),        
         ddp.Input("map_options", "value"),
         ddp.Input('rerun-btn', 'n_clicks'),        
     ],
@@ -2112,10 +2227,11 @@ def update_trends_charts(n_clicks, region_name, facemask_slider,
     ],   
 )
 
-def display_choropleth(map_options, n_clicks, province_name):
+def display_choropleth(region_name, map_options, n_clicks, province_name):
     
+    print("START --- display_choropleth \t\t", nowtime())    
+
     province_name = update_province_name(province_name)
-    
     if (province_name == 'Alberta') or (province_name == 'BC') or (province_name == 'Manitoba') or (province_name == 'Saskatchewan'):
         coordinates = {"lat": 54.2780, "lon": -110.0061}
         zoom = 4
@@ -2131,6 +2247,7 @@ def display_choropleth(map_options, n_clicks, province_name):
     else:
         coordinates = {"lat": 47.7799, "lon": -61.0259}
         zoom = 4.8
+    print("      --- display_choropleth \t\t", nowtime(), "  --- got province")
     
     if (map_options == 'cumulative_deaths'):
         range_color = (0,500)
@@ -2167,19 +2284,45 @@ def display_choropleth(map_options, n_clicks, province_name):
     
     else:
         range_color = (0,100)
-        
-    fig = px.choropleth_mapbox(df_map_data(region_list), geojson=geo_json_data, color=map_options,
-                           color_continuous_scale="Deep", range_color=range_color, opacity=0.5,
-                           locations="ENG_LABEL", featureidkey="properties.ENG_LABEL",
-                           height=700, center=coordinates,
-                           mapbox_style="carto-positron", zoom=zoom)
+    print("      --- display_choropleth \t\t", nowtime(), "  --- set range_color")
+    print("      --- display_choropleth \t\t", nowtime(), "  --- start choropleth_mapbox")
+
+    # fixme: why is this run every time?
+    df_map_data = get_map_data(region_list)
     
+    fig = px.choropleth_mapbox(df_map_data, geojson=geo_json_data, color=map_options,
+                          color_continuous_scale="Deep", range_color=range_color, opacity=0.5,
+                          locations="ENG_LABEL", featureidkey="properties.ENG_LABEL",
+                          height=700, center=coordinates,
+                          mapbox_style="carto-positron", zoom=zoom)
+
+    #=== ben trying the other method... doesn't work in dash?
+    # fig = go.Figure(go.Choroplethmapbox(
+    #     geojson = geo_json_data,
+    #     locations = df_map_data.ENG_LABEL,
+    #     z = df_map_data[map_options],
+    #     colorscale = "Deep",
+    #     zmin = range_color[0],
+    #     zmax = range_color[1],        
+    #     marker_opacity = 0.5,
+    #     marker_line_width = 0
+    # ))
+    # fig.update_layout(
+    #     mapbox_style = "carto-positron",
+    #     mapbox_zoom = zoom,
+    #     mapbox_center = coordinates,
+    #     height = 700,
+    # )
+    # fig.show()
+
+    #=== prior by shafika
     # fig = px.choropleth(df, geojson=geo_json_data, color=death_type,
                            # color_continuous_scale="Deep", range_color=range_color,
                            # locations="ENG_LABEL", featureidkey="properties.ENG_LABEL",
                            # projection='winkel tripel',
                            # height=700)
-
+    print("END   --- display_choropleth \t\t", nowtime())
+    
     return fig
 
 #=====================================================
@@ -3065,79 +3208,19 @@ def calculate_Rt_from_mortality(df_mort):
 
 # -------------- MAP FUNCTIONS --------------
 
-def adjust_region_names_for_json(df):
-    provs = ['Alberta', 'Alberta', 'Alberta',
-             'BC', 'Manitoba',
-             'NL', 'NL', 'NL',
-             'Ontario', 'Ontario', 'Ontario',
-             'Saskatchewan', 'Saskatchewan', 'Saskatchewan', 'Saskatchewan' ]
-    regs = ['Central', 'North', 'South',
-            'Northern', 'Northern',
-            'Central', 'Eastern', 'Western',
-            'Eastern', 'Northwestern', 'Southwestern',
-            'Central', 'Far North', 'North', 'South']
-    abbs = ['AB', 'AB', 'AB',
-            'BC', 'MB',
-            'NL', 'NL', 'NL',
-            'ON', 'ON', 'ON',
-            'SK', 'SK', 'SK', 'SK']
-    dfnew = df.copy()
-    for i in range(len(abbs)):
-        theones = ( (dfnew['health_region'] == regs[i])
-                    & (dfnew['province'] == provs[i]) )
-        dfnew.loc[theones, 'health_region'] = regs[i] + " " + abbs[i]
-    return dfnew
-
-# Reads the JSON file
-with open('data/health_regions.json', 'r') as myfile:
-    map_data = myfile.read()
-
-# Parses the file
-geo_json_data = json.loads(map_data)
-
-static_data2 = pd.read_csv(r'data/health_regions_static_data2.csv', encoding='Latin-1')
-region_list = static_data2["ENG_LABEL"].tolist()
-
-#df_mort2 = pd.read_csv(r'data/mortality2.csv', dtype={"ENG_LABEL": str})
-df_mort2 = df_mort_all.copy()
-df_mort2 = adjust_region_names_for_json(df_mort2)
-col_names = df_mort2.columns.to_list()
-col_names[1] = "ENG_LABEL"
-df_mort2.columns = col_names
-df_mort2["date_death_report"] = pd.to_datetime(df_mort2["date_death_report"], format="%d-%m-%Y")
-
-index = df_mort2[df_mort2['ENG_LABEL'] == 'Not Reported'].index
-df_mort2.drop(index, inplace=True)
-
-df_mort2.to_csv("junk.csv", index=False)
-
-# df_mobility = pd.read_csv(r'data/mobility.csv')
-# df_mobility["date"] = pd.to_datetime(df_mobility["date"], format="%Y-%m-%d")
-# df_mobility = df_mobility[df_mobility['date'] == max(df_mobility["date"])]
-
-#df_cases2 = pd.read_csv(r'data/cases2.csv', dtype={"ENG_LABEL": str})
-df_cases2 = df_cases_all.copy()
-df_cases2 = adjust_region_names_for_json(df_cases2)
-col_names = df_cases2.columns.to_list()
-col_names[1] = "ENG_LABEL"
-df_cases2.columns = col_names
-df_cases2["date_report"] = pd.to_datetime(df_cases2["date_report"], format="%d-%m-%Y")
-
-index = df_cases2[df_cases2['ENG_LABEL'] == 'Not Reported'].index
-df_cases2.drop(index, inplace=True)
-
-# def get_mobility_region_list(region_list):
-    # return static_data2.sub_region_2[static_data2.ENG_LABEL == region_list].tolist()
-
-def df_map_data(region_list):
+def get_map_data(region_list):
     
     df_deaths = df_mort2[df_mort2['date_death_report'] == max(df_mort2["date_death_report"])]
     cumulative_deaths_data = df_deaths.cumulative_deaths[df_deaths.ENG_LABEL == region_list].tolist()
+
+    print("      --- display_choropleth \t\t", nowtime(), "  --- got deaths")
     
     df_cases = df_cases2[df_cases2['date_report'] == max(df_cases2["date_report"])]
     cumulative_cases_data = df_cases.cumulative_cases[df_cases.ENG_LABEL == region_list].tolist()
     daily_cases_data = df_cases.cases[df_cases.ENG_LABEL == region_list].tolist()
     
+    print("      --- display_choropleth \t\t", nowtime(), "  --- got cases")
+
     frac80_data = static_data2.frac80[static_data2.ENG_LABEL == region_list].tolist()
     frac80_data = [i * 100 for i in frac80_data]
     
@@ -3147,6 +3230,8 @@ def df_map_data(region_list):
     
     pop_sparsity_data = static_data2.region_pop[static_data2.ENG_LABEL == region_list].tolist()
     
+    print("      --- display_choropleth \t\t", nowtime(), "  --- got popdata")
+
     anndeath_data = static_data2.anndeath[static_data2.ENG_LABEL == region_list].tolist()
     anndeath_data = [i * 1.3 for i in anndeath_data]
     
@@ -3156,6 +3241,8 @@ def df_map_data(region_list):
     cumulative_per_100000pop_data = [i * 100000 for i in cumulative_per_pop_data]
     
     avg_per_house_data = static_data2.house[static_data2.ENG_LABEL == region_list].tolist()
+
+    print("      --- display_choropleth \t\t", nowtime(), "  --- got demodata")
     
     # df_mob = df_mobility[df_mobility['date'] == max(df_mobility["date"])]
     # mobility_yukon = df_mob.workplaces_percent_change_from_baseline[df_mob.sub_region_1 == 'Yukon'].item()
@@ -3179,9 +3266,12 @@ def df_map_data(region_list):
                      # 'workplace_mobility': mobility_data}
     
     df_map_data = pd.DataFrame(combined_data)
+
+    print("      --- display_choropleth \t\t", nowtime(), "  --- got all data")
     return df_map_data
 
-# ======================= END OF PROGRAM =======================
+#=================== MAIN PROGRAM =======================
 
+#=== Start the server
 if __name__ == "__main__":
     app.run_server(debug=True)
