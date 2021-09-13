@@ -2939,7 +2939,7 @@ def get_hr_mob_df(province_name, region_name, getall=True, startdate=None, endda
         polyorder=1
     elif (province_name == "Yukon"):
         df_mob = df_mob_all[df_mob_all["sub_region_1"] == "Yukon"].copy()
-        polyorder=1
+        polyorder=1        
     else:
         sub_region_name = \
             static_data[(static_data["province_name"] == province_name)
