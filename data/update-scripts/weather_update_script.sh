@@ -12,5 +12,8 @@
 #
 #    bash weather_update_script.sh > stdout_weather_script 2> stderr_weather_script
 #
+
+cd ../weather
+
 $(which python3) get_actual_avg_weather_all_health_regions.py update_raw_data_two_months && \
     $(which python3) get_actual_avg_weather_all_health_regions.py create_actual_avg_all 

@@ -557,7 +557,7 @@ navbar = dbc.NavbarSimple(
         dbc.NavItem(dbc.NavLink("FAQ", href="faq")),
         dbc.NavItem(html.Img(src='assets/waterloo.png', height="40px")),
     ],
-    brand="My Local COVID: History, Forecast and Mitigation Portal",
+    brand="My Local COVID: History, Forecast, and Mitigation Portal",
     brand_style={'align':'right'},
     brand_href="/",
     color="dark",

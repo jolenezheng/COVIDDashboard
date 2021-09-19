@@ -13,4 +13,9 @@ df = df[((df['country_region_code'] == "CA") & (df['sub_region_2'].notna()))
 # remove accents
 df['sub_region_2'] = \
     df['sub_region_2'].str.normalize('NFKD').str.encode('ascii', errors='ignore').str.decode('utf-8')
+
+# delete the column "iso_3166_2_code"  (gives warning about mixed type, mostly blank)
+df.drop(["iso_3166_2_code"], axis=1, inplace=True)
+
+# output to file
 df.to_csv(output_mobility_file, index=False)
